@@ -148,6 +148,15 @@
     .roadmap-phase ul { list-style: none; font-size: 0.875rem; color: var(--muted); display: flex; flex-direction: column; gap: 0.3rem; }
     .roadmap-phase ul li::before { content: "→ "; color: var(--accent); }
 
+    /* Claude Run Metrics */
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+    .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
+    .metric-card .m-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; }
+    .metric-card .m-value { font-size: 1.35rem; font-weight: 700; color: var(--text); }
+    .metric-card .m-sub { font-size: 0.75rem; color: var(--muted); margin-top: 0.15rem; }
+    .metric-card.accent { border-color: var(--accent); }
+    .metrics-disclaimer { font-size: 0.75rem; color: var(--muted); font-style: italic; margin-bottom: 1rem; }
+
     /* Footer */
     .report-footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding-top: 1.5rem; border-top: 1px solid var(--border); margin-top: 2rem; }
   </style>
@@ -348,6 +357,58 @@
           <tr><td>🟡 Medium</td><td></td></tr>
           <tr><td>🔵 Low</td><td></td></tr>
           <tr><td><strong>Total</strong></td><td><strong></strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Claude Run Metrics -->
+  <section>
+    <div class="section-title">&#x1F916; Claude Run Metrics</div>
+    <p class="metrics-disclaimer">Token counts are <strong>estimates</strong> derived from file sizes and conversation content &mdash; not values read from an API response.</p>
+    <div class="metrics-grid">
+      <div class="metric-card accent">
+        <div class="m-label">Model</div>
+        <div class="m-value" style="font-size:1rem"><!-- e.g. claude-sonnet-4-6 --></div>
+      </div>
+      <div class="metric-card">
+        <div class="m-label">Input Tokens (est.)</div>
+        <div class="m-value"><!-- integer --></div>
+        <div class="m-sub">tokens consumed</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-label">Output Tokens (est.)</div>
+        <div class="m-value"><!-- integer --></div>
+        <div class="m-sub">tokens generated</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-label">Total Tokens (est.)</div>
+        <div class="m-value"><!-- integer --></div>
+        <div class="m-sub">of 200,000 window</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-label">Context Utilization</div>
+        <div class="m-value"><!-- e.g. 14.2% --></div>
+        <div class="m-sub"><!-- 🟢 Low / 🟡 Moderate / 🟠 High / 🔴 Near limit --></div>
+      </div>
+      <div class="metric-card">
+        <div class="m-label">Run Duration</div>
+        <div class="m-value"><!-- e.g. 4m 32s --></div>
+        <div class="m-sub"><!-- run date --></div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Detail</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Memory files loaded</td><td><!-- list paths + sizes, or "none" --></td></tr>
+          <tr><td>Tool calls &mdash; total</td><td><!-- integer --></td></tr>
+          <tr><td>&nbsp;&nbsp;Bash</td><td><!-- integer --></td></tr>
+          <tr><td>&nbsp;&nbsp;Read</td><td><!-- integer --></td></tr>
+          <tr><td>&nbsp;&nbsp;Write / Edit</td><td><!-- integer --></td></tr>
+          <tr><td>&nbsp;&nbsp;Grep / Glob</td><td><!-- integer --></td></tr>
+          <tr><td>&nbsp;&nbsp;Agent (subagents)</td><td><!-- integer --></td></tr>
+          <tr><td>Repo files inspected</td><td><!-- integer --></td></tr>
         </tbody>
       </table>
     </div>

@@ -26,8 +26,11 @@ Read each skill file before starting analysis:
 - `skills/devops.md`
 - `skills/dependency.md`
 - `skills/governance.md`
+- `skills/claude-metrics.md`
 
 ### Step 3 — Run all skills
+
+**Before running any skill**, record the wall-clock start time and note which memory files were loaded from `.claude/` at session start.
 
 Execute each skill against the cloned repo.
 Write findings into a shared mental knowledge graph as you go.
@@ -41,6 +44,7 @@ Run skills in this order:
 4. `devops` — CI/CD, containers, hygiene
 5. `dependency` — CVEs, licenses, supply chain
 6. `governance` — runs LAST; synthesizes all scores into compliance verdict
+7. `claude-metrics` — runs AFTER governance; collects token usage, context utilization, tool call tally, and memory file list for the current run
 
 ### Step 4 — Synthesize insights
 
@@ -63,6 +67,7 @@ Populate every section with the real data collected in Steps 3–4:
 - **Top 3 Quick Wins** — three specific, actionable items that can be fixed in under an hour, each with a file reference.
 - **Recommended Roadmap** — populate the three phases (this week / this month / this quarter) from the prioritised findings.
 - **Findings Summary table** — count findings by severity and total them.
+- **Claude Run Metrics section** — fill in all fields from the `ClaudeMetricsResult` produced by the `claude-metrics` skill: model name, run date, duration, estimated input/output/total tokens, context window utilization percentage and pressure label, memory files loaded, total tool calls with breakdown, and number of repo files inspected. Mark token counts clearly as estimates.
 
 Replace every `<!-- ... -->` HTML comment placeholder with real content. Do not leave any placeholder text in the output.
 
