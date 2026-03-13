@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs wc:*)",
+      "Bash(git clone:*)",
+      "Bash(cd /tmp/repo-intel-target && node -e \"\nconst p = require\\('./package.json'\\);\nconst direct = Object.keys\\(p.dependencies||{}\\).length;\nconst dev = Object.keys\\(p.devDependencies||{}\\).length;\nconsole.log\\('Direct deps:', direct, 'Dev deps:', dev\\);\nconst deps = {...p.dependencies, ...p.devDependencies};\nconst risky = {\n  'moment': 'Deprecated/unmaintained — migrate to date-fns or dayjs',\n  'xlsx': 'Known CVEs \\(SSRF/prototype pollution\\) — check version',\n  'pdfjs-dist': 'CVE-2024-4367 \\(arbitrary JS in PDF\\) — ensure >= 4.2.67'\n};\nObject.entries\\(risky\\).forEach\\(\\([pkg, note]\\) => {\n  if\\(deps[pkg]\\) console.log\\('FOUND:', pkg, deps[pkg], '->', note\\);\n}\\);\n\")",
+      "Bash(cd /tmp/repo-intel-target && grep -rn \"pdfjs-dist\\\\|pdf.js\" package.json && grep -rn \"\\\\\"xlsx\\\\\"\" package.json)"
+    ]
+  }
+}

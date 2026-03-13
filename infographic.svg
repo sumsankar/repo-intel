@@ -1,0 +1,264 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1400" width="1000" height="1400">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+    <linearGradient id="secGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ef4444"/>
+      <stop offset="100%" style="stop-color:#dc2626"/>
+    </linearGradient>
+    <linearGradient id="codeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#3b82f6"/>
+      <stop offset="100%" style="stop-color:#2563eb"/>
+    </linearGradient>
+    <linearGradient id="archGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#8b5cf6"/>
+      <stop offset="100%" style="stop-color:#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="devopsGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#10b981"/>
+      <stop offset="100%" style="stop-color:#059669"/>
+    </linearGradient>
+    <linearGradient id="depGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f59e0b"/>
+      <stop offset="100%" style="stop-color:#d97706"/>
+    </linearGradient>
+    <linearGradient id="govGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#06b6d4"/>
+      <stop offset="100%" style="stop-color:#0891b2"/>
+    </linearGradient>
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1000" height="1400" fill="url(#bgGrad)"/>
+
+  <!-- Grid pattern overlay -->
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" stroke-width="0.3" opacity="0.05"/>
+  </pattern>
+  <rect width="1000" height="1400" fill="url(#grid)"/>
+
+  <!-- ── HEADER BAND ── -->
+  <rect x="0" y="0" width="1000" height="110" fill="url(#headerGrad)" opacity="0.95"/>
+  <rect x="0" y="106" width="1000" height="4" fill="#6366f1" opacity="0.6"/>
+
+  <text x="500" y="48" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="28" font-weight="800" fill="#ffffff" letter-spacing="1">AI ENGINEERING INTELLIGENCE</text>
+  <text x="500" y="82" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="15" fill="#c7d2fe" letter-spacing="4">R E P O - I N T E L  P L A T F O R M</text>
+
+  <!-- ── HOOK SECTION ── -->
+  <rect x="40" y="130" width="920" height="90" rx="12" fill="#1e1b4b" filter="url(#shadow)"/>
+  <rect x="40" y="130" width="6" height="90" rx="3" fill="#f43f5e"/>
+  <text x="500" y="172" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="20" font-weight="700" fill="#fef2f2">
+    "The average data breach costs $4.88M.
+  </text>
+  <text x="500" y="200" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="20" font-weight="700" fill="#fca5a5">
+    Half of them start in the codebase."
+  </text>
+
+  <!-- ── PROBLEM ── -->
+  <text x="500" y="268" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="13" font-weight="700" fill="#94a3b8" letter-spacing="3">THE PROBLEM</text>
+  <line x1="200" y1="270" x2="340" y2="270" stroke="#334155" stroke-width="1"/>
+  <line x1="660" y1="270" x2="800" y2="270" stroke="#334155" stroke-width="1"/>
+
+  <!-- Problem pills -->
+  <rect x="55" y="285" width="270" height="60" rx="10" fill="#1e293b" stroke="#ef4444" stroke-width="1" stroke-opacity="0.4"/>
+  <text x="190" y="308" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="700" fill="#ef4444">FRAGMENTED TOOLING</text>
+  <text x="190" y="328" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#94a3b8">Semgrep · Trivy · SonarQube</text>
+  <text x="190" y="342" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">siloed, no unified signal</text>
+
+  <rect x="365" y="285" width="270" height="60" rx="10" fill="#1e293b" stroke="#f59e0b" stroke-width="1" stroke-opacity="0.4"/>
+  <text x="500" y="308" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="700" fill="#f59e0b">NO SYNTHESIS</text>
+  <text x="500" y="328" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#94a3b8">Alerts without context</text>
+  <text x="500" y="342" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">scores without weight</text>
+
+  <rect x="675" y="285" width="270" height="60" rx="10" fill="#1e293b" stroke="#8b5cf6" stroke-width="1" stroke-opacity="0.4"/>
+  <text x="810" y="308" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="700" fill="#8b5cf6">MANUAL AUDITS</text>
+  <text x="810" y="328" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#94a3b8">Security reviews are reactive</text>
+  <text x="810" y="342" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">governance is unenforceable</text>
+
+  <!-- Arrow down -->
+  <line x1="500" y1="358" x2="500" y2="385" stroke="#334155" stroke-width="2"/>
+  <polygon points="500,390 494,378 506,378" fill="#334155"/>
+
+  <!-- ── SOLUTION ── -->
+  <text x="500" y="415" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="13" font-weight="700" fill="#94a3b8" letter-spacing="3">THE SOLUTION</text>
+  <line x1="200" y1="417" x2="340" y2="417" stroke="#334155" stroke-width="1"/>
+  <line x1="660" y1="417" x2="800" y2="417" stroke="#334155" stroke-width="1"/>
+
+  <rect x="55" y="430" width="890" height="70" rx="12" fill="#1e1b4b" filter="url(#shadow)"/>
+  <rect x="55" y="430" width="4" height="70" rx="2" fill="url(#headerGrad)"/>
+  <text x="540" y="460" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="15" font-weight="700" fill="#e0e7ff">repo-intel — AI-orchestrated repository intelligence</text>
+  <text x="540" y="485" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="11" fill="#94a3b8">Ingest any GitHub repo → 6 parallel engines → single scored, governance-enforced health report</text>
+
+  <!-- Claude badge -->
+  <rect x="400" y="510" width="200" height="28" rx="14" fill="#312e81"/>
+  <text x="500" y="529" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="600" fill="#a5b4fc">⚡ Orchestrated by Claude (Anthropic)</text>
+
+  <!-- Arrow down -->
+  <line x1="500" y1="548" x2="500" y2="565" stroke="#334155" stroke-width="2"/>
+  <polygon points="500,570 494,558 506,558" fill="#334155"/>
+
+  <!-- ── ENGINES HEADER ── -->
+  <text x="500" y="592" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="13" font-weight="700" fill="#94a3b8" letter-spacing="3">6 ANALYSIS ENGINES</text>
+  <line x1="200" y1="594" x2="330" y2="594" stroke="#334155" stroke-width="1"/>
+  <line x1="670" y1="594" x2="800" y2="594" stroke="#334155" stroke-width="1"/>
+
+  <!-- ── ENGINE CARDS ── -->
+
+  <!-- 1. Security -->
+  <rect x="55" y="610" width="430" height="130" rx="12" fill="#1e293b" filter="url(#shadow)"/>
+  <rect x="55" y="610" width="430" height="6" rx="3" fill="url(#secGrad)"/>
+  <rect x="55" y="610" width="6" height="130" rx="3" fill="url(#secGrad)"/>
+  <text x="80" y="638" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="800" fill="#ef4444">SECURITY</text>
+  <rect x="370" y="618" width="95" height="22" rx="11" fill="#ef4444" opacity="0.15"/>
+  <text x="418" y="633" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="700" fill="#ef4444">30% WEIGHT</text>
+  <text x="80" y="658" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#94a3b8">Tools:  Semgrep · Regex pattern scanner</text>
+  <text x="80" y="676" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">→ SAST: SQL injection, eval(), pickle.loads(), MD5 hashing</text>
+  <text x="80" y="693" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">→ Secrets: AWS keys, GitHub PATs, Stripe keys, DB URIs</text>
+  <text x="80" y="710" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">→ Misconfigs: CORS *, debug mode, HTTP base URLs</text>
+  <circle cx="80" cy="726" r="4" fill="#ef4444"/>
+  <text x="92" y="730" font-family="'Segoe UI', Arial, sans-serif" font-size="10" font-weight="600" fill="#fca5a5">Critical  </text>
+  <circle cx="148" cy="726" r="4" fill="#f97316"/>
+  <text x="160" y="730" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#94a3b8">High  </text>
+  <circle cx="200" cy="726" r="4" fill="#eab308"/>
+  <text x="212" y="730" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#94a3b8">Medium  </text>
+  <circle cx="268" cy="726" r="4" fill="#22c55e"/>
+  <text x="280" y="730" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#94a3b8">Low</text>
+
+  <!-- 2. Code Quality -->
+  <rect x="515" y="610" width="430" height="130" rx="12" fill="#1e293b" filter="url(#shadow)"/>
+  <rect x="515" y="610" width="430" height="6" rx="3" fill="url(#codeGrad)"/>
+  <rect x="515" y="610" width="6" height="130" rx="3" fill="url(#codeGrad)"/>
+  <text x="540" y="638" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="800" fill="#3b82f6">CODE QUALITY</text>
+  <rect x="830" y="618" width="95" height="22" rx="11" fill="#3b82f6" opacity="0.15"/>
+  <text x="878" y="633" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="700" fill="#3b82f6">25% WEIGHT</text>
+  <text x="540" y="658" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#94a3b8">Tools:  AST metrics · File pattern analysis</text>
+  <text x="540" y="676" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">→ Complexity: nesting depth, function size, file length</text>
+  <text x="540" y="693" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">→ Test ratio ≥ 30% | No files &gt; 500 LOC</text>
+  <text x="540" y="710" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">→ Duplication signals | Silent exception detection</text>
+  <text x="540" y="727" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">→ README, docstrings, inline comment coverage</text>
+
+  <!-- 3. Architecture -->
+  <rect x="55" y="758" width="430" height="120" rx="12" fill="#1e293b" filter="url(#shadow)"/>
+  <rect x="55" y="758" width="430" height="6" rx="3" fill="url(#archGrad)"/>
+  <rect x="55" y="758" width="6" height="120" rx="3" fill="url(#archGrad)"/>
+  <text x="80" y="786" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="800" fill="#8b5cf6">ARCHITECTURE</text>
+  <rect x="370" y="766" width="95" height="22" rx="11" fill="#8b5cf6" opacity="0.15"/>
+  <text x="418" y="781" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="700" fill="#8b5cf6">20% WEIGHT</text>
+  <text x="80" y="806" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#94a3b8">Tools:  madge (circular deps) · Heuristic signal maps</text>
+  <text x="80" y="824" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">→ Framework detection: Next.js, FastAPI, Spring Boot, Rails</text>
+  <text x="80" y="841" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">→ Circular dependency detection (JS/TS)</text>
+  <text x="80" y="858" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">→ God object detection | Coupling &amp; layering violations</text>
+
+  <!-- 4. DevOps -->
+  <rect x="515" y="758" width="430" height="120" rx="12" fill="#1e293b" filter="url(#shadow)"/>
+  <rect x="515" y="758" width="430" height="6" rx="3" fill="url(#devopsGrad)"/>
+  <rect x="515" y="758" width="6" height="120" rx="3" fill="url(#devopsGrad)"/>
+  <text x="540" y="786" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="800" fill="#10b981">DEVOPS</text>
+  <rect x="830" y="766" width="95" height="22" rx="11" fill="#10b981" opacity="0.15"/>
+  <text x="878" y="781" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="700" fill="#10b981">15% WEIGHT</text>
+  <text x="540" y="806" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#94a3b8">Tools:  File pattern matching · YAML analysis</text>
+  <text x="540" y="824" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">→ CI/CD: GitHub Actions, GitLab CI, Azure Pipelines</text>
+  <text x="540" y="841" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">→ Dockerfile: multi-stage, non-root USER, pinned tags</text>
+  <text x="540" y="858" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">→ Hygiene: LICENSE, SECURITY.md, Dependabot, lock files</text>
+
+  <!-- 5. Dependency Risk -->
+  <rect x="55" y="896" width="430" height="120" rx="12" fill="#1e293b" filter="url(#shadow)"/>
+  <rect x="55" y="896" width="430" height="6" rx="3" fill="url(#depGrad)"/>
+  <rect x="55" y="896" width="6" height="120" rx="3" fill="url(#depGrad)"/>
+  <text x="80" y="924" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="800" fill="#f59e0b">DEPENDENCY RISK</text>
+  <rect x="370" y="904" width="95" height="22" rx="11" fill="#f59e0b" opacity="0.15"/>
+  <text x="418" y="919" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="700" fill="#f59e0b">10% WEIGHT</text>
+  <text x="80" y="944" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#94a3b8">Tools:  Trivy · OSV API (osv.dev)</text>
+  <text x="80" y="962" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">→ CVE scanning against lock files (npm, Poetry, Maven)</text>
+  <text x="80" y="979" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">→ License: MIT/Apache → LGPL → GPL/AGPL → Unknown</text>
+  <text x="80" y="996" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">→ Package staleness | transitive depth | supply chain</text>
+
+  <!-- 6. Governance -->
+  <rect x="515" y="896" width="430" height="120" rx="12" fill="#1e293b" filter="url(#shadow)"/>
+  <rect x="515" y="896" width="430" height="6" rx="3" fill="url(#govGrad)"/>
+  <rect x="515" y="896" width="6" height="120" rx="3" fill="url(#govGrad)"/>
+  <text x="540" y="924" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="800" fill="#06b6d4">GOVERNANCE</text>
+  <rect x="800" y="904" width="115" height="22" rx="11" fill="#06b6d4" opacity="0.15"/>
+  <text x="858" y="919" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="11" font-weight="700" fill="#06b6d4">COMPOSITE</text>
+  <text x="540" y="944" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#94a3b8">Tools:  Policy-as-code expression engine</text>
+  <text x="540" y="962" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">→ Rules: security.score ≥ 5, critical_cve_count == 0</text>
+  <text x="540" y="979" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">→ Blocking vs. non-blocking violation classification</text>
+  <text x="540" y="996" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#64748b">→ 1 committed secret = entire run flagged NON-COMPLIANT</text>
+
+  <!-- ── RELIABILITY SECTION ── -->
+  <text x="500" y="1052" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="13" font-weight="700" fill="#94a3b8" letter-spacing="3">WHY YOU CAN RELY ON IT</text>
+  <line x1="150" y1="1054" x2="290" y2="1054" stroke="#334155" stroke-width="1"/>
+  <line x1="710" y1="1054" x2="850" y2="1054" stroke="#334155" stroke-width="1"/>
+
+  <!-- Reliability pills row 1 -->
+  <rect x="55" y="1068" width="210" height="72" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="160" y="1090" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="10" font-weight="700" fill="#e2e8f0">TOOL-BACKED</text>
+  <text x="160" y="1107" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="9" fill="#64748b">Every finding traces to a</text>
+  <text x="160" y="1122" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="9" fill="#64748b">Semgrep rule ID or CVE ID</text>
+
+  <rect x="285" y="1068" width="210" height="72" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="390" y="1090" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="10" font-weight="700" fill="#e2e8f0">WEIGHTED SCORING</text>
+  <text x="390" y="1107" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="9" fill="#64748b">0–10 per dimension, not</text>
+  <text x="390" y="1122" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="9" fill="#64748b">binary pass/fail</text>
+
+  <rect x="515" y="1068" width="210" height="72" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="620" y="1090" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="10" font-weight="700" fill="#e2e8f0">POLICY-AS-CODE</text>
+  <text x="620" y="1107" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="9" fill="#64748b">Rules are explicit expressions,</text>
+  <text x="620" y="1122" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="9" fill="#64748b">auditors can read the ruleset</text>
+
+  <rect x="745" y="1068" width="210" height="72" rx="10" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <text x="850" y="1090" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="10" font-weight="700" fill="#e2e8f0">PARALLELIZABLE</text>
+  <text x="850" y="1107" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="9" fill="#64748b">Stateless engines, timeout-</text>
+  <text x="850" y="1122" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="9" fill="#64748b">isolated, no blast radius</text>
+
+  <!-- ── HEALTH SCORE BAR ── -->
+  <text x="500" y="1178" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="13" font-weight="700" fill="#94a3b8" letter-spacing="3">HEALTH SCORE</text>
+  <line x1="220" y1="1180" x2="340" y2="1180" stroke="#334155" stroke-width="1"/>
+  <line x1="660" y1="1180" x2="780" y2="1180" stroke="#334155" stroke-width="1"/>
+
+  <!-- Score segments -->
+  <rect x="55" y="1192" width="200" height="48" rx="8" fill="#7f1d1d"/>
+  <text x="155" y="1212" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="22" font-weight="800" fill="#ef4444">0–2</text>
+  <text x="155" y="1232" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#fca5a5">CRITICAL</text>
+
+  <rect x="265" y="1192" width="200" height="48" rx="8" fill="#431407"/>
+  <text x="365" y="1212" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="22" font-weight="800" fill="#f97316">3–4</text>
+  <text x="365" y="1232" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#fdba74">POOR</text>
+
+  <rect x="475" y="1192" width="200" height="48" rx="8" fill="#422006"/>
+  <text x="575" y="1212" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="22" font-weight="800" fill="#eab308">5–7</text>
+  <text x="575" y="1232" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#fde047">NEEDS WORK</text>
+
+  <rect x="685" y="1192" width="260" height="48" rx="8" fill="#052e16"/>
+  <text x="815" y="1212" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="22" font-weight="800" fill="#22c55e">8–10</text>
+  <text x="815" y="1232" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#86efac">PRODUCTION-READY</text>
+
+  <!-- ── FOOTER ── -->
+  <rect x="0" y="1260" width="1000" height="140" fill="#0f172a"/>
+  <rect x="0" y="1260" width="1000" height="3" fill="url(#headerGrad)" opacity="0.6"/>
+
+  <text x="500" y="1295" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="13" font-weight="700" fill="#6366f1" letter-spacing="2">TECH STACK</text>
+  <text x="500" y="1318" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="11" fill="#64748b">Claude (Anthropic)  ·  Semgrep  ·  Trivy  ·  OSV API  ·  madge  ·  Tree-sitter  ·  Neo4j  ·  FastAPI  ·  React</text>
+
+  <rect x="330" y="1332" width="340" height="36" rx="18" fill="#1e1b4b" stroke="#6366f1" stroke-width="1.5"/>
+  <text x="500" y="1355" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="700" fill="#a5b4fc">github.com / your-handle / repo-intel</text>
+
+  <text x="500" y="1390" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="10" fill="#334155">#PlatformEngineering  #DevSecOps  #AIEngineering  #EngineeringGovernance  #SAST  #SupplyChainSecurity</text>
+
+</svg>

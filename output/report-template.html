@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Repository Intelligence Report</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: #2d3148;
+      --text: #e2e8f0;
+      --muted: #8892a4;
+      --accent: #6c8eff;
+      --green: #22c55e;
+      --yellow: #facc15;
+      --orange: #f97316;
+      --red: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; }
+
+    /* Header */
+    .report-header {
+      border-left: 4px solid var(--accent);
+      padding: 1.5rem 1.5rem 1.5rem 1.75rem;
+      background: var(--surface);
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 2rem;
+    }
+    .report-header h1 { font-size: 1.75rem; margin-bottom: 0.75rem; }
+    .report-header .meta { color: var(--muted); font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 1.25rem; }
+    .report-header .meta span strong { color: var(--text); }
+
+    /* Section */
+    section { margin-bottom: 2rem; }
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.4rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Executive summary */
+    .summary-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    /* Scorecard */
+    .scorecard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+    }
+    .score-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .score-card.overall { border-color: var(--accent); }
+    .score-card .label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .score-card .score { font-size: 2rem; font-weight: 700; line-height: 1; }
+    .score-card .status { font-size: 1.25rem; margin-top: 0.25rem; }
+    .score-legend { margin-top: 0.75rem; font-size: 0.8rem; color: var(--muted); text-align: center; }
+
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      padding: 0.6rem 0.85rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    th { color: var(--muted); font-weight: 500; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    tr:last-child td { border-bottom: none; }
+    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+
+    /* Findings */
+    .findings-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .finding {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--border);
+      border-radius: 0 6px 6px 0;
+      padding: 0.75rem 1rem;
+      font-size: 0.875rem;
+    }
+    .finding.critical { border-left-color: var(--red); }
+    .finding.high { border-left-color: var(--orange); }
+    .finding.medium { border-left-color: var(--yellow); }
+    .finding.low { border-left-color: var(--green); }
+    .finding .badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.1rem 0.45rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-right: 0.5rem;
+    }
+    .finding.critical .badge { background: rgba(239,68,68,.15); color: var(--red); }
+    .finding.high    .badge { background: rgba(249,115,22,.15); color: var(--orange); }
+    .finding.medium  .badge { background: rgba(250,204,21,.15); color: var(--yellow); }
+    .finding.low     .badge { background: rgba(34,197,94,.15);  color: var(--green); }
+    .finding .location { color: var(--muted); font-family: monospace; font-size: 0.8rem; margin-top: 0.25rem; }
+
+    /* Metrics list */
+    .metrics { color: var(--muted); font-size: 0.9rem; }
+    .metrics li { padding: 0.2rem 0; list-style: none; }
+    .metrics li strong { color: var(--text); }
+
+    /* Checklist */
+    .checklist { list-style: none; display: flex; flex-direction: column; gap: 0.3rem; }
+    .checklist li { font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
+    .checklist .check { width: 16px; height: 16px; border: 1px solid var(--border); border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; }
+    .checklist .check.done { background: var(--green); border-color: var(--green); color: #000; }
+
+    /* Quick wins */
+    .quick-wins ol { padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem; color: var(--muted); }
+    .quick-wins ol li::marker { color: var(--accent); font-weight: 700; }
+    .quick-wins ol li { padding-left: 0.25rem; }
+
+    /* Roadmap */
+    .roadmap { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+    .roadmap-phase { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; }
+    .roadmap-phase h4 { font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .roadmap-phase ul { list-style: none; font-size: 0.875rem; color: var(--muted); display: flex; flex-direction: column; gap: 0.3rem; }
+    .roadmap-phase ul li::before { content: "→ "; color: var(--accent); }
+
+    /* Footer */
+    .report-footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding-top: 1.5rem; border-top: 1px solid var(--border); margin-top: 2rem; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="report-header">
+    <h1>🔍 Repository Intelligence Report</h1>
+    <div class="meta">
+      <span><strong>Repository:</strong> <!-- URL --></span>
+      <span><strong>Analyzed:</strong> <!-- date and time --></span>
+      <span><strong>Skills run:</strong> <!-- code, architecture, security, devops --></span>
+    </div>
+  </div>
+
+  <!-- Executive Summary -->
+  <section>
+    <div class="section-title">Executive Summary</div>
+    <div class="summary-box">
+      <!-- 3–4 sentences. Answer: What is this project? How healthy is it? What is the single most important thing to fix? -->
+    </div>
+  </section>
+
+  <!-- Health Scorecard -->
+  <section>
+    <div class="section-title">Health Scorecard</div>
+    <div class="scorecard">
+      <div class="score-card">
+        <div class="label">Code Quality</div>
+        <div class="score"><!-- x -->/10</div>
+        <div class="status"><!-- 🔴🟠🟡🟢 --></div>
+      </div>
+      <div class="score-card">
+        <div class="label">Architecture</div>
+        <div class="score"><!-- x -->/10</div>
+        <div class="status"><!-- 🔴🟠🟡🟢 --></div>
+      </div>
+      <div class="score-card">
+        <div class="label">Security</div>
+        <div class="score"><!-- x -->/10</div>
+        <div class="status"><!-- 🔴🟠🟡🟢 --></div>
+      </div>
+      <div class="score-card">
+        <div class="label">DevOps</div>
+        <div class="score"><!-- x -->/10</div>
+        <div class="status"><!-- 🔴🟠🟡🟢 --></div>
+      </div>
+      <div class="score-card overall">
+        <div class="label">Overall</div>
+        <div class="score"><!-- x -->/10</div>
+        <div class="status"><!-- 🔴🟠🟡🟢 --></div>
+      </div>
+    </div>
+    <div class="score-legend">Scoring guide: 8–10 🟢 Good · 5–7 🟡 Needs work · 3–4 🟠 Poor · 0–2 🔴 Critical</div>
+  </section>
+
+  <!-- Repository Overview -->
+  <section>
+    <div class="section-title">Repository Overview</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Primary Language</td><td></td></tr>
+          <tr><td>Project Type</td><td></td></tr>
+          <tr><td>Total Files</td><td></td></tr>
+          <tr><td>Total Lines of Code</td><td></td></tr>
+          <tr><td>Test Files</td><td></td></tr>
+          <tr><td>Estimated Test Coverage</td><td></td></tr>
+          <tr><td>CI/CD Platform</td><td></td></tr>
+          <tr><td>Docker</td><td></td></tr>
+          <tr><td>IaC Tool</td><td></td></tr>
+          <tr><td>Security Risk Level</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Critical & High Priority Findings -->
+  <section>
+    <div class="section-title">🚨 Critical &amp; High Priority Findings</div>
+    <ul class="findings-list">
+      <!-- Example entries — replace or remove: -->
+      <!-- <li class="finding critical"><span class="badge">Critical</span> SKILL · Finding — <span class="location">File:line</span><div>Fix description</div></li> -->
+      <!-- <li class="finding high"><span class="badge">High</span> SKILL · Finding — <span class="location">File:line</span><div>Fix description</div></li> -->
+    </ul>
+  </section>
+
+  <!-- Code Quality -->
+  <section>
+    <div class="section-title">📝 Code Quality</div>
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> <!-- one sentence --></p>
+    <ul class="metrics" style="margin-bottom:1rem">
+      <li><strong>Languages:</strong> </li>
+      <li><strong>Total files / lines:</strong> </li>
+      <li><strong>Test coverage estimate:</strong> </li>
+      <li><strong>TODO/FIXME count:</strong> </li>
+    </ul>
+    <ul class="findings-list">
+      <!-- medium and low findings -->
+    </ul>
+  </section>
+
+  <!-- Architecture -->
+  <section>
+    <div class="section-title">🏗️ Architecture</div>
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> <!-- one sentence --></p>
+    <ul class="metrics" style="margin-bottom:1rem">
+      <li><strong>Project type:</strong> </li>
+      <li><strong>Direct dependencies:</strong> </li>
+      <li><strong>Monorepo:</strong> </li>
+      <li><strong>Layered structure:</strong> </li>
+    </ul>
+    <ul class="findings-list">
+      <!-- medium and low findings -->
+    </ul>
+  </section>
+
+  <!-- Security -->
+  <section>
+    <div class="section-title">🔒 Security</div>
+    <p style="margin-bottom:.75rem;font-size:.9rem">
+      <strong>Risk Level:</strong>
+      <span style="color:var(--red);font-weight:700"><!-- CRITICAL / HIGH / MEDIUM / LOW --></span>
+    </p>
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> <!-- one sentence --></p>
+    <ul class="findings-list">
+      <!-- all security findings -->
+    </ul>
+  </section>
+
+  <!-- DevOps -->
+  <section>
+    <div class="section-title">⚙️ DevOps</div>
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> <!-- one sentence --></p>
+    <ul class="checklist" style="margin-bottom:1rem">
+      <li><span class="check"><!-- ✓ if done --></span> CI/CD pipeline</li>
+      <li><span class="check"><!-- ✓ if done --></span> Tests in CI</li>
+      <li><span class="check"><!-- ✓ if done --></span> Docker</li>
+      <li><span class="check"><!-- ✓ if done --></span> IaC</li>
+      <li><span class="check"><!-- ✓ if done --></span> README</li>
+      <li><span class="check"><!-- ✓ if done --></span> LICENSE</li>
+      <li><span class="check"><!-- ✓ if done --></span> CHANGELOG</li>
+      <li><span class="check"><!-- ✓ if done --></span> Lock file</li>
+    </ul>
+    <ul class="findings-list">
+      <!-- medium and low findings -->
+    </ul>
+  </section>
+
+  <!-- Top 3 Quick Wins -->
+  <section class="quick-wins">
+    <div class="section-title">🎯 Top 3 Quick Wins</div>
+    <p style="color:var(--muted);font-size:.875rem;margin-bottom:.75rem">Things that can be fixed in under an hour with high impact:</p>
+    <ol>
+      <li><!-- specific, actionable, with file reference --></li>
+      <li><!-- specific, actionable, with file reference --></li>
+      <li><!-- specific, actionable, with file reference --></li>
+    </ol>
+  </section>
+
+  <!-- Roadmap -->
+  <section>
+    <div class="section-title">🗺️ Recommended Roadmap</div>
+    <div class="roadmap">
+      <div class="roadmap-phase">
+        <h4>This week — critical fixes</h4>
+        <ul>
+          <!-- items from critical/high findings -->
+        </ul>
+      </div>
+      <div class="roadmap-phase">
+        <h4>This month — quality improvements</h4>
+        <ul>
+          <!-- items from medium findings -->
+        </ul>
+      </div>
+      <div class="roadmap-phase">
+        <h4>This quarter — strategic improvements</h4>
+        <ul>
+          <!-- architectural or process improvements -->
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Findings Summary -->
+  <section>
+    <div class="section-title">Findings Summary</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Severity</th><th>Count</th></tr></thead>
+        <tbody>
+          <tr><td>🔴 Critical</td><td></td></tr>
+          <tr><td>🟠 High</td><td></td></tr>
+          <tr><td>🟡 Medium</td><td></td></tr>
+          <tr><td>🔵 Low</td><td></td></tr>
+          <tr><td><strong>Total</strong></td><td><strong></strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="report-footer">
+    Generated by repo-intel · <a href="https://github.com/your-org/repo-intel" style="color:var(--accent)">github.com/your-org/repo-intel</a>
+  </div>
+
+</div>
+</body>
+</html>
