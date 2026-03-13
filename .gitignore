@@ -1,0 +1,29 @@
+# Local Claude Code developer config
+.claude/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Secrets / certificates
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Generated report output
+repo-intel-report.*
+
+# Temporary files
+/tmp/
+*.tmp
+*.log
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Editor directories
+.vscode/
+.idea/

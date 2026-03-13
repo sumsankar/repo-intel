@@ -260,7 +260,7 @@ services:
     build: ./api
     ports: ["8000:8000"]
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/repointel
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/repointel  # Override via environment variables in production
       REDIS_URL: redis://redis:6379
       NEO4J_URI: bolt://neo4j:7687
     depends_on: [db, redis, neo4j]
