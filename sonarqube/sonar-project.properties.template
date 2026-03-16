@@ -1,0 +1,63 @@
+# SonarQube Project Configuration Template
+# Copy this to the root of the repository being analyzed
+# repo-intel auto-generates this file during analysis — manual use is optional
+
+# ── Project identity ──────────────────────────────────────────────────────────
+sonar.projectKey=REPLACE_WITH_PROJECT_KEY
+sonar.projectName=REPLACE_WITH_PROJECT_NAME
+sonar.projectVersion=1.0
+
+# ── Source & test paths ───────────────────────────────────────────────────────
+sonar.sources=.
+sonar.exclusions=\
+  **/node_modules/**,\
+  **/dist/**,\
+  **/build/**,\
+  **/.git/**,\
+  **/*.min.js,\
+  **/coverage/**,\
+  **/vendor/**,\
+  **/__pycache__/**,\
+  **/*.pyc
+
+sonar.tests=.
+sonar.test.inclusions=\
+  **/*.test.js,\
+  **/*.test.ts,\
+  **/*.spec.js,\
+  **/*.spec.ts,\
+  **/__tests__/**,\
+  **/test_*.py,\
+  **/*_test.go,\
+  **/*Test.java,\
+  **/*Spec.cs
+
+# ── Server connection ─────────────────────────────────────────────────────────
+sonar.host.url=http://localhost:9000
+# Token is passed via SONAR_TOKEN env var or -Dsonar.token CLI flag
+# Do NOT hardcode your token here
+
+# ── Encoding ──────────────────────────────────────────────────────────────────
+sonar.sourceEncoding=UTF-8
+
+# ── SCM ───────────────────────────────────────────────────────────────────────
+# Disable SCM for shallow clones (repo-intel uses --depth 1)
+sonar.scm.disabled=true
+
+# ── Language-specific (uncomment as needed) ───────────────────────────────────
+
+# Python
+# sonar.python.version=3
+
+# Java (requires compiled bytecode)
+# sonar.java.binaries=target/classes,build/classes
+# sonar.java.source=17
+
+# JavaScript/TypeScript coverage (lcov from jest/vitest)
+# sonar.javascript.lcov.reportPaths=coverage/lcov.info
+
+# Python coverage (xml from pytest-cov)
+# sonar.python.coverage.reportPaths=coverage.xml
+
+# .NET
+# sonar.cs.opencover.reportsPaths=**/coverage.opencover.xml

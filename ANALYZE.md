@@ -26,6 +26,7 @@ Read each skill file before starting analysis:
 - `skills/devops.md`
 - `skills/dependency.md`
 - `skills/governance.md`
+- `skills/sonarqube.md`
 - `skills/claude-metrics.md`
 
 ### Step 3 — Run all skills
@@ -40,11 +41,12 @@ Run skills in this order:
 
 1. `security` — always first; if critical secrets found, escalate immediately
 2. `code` — size, coverage, complexity
-3. `architecture` — structure, dependencies, patterns
-4. `devops` — CI/CD, containers, hygiene
-5. `dependency` — CVEs, licenses, supply chain
-6. `governance` — runs LAST; synthesizes all scores into compliance verdict
-7. `claude-metrics` — runs AFTER governance; collects token usage, context utilization, tool call tally, and memory file list for the current run
+3. `sonarqube` — **required**; deep AST-based analysis; augments code and security scores. If prerequisites fail, halt and prompt user to set up SonarQube before continuing
+4. `architecture` — structure, dependencies, patterns
+5. `devops` — CI/CD, containers, hygiene
+6. `dependency` — CVEs, licenses, supply chain
+7. `governance` — runs LAST; synthesizes all scores into compliance verdict
+8. `claude-metrics` — runs AFTER governance; collects token usage, context utilization, tool call tally, and memory file list for the current run
 
 ### Step 4 — Synthesize insights
 
@@ -62,7 +64,7 @@ Populate every section with the real data collected in Steps 3–4:
 - **Health Scorecard** — assign a score (0–10) and status emoji for each skill dimension (Code Quality, Architecture, Security, DevOps) and derive the Overall score as the average.
 - **Repository Overview table** — fill in primary language, project type, total files, total lines of code, test files, estimated test coverage, CI/CD platform, Docker presence, IaC tool, and security risk level.
 - **Critical & High Priority Findings** — list every critical and high finding across all skills. Each entry must include: severity badge, skill category badge, a one-sentence description with the specific file and line reference, and an actionable fix.
-- **Code Quality, Architecture, Security, DevOps sections** — fill in the summary sentence, all metric fields, and the medium/low findings for that skill in the same badge format.
+- **Code Quality, Architecture, Security, DevOps sections** — fill in the summary sentence, all metric fields, and the medium/low findings for that skill in the same badge format. If SonarQube ran successfully, include the SonarQube Results subsection (Quality Gate, ratings, debt ratio, dashboard link).
 - **DevOps Checklist** — mark each item `pass` (green ✓) or `fail` (red ✗) based on what was found.
 - **Top 3 Quick Wins** — three specific, actionable items that can be fixed in under an hour, each with a file reference.
 - **Recommended Roadmap** — populate the three phases (this week / this month / this quarter) from the prioritised findings.

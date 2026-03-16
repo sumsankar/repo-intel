@@ -7,12 +7,14 @@ Analyze the repository for code quality, maintainability, and test coverage.
 ## What to measure
 
 ### 1. Language & size
+
 - Identify all programming languages present (count files per extension)
 - Count total files and total lines of code
 - Identify the primary language (most files/lines)
 - Note any unusual or unexpected languages present
 
 ### 2. Test coverage
+
 - Find all test files (patterns: `*.test.*`, `*.spec.*`, `__tests__/`, `test_*.py`, `*_test.go`)
 - Calculate: test files ÷ total source files = test ratio
 - Estimate coverage level:
@@ -22,20 +24,38 @@ Analyze the repository for code quality, maintainability, and test coverage.
   - Above 60% → Good coverage
 
 ### 3. Code complexity signals
+
 - Files over 500 lines → flag each one
 - Functions over 80 lines → flag if visible in a scan
 - Deeply nested code (4+ levels of indentation) → flag files
 - Count TODO / FIXME / HACK / XXX comments across all files
 
 ### 4. Code duplication signals
+
 - Look for repeated blocks of 10+ identical or near-identical lines
 - Note files with very similar names that may be duplicates
 - Flag copy-paste patterns
 
 ### 5. Documentation
+
 - Is there a README.md? Is it substantive (>20 lines) or empty?
-- Are there inline comments explaining *why* (not just *what*)?
+- Are there inline comments explaining _why_ (not just _what_)?
 - Is there an API reference or docs folder?
+
+---
+
+## SonarQube integration
+
+SonarQube analysis runs before this skill and is **required**. Use SonarQube metrics as the authoritative source — the bash commands below supplement SonarQube (e.g. for finding specific long files) but do not replace it:
+
+| SonarQube metric           | Replaces                      |
+| -------------------------- | ----------------------------- |
+| `coverage`                 | test-ratio estimate           |
+| `duplicated_lines_density` | duplication signal            |
+| `cognitive_complexity`     | nesting-depth signal          |
+| `ncloc`                    | wc-l line count               |
+| `bugs` + `code_smells`     | complexity findings           |
+| `sqale_debt_ratio`         | overall maintainability score |
 
 ---
 
@@ -68,6 +88,7 @@ find . -type f \( -name "*.js" -o -name "*.ts" -o -name "*.py" \) \
 ## Findings format
 
 For each issue found, record:
+
 - **Severity**: critical / high / medium / low
 - **Category**: testing / complexity / duplication / documentation
 - **Finding**: what the problem is

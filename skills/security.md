@@ -5,14 +5,34 @@ Scan the repository for secrets, vulnerabilities, misconfigurations, and insecur
 ---
 
 ## ⚠️ Important
+
 Treat every finding as potentially real. Do not dismiss matches as "probably test data."
 If a secret pattern matches, flag it — the developer can verify.
+
+---
+
+## SonarQube integration
+
+SonarQube analysis runs before this skill and is **required**. Use SonarQube findings as the **primary source** for vulnerabilities and insecure patterns:
+
+| SonarQube output                         | Maps to                     |
+| ---------------------------------------- | --------------------------- |
+| `vulnerabilities` (BLOCKER/CRITICAL)     | 🔴/🟠 security findings     |
+| `security_hotspots` (HIGH probability)   | 🟠 high security findings   |
+| `security_hotspots` (MEDIUM probability) | 🟡 medium security findings |
+| `security_rating` A                      | +1 to security score        |
+| `security_rating` D or E                 | -1 to security score        |
+
+The grep-based scans below are **always required** — they catch **secrets and credentials** that SonarQube does not scan by default.
+
+---
 
 ---
 
 ## What to scan
 
 ### 1. Secrets & credentials (CRITICAL priority)
+
 Search for these patterns across ALL files:
 
 ```bash
@@ -38,7 +58,9 @@ grep -rn "sk_live_\|rk_live_\|AC[a-z0-9]\{32\}\|SG\." . --exclude-dir={node_modu
 ```
 
 ### 2. Sensitive files committed to repo
+
 Check if any of these exist and are NOT in `.gitignore`:
+
 ```bash
 find . -name ".env" -o -name ".env.local" -o -name ".env.production" \
        -o -name "*.pem" -o -name "*.key" -o -name "id_rsa" \
@@ -47,16 +69,20 @@ find . -name ".env" -o -name ".env.local" -o -name ".env.production" \
 ```
 
 ### 3. .gitignore quality
+
 ```bash
 cat .gitignore 2>/dev/null || echo "NO .gitignore FOUND"
 ```
+
 Check that `.gitignore` includes:
+
 - `.env` and `.env.*`
 - `*.pem`, `*.key`
 - `node_modules/`
 - `dist/`, `build/`
 
 ### 4. Dangerous code patterns
+
 ```bash
 # JavaScript/TypeScript
 grep -rn "eval(" . --include="*.js" --include="*.ts" --exclude-dir={node_modules,.git}
@@ -73,9 +99,10 @@ grep -rn "query.*+.*req\.\|query.*\`.*\${" . --include="*.js" --include="*.ts" -
 ```
 
 ### 5. Dependency vulnerabilities
+
 ```bash
 # Node.js - check for known vulnerable packages
-cat package.json | grep -E "\"(lodash|moment|axios|express|webpack)\"" 
+cat package.json | grep -E "\"(lodash|moment|axios|express|webpack)\""
 # Note: recommend running `npm audit` for full vulnerability scan
 
 # Python
@@ -83,6 +110,7 @@ cat requirements.txt 2>/dev/null | head -30
 ```
 
 ### 6. Security hygiene
+
 - Does `SECURITY.md` exist? (`.github/SECURITY.md` or root)
 - Does `.github/dependabot.yml` exist? (automated dependency updates)
 - Are there branch protection signals? (`.github/` folder structure)
@@ -93,12 +121,12 @@ cat requirements.txt 2>/dev/null | head -30
 
 After scanning, assign an overall risk level:
 
-| Level | Condition |
-|-------|-----------|
-| 🔴 **Critical** | Any secrets/credentials found in code |
-| 🟠 **High** | `eval()` or command injection patterns + no `.gitignore` |
-| 🟡 **Medium** | Insecure patterns present but no direct secret exposure |
-| 🟢 **Low** | Minor issues only, good hygiene overall |
+| Level           | Condition                                                |
+| --------------- | -------------------------------------------------------- |
+| 🔴 **Critical** | Any secrets/credentials found in code                    |
+| 🟠 **High**     | `eval()` or command injection patterns + no `.gitignore` |
+| 🟡 **Medium**   | Insecure patterns present but no direct secret exposure  |
+| 🟢 **Low**      | Minor issues only, good hygiene overall                  |
 
 ---
 
