@@ -57,7 +57,83 @@ Look for evidence of:
 - **Event-driven** (EventEmitter, message queues, pub/sub)
 - **God objects** — single files/classes doing too many unrelated things
 
----
+### 6. Diagram generation
+
+After completing all other architecture analysis, synthesize your findings into two Mermaid diagrams. These diagrams must reflect only what was actually discovered — do not invent components.
+
+#### Logical Architecture Diagram
+Show the **static module structure**: layers, key directories/modules, and how they depend on each other.
+
+Rules:
+- Use `graph TD` (top-down) layout
+- Group nodes by layer using `subgraph` blocks (e.g. `subgraph API`, `subgraph Services`, `subgraph Data`)
+- Arrows represent import/call dependencies, not data flow
+- Label each node with the actual directory or module name found
+- If the project is flat with no clear layering, use a single level with all top-level modules as nodes
+- Keep it readable: max ~15 nodes. Collapse similar siblings into one representative node if needed
+
+**Template:**
+```mermaid
+graph TD
+  subgraph "Entry Points"
+    A[index / main / app]
+  end
+  subgraph "API Layer"
+    B[routes / controllers]
+  end
+  subgraph "Business Logic"
+    C[services]
+    D[domain / core]
+  end
+  subgraph "Data Layer"
+    E[models / repositories]
+    F[database / migrations]
+  end
+  subgraph "Shared"
+    G[utils / helpers / config]
+  end
+
+  A --> B
+  B --> C
+  C --> D
+  C --> E
+  E --> F
+  B --> G
+  C --> G
+```
+
+#### Functional Flow Diagram
+Show the **primary runtime flow**: trace the most important user action or request through the system end-to-end.
+
+Rules:
+- Use `sequenceDiagram` if the flow crosses multiple services/actors; use `flowchart LR` for a single-process flow
+- Pick the single most representative flow (e.g. "API request → auth → service → DB → response" or "user submits form → validation → persistence → email")
+- Use real module/file names found in the repo, not generic labels
+- Annotate key steps (e.g. auth check, DB write, cache hit)
+- Include error/failure paths only if they are architecturally significant
+
+**Template (adapt based on project type):**
+```mermaid
+sequenceDiagram
+  participant Client
+  participant Router as routes/
+  participant Auth as middleware/auth
+  participant Service as services/
+  participant DB as models/ + DB
+
+  Client->>Router: HTTP Request
+  Router->>Auth: Validate token
+  Auth-->>Router: User context
+  Router->>Service: Call business logic
+  Service->>DB: Query / mutate
+  DB-->>Service: Result
+  Service-->>Router: Response data
+  Router-->>Client: HTTP Response
+```
+
+**Output both diagrams as fenced Mermaid code blocks in the report.** Label them clearly as "Logical Architecture" and "Functional Flow".
+
+> **CRITICAL:** Both diagrams are REQUIRED in every report — even for non-code repos (docs-only, prompt libraries, config-only). If there is no runtime flow, model the static information flow (e.g. user → ANALYZE.md → skill files → report output). Never skip or omit this section.
 
 ## How to analyze
 

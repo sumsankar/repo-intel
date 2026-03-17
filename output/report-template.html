@@ -148,6 +148,21 @@
     .roadmap-phase ul { list-style: none; font-size: 0.875rem; color: var(--muted); display: flex; flex-direction: column; gap: 0.3rem; }
     .roadmap-phase ul li::before { content: "→ "; color: var(--accent); }
 
+    /* Diagram blocks */
+    .diagram-section { display: flex; flex-direction: column; gap: 1.25rem; }
+    .diagram-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .diagram-block .diagram-header { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.75rem 0.5rem 1rem; border-bottom: 1px solid var(--border); }
+    .diagram-block .diagram-title { font-size: 0.8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .diagram-controls { display: flex; align-items: center; gap: 0.35rem; }
+    .zoom-btn { background: var(--bg); border: 1px solid var(--border); color: var(--muted); border-radius: 4px; width: 26px; height: 26px; font-size: 0.95rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: color .15s, border-color .15s; }
+    .zoom-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .zoom-btn.reset { font-size: 0.65rem; font-weight: 700; width: auto; padding: 0 0.45rem; letter-spacing: 0.04em; text-transform: uppercase; }
+    .zoom-scale { font-size: 0.7rem; color: var(--muted); min-width: 2.8rem; text-align: center; font-variant-numeric: tabular-nums; }
+    .diagram-viewport { overflow: auto; max-height: 520px; cursor: grab; background: var(--surface); }
+    .diagram-viewport:active { cursor: grabbing; }
+    .diagram-viewport .mermaid { padding: 1.5rem; display: inline-block; }
+    .diagram-viewport .mermaid svg { display: block; shape-rendering: geometricPrecision; text-rendering: geometricPrecision; }
+
     /* Claude Run Metrics */
     .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
     .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
@@ -275,6 +290,79 @@
     <ul class="findings-list">
       <!-- medium and low findings -->
     </ul>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════
+       ARCHITECTURE DIAGRAMS — MANDATORY — DO NOT REMOVE THIS SECTION
+       Always include both diagrams below. Even for non-code repos,
+       produce diagrams from whatever logical structure exists.
+       Replace the <pre class="mermaid"> content with real Mermaid syntax.
+       ══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">🗺️ Architecture Diagrams</div>
+    <div class="diagram-section">
+
+      <div class="diagram-block" id="diag-logical">
+        <div class="diagram-header">
+          <span class="diagram-title">Logical Architecture</span>
+          <div class="diagram-controls">
+            <button class="zoom-btn" onclick="zoomDiagram('diag-logical',-0.2)" title="Zoom out">−</button>
+            <span class="zoom-scale" id="diag-logical-scale">100%</span>
+            <button class="zoom-btn" onclick="zoomDiagram('diag-logical', 0.2)" title="Zoom in">+</button>
+            <button class="zoom-btn reset" onclick="resetDiagram('diag-logical')" title="Reset zoom">Reset</button>
+          </div>
+        </div>
+        <div class="diagram-viewport" id="diag-logical-vp">
+          <pre class="mermaid">
+graph TD
+  subgraph "Entry Points"
+    A[main / index]
+  end
+  subgraph "API Layer"
+    B[routes / controllers]
+  end
+  subgraph "Business Logic"
+    C[services]
+  end
+  subgraph "Data Layer"
+    D[models / repositories]
+  end
+  A --> B
+  B --> C
+  C --> D
+          </pre>
+        </div>
+      </div>
+
+      <div class="diagram-block" id="diag-flow">
+        <div class="diagram-header">
+          <span class="diagram-title">Functional Flow</span>
+          <div class="diagram-controls">
+            <button class="zoom-btn" onclick="zoomDiagram('diag-flow',-0.2)" title="Zoom out">−</button>
+            <span class="zoom-scale" id="diag-flow-scale">100%</span>
+            <button class="zoom-btn" onclick="zoomDiagram('diag-flow', 0.2)" title="Zoom in">+</button>
+            <button class="zoom-btn reset" onclick="resetDiagram('diag-flow')" title="Reset zoom">Reset</button>
+          </div>
+        </div>
+        <div class="diagram-viewport" id="diag-flow-vp">
+          <pre class="mermaid">
+sequenceDiagram
+  participant Client
+  participant API as routes/
+  participant Svc as services/
+  participant DB as models/ + DB
+
+  Client->>API: HTTP Request
+  API->>Svc: Business logic
+  Svc->>DB: Query
+  DB-->>Svc: Result
+  Svc-->>API: Data
+  API-->>Client: HTTP Response
+          </pre>
+        </div>
+      </div>
+
+    </div>
   </section>
 
   <!-- Security -->
@@ -419,5 +507,123 @@
   </div>
 
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+  /* ── Mermaid init ───────────────────────────────────────────── */
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      background: '#1a1d27',
+      primaryColor: '#2d3148',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#6c8eff',
+      lineColor: '#8892a4',
+      secondaryColor: '#1a1d27',
+      tertiaryColor: '#0f1117',
+      edgeLabelBackground: '#1a1d27',
+      clusterBkg: '#1a1d27',
+      clusterBorder: '#2d3148',
+      titleColor: '#e2e8f0',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    },
+    flowchart: { curve: 'basis', padding: 20 },
+    sequence: { actorMargin: 60, messageMargin: 30 }
+  });
+
+  /* ── Zoom / Pan controller ──────────────────────────────────── *
+   *  Uses direct SVG width/height attribute scaling — NOT CSS     *
+   *  transform — so the vector re-renders crisp at every zoom     *
+   *  level instead of blurring like a scaled bitmap.              *
+   * ────────────────────────────────────────────────────────────── */
+  const _diag = {};   // { scale, origW, origH }
+
+  function _getSvg(blockId) {
+    const vp = document.getElementById(blockId + '-vp');
+    return vp ? vp.querySelector('svg') : null;
+  }
+
+  function _applyScale(blockId) {
+    const svg = _getSvg(blockId);
+    if (!svg) return;
+    const st = _diag[blockId];
+    // Scale the SVG by setting its rendered dimensions.
+    // The viewBox stays unchanged, so the browser re-rasterises the
+    // full vector at the new size → always sharp, never blurry.
+    svg.setAttribute('width',  st.origW * st.scale);
+    svg.setAttribute('height', st.origH * st.scale);
+    const label = document.getElementById(blockId + '-scale');
+    if (label) label.textContent = Math.round(st.scale * 100) + '%';
+  }
+
+  function zoomDiagram(blockId, delta) {
+    const st = _diag[blockId];
+    if (!st) return;
+    st.scale = Math.min(5, Math.max(0.2, st.scale + delta));
+    _applyScale(blockId);
+  }
+
+  function resetDiagram(blockId) {
+    const st = _diag[blockId];
+    if (!st) return;
+    st.scale = 1;
+    _applyScale(blockId);
+    const vp = document.getElementById(blockId + '-vp');
+    if (vp) { vp.scrollLeft = 0; vp.scrollTop = 0; }
+  }
+
+  /* Wire up after Mermaid finishes rendering the SVGs */
+  document.addEventListener('DOMContentLoaded', function () {
+    const ids = ['diag-logical', 'diag-flow'];
+    let tries = 0;
+    const poll = setInterval(function () {
+      tries++;
+      const allReady = ids.every(id => !!_getSvg(id));
+      if (!allReady && tries < 50) return;
+      clearInterval(poll);
+
+      ids.forEach(function (id) {
+        const svg = _getSvg(id);
+        if (!svg) return;
+
+        // Capture natural rendered dimensions as the 100% baseline
+        const bbox = svg.getBoundingClientRect();
+        const origW = parseFloat(svg.getAttribute('width'))  || bbox.width  || 600;
+        const origH = parseFloat(svg.getAttribute('height')) || bbox.height || 400;
+        _diag[id] = { scale: 1, origW, origH };
+
+        // Ensure the viewBox is set (needed so the SVG scales correctly)
+        if (!svg.getAttribute('viewBox')) {
+          svg.setAttribute('viewBox', `0 0 ${origW} ${origH}`);
+        }
+
+        const vp = document.getElementById(id + '-vp');
+        if (!vp) return;
+
+        /* Ctrl + scroll-wheel → zoom */
+        vp.addEventListener('wheel', function (e) {
+          if (!e.ctrlKey && !e.metaKey) return;
+          e.preventDefault();
+          zoomDiagram(id, e.deltaY < 0 ? 0.15 : -0.15);
+        }, { passive: false });
+
+        /* Click-drag → pan */
+        let drag = false, ox, oy, sl, st2;
+        vp.addEventListener('mousedown', function (e) {
+          drag = true; ox = e.pageX; oy = e.pageY;
+          sl = vp.scrollLeft; st2 = vp.scrollTop;
+        });
+        vp.addEventListener('mouseleave', () => drag = false);
+        vp.addEventListener('mouseup',    () => drag = false);
+        vp.addEventListener('mousemove', function (e) {
+          if (!drag) return;
+          vp.scrollLeft = sl - (e.pageX - ox);
+          vp.scrollTop  = st2 - (e.pageY - oy);
+        });
+      });
+    }, 150);
+  });
+</script>
 </body>
 </html>

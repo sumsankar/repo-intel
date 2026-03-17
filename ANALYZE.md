@@ -63,6 +63,10 @@ Populate every section with the real data collected in Steps 3–4:
 - **Repository Overview table** — fill in primary language, project type, total files, total lines of code, test files, estimated test coverage, CI/CD platform, Docker presence, IaC tool, and security risk level.
 - **Critical & High Priority Findings** — list every critical and high finding across all skills. Each entry must include: severity badge, skill category badge, a one-sentence description with the specific file and line reference, and an actionable fix.
 - **Code Quality, Architecture, Security, DevOps sections** — fill in the summary sentence, all metric fields, and the medium/low findings for that skill in the same badge format.
+- **Architecture Diagrams section** — **THIS SECTION IS MANDATORY AND MUST ALWAYS BE PRESENT IN EVERY REPORT, NO EXCEPTIONS.** Include a `<section>` block with two Mermaid diagrams rendered via `<pre class="mermaid">` tags:
+  1. **Logical Architecture** (`graph TD`) — shows module layers and static dependencies using `subgraph` blocks
+  2. **Functional Flow** (`sequenceDiagram` or `flowchart LR`) — traces the primary runtime request/data flow through the system
+  Write raw Mermaid syntax directly inside the `<pre class="mermaid">` tags — no fences, no `<code>` wrapper, no HTML-encoding. Even if the project has no code (e.g. a docs-only repo), you MUST still produce both diagrams using whatever logical structure exists (e.g. files, skills, prompts, sections). **Never omit this section.**
 - **DevOps Checklist** — mark each item `pass` (green ✓) or `fail` (red ✗) based on what was found.
 - **Top 3 Quick Wins** — three specific, actionable items that can be fixed in under an hour, each with a file reference.
 - **Recommended Roadmap** — populate the three phases (this week / this month / this quarter) from the prioritised findings.

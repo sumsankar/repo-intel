@@ -32,6 +32,23 @@ Analyze the repository for code quality, maintainability, and test coverage.
 - Note files with very similar names that may be duplicates
 - Flag copy-paste patterns
 
+**In the report, for each duplication signal found, include:**
+- The specific files (or file pairs) where the duplication was detected
+- An estimate of the duplicated line count or percentage of the file affected
+- The nature of the duplication (e.g., identical utility functions, copy-pasted config blocks, near-identical classes)
+- The recommended action (e.g., extract to a shared module, replace with a parameterized function, consolidate into a single source of truth)
+
+**Severity guide for duplication findings:**
+- 🔴 **Critical** — core business logic duplicated across 3+ files with diverging implementations (risk of bugs from inconsistent changes)
+- 🟠 **High** — 50+ lines duplicated across 2 files, or entire files that are near-identical copies
+- 🟡 **Medium** — repeated utility/helper code (10–50 lines) that could be extracted into a shared module
+- 🔵 **Low** — minor copy-paste (< 10 lines) or cosmetic repetition with no logic risk
+
+**Example findings:**
+- 🟠 **High** `[duplication]` `src/utils/dateHelper.js` and `src/lib/dateUtils.js` contain ~80 identical lines of date-formatting logic. Consolidate into a single shared module.
+- 🟡 **Medium** `[duplication]` Input validation block repeated in `controllers/userController.js` (lines 45–67) and `controllers/adminController.js` (lines 112–134). Extract to a shared `validateInput()` helper.
+- 🔵 **Low** `[duplication]` Database connection setup copy-pasted across 4 route files. Consider a shared `db.js` initializer.
+
 ### 5. Documentation
 - Is there a README.md? Is it substantive (>20 lines) or empty?
 - Are there inline comments explaining *why* (not just *what*)?
