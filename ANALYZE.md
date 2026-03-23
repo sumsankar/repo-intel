@@ -7,14 +7,22 @@ Your job is to analyze a GitHub or GitLab repository and produce a structured in
 
 ## How to run an analysis
 
-When the user gives you a repository URL, follow these steps **in order**:
+When the user gives you a repository URL **or a local folder path**, follow these steps **in order**:
 
-### Step 1 — Clone the repository
+### Step 1 — Locate the repository
 
+The user may provide either a remote URL or a local folder path. Handle each case:
+
+**If the input is a remote URL** (starts with `https://`, `git@`, `http://`):
 ```
 git clone --depth 1 <repo-url> /tmp/repo-intel-target
-cd /tmp/repo-intel-target
 ```
+Set `REPO_PATH=/tmp/repo-intel-target`
+
+**If the input is a local folder path** (e.g. `C:\projects\my-app` or `/home/user/my-app`):
+- Do not clone — use the folder directly
+- Set `REPO_PATH=<the path the user provided>`
+- Confirm the folder exists and contains recognisable project files before proceeding
 
 ### Step 2 — Load your skills
 
@@ -77,7 +85,10 @@ Replace every `<!-- ... -->` HTML comment placeholder with real content. Do not 
 
 ### Step 6 — Clean up
 
+Only delete the cloned folder if a remote URL was cloned in Step 1. **Never delete a local folder path provided by the user.**
+
 ```
+# Only run if input was a remote URL:
 rm -rf /tmp/repo-intel-target
 ```
 
@@ -95,16 +106,20 @@ rm -rf /tmp/repo-intel-target
 
 ## Quick start
 
-To analyze a repo, tell Claude Code:
-
+**Remote URL:**
 ```
 Follow ANALYZE.md and analyze https://github.com/org/repo
+```
+
+**Local folder:**
+```
+Follow ANALYZE.md and analyze C:\projects\my-app
 ```
 
 To run only specific skills:
 
 ```
-Follow ANALYZE.md but only run the security and devops skills on https://github.com/org/repo
+Follow ANALYZE.md but only run the security and devops skills on C:\projects\my-app
 ```
 
 To compare two repos:

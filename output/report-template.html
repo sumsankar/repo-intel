@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Repository Intelligence Report</title>
   <style>
+    /* ── Dark mode (default) ── */
     :root {
       --bg: #0f1117;
       --surface: #1a1d27;
@@ -16,6 +17,20 @@
       --yellow: #facc15;
       --orange: #f97316;
       --red: #ef4444;
+    }
+
+    /* ── Light mode ── */
+    :root.light {
+      --bg: #f5f6fa;
+      --surface: #ffffff;
+      --border: #d1d5e0;
+      --text: #1a1d27;
+      --muted: #6b7280;
+      --accent: #3b5bdb;
+      --green: #16a34a;
+      --yellow: #ca8a04;
+      --orange: #ea580c;
+      --red: #dc2626;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -158,10 +173,25 @@
     .zoom-btn:hover { color: var(--accent); border-color: var(--accent); }
     .zoom-btn.reset { font-size: 0.65rem; font-weight: 700; width: auto; padding: 0 0.45rem; letter-spacing: 0.04em; text-transform: uppercase; }
     .zoom-scale { font-size: 0.7rem; color: var(--muted); min-width: 2.8rem; text-align: center; font-variant-numeric: tabular-nums; }
-    .diagram-viewport { overflow: auto; max-height: 520px; cursor: grab; background: var(--surface); }
+    .expand-btn { background: var(--bg); border: 1px solid var(--border); color: var(--muted); border-radius: 4px; height: 26px; padding: 0 0.5rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; cursor: pointer; white-space: nowrap; transition: color .15s, border-color .15s; }
+    .expand-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .diagram-viewport { overflow: auto; max-height: 480px; cursor: grab; background: var(--surface); }
     .diagram-viewport:active { cursor: grabbing; }
-    .diagram-viewport .mermaid { padding: 1.5rem; display: inline-block; }
-    .diagram-viewport .mermaid svg { display: block; shape-rendering: geometricPrecision; text-rendering: geometricPrecision; }
+    .diagram-viewport .mermaid { padding: 1.5rem; display: inline-block; min-width: 100%; }
+    .diagram-viewport .mermaid svg { display: block; max-width: none !important; shape-rendering: geometricPrecision; text-rendering: geometricPrecision; }
+    .diagram-hint { font-size: 0.7rem; color: var(--muted); padding: 0.25rem 1rem 0.4rem; opacity: 0.6; }
+
+    /* Fullscreen modal */
+    .diag-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 9999; align-items: center; justify-content: center; }
+    .diag-modal.open { display: flex; }
+    .diag-modal-inner { position: relative; width: 96vw; height: 92vh; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+    .diag-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 0.5rem; }
+    .diag-modal-title { font-size: 0.9rem; font-weight: 600; color: var(--accent); flex: 1; }
+    .diag-modal-vp { flex: 1; overflow: auto; cursor: grab; padding: 1.5rem; }
+    .diag-modal-vp:active { cursor: grabbing; }
+    .diag-modal-vp svg { display: block; max-width: none !important; }
+    .close-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 4px; padding: 0.2rem 0.6rem; cursor: pointer; font-size: 0.8rem; transition: color .15s, border-color .15s; }
+    .close-btn:hover { color: var(--red); border-color: var(--red); }
 
     /* Claude Run Metrics */
     .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
@@ -174,9 +204,20 @@
 
     /* Footer */
     .report-footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding-top: 1.5rem; border-top: 1px solid var(--border); margin-top: 2rem; }
+
+    /* Theme toggle */
+    .theme-toggle { position: fixed; top: 1rem; right: 1rem; z-index: 1000; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 0.3rem 0.75rem; display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-size: 0.8rem; color: var(--muted); transition: border-color .15s, color .15s; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+    .theme-toggle .toggle-icon { font-size: 1rem; line-height: 1; }
   </style>
 </head>
 <body>
+
+<button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Switch theme">
+  <span class="toggle-icon" id="theme-icon">☀️</span>
+  <span id="theme-label">Light</span>
+</button>
+
 <div class="container">
 
   <!-- Header -->
@@ -306,10 +347,11 @@
         <div class="diagram-header">
           <span class="diagram-title">Logical Architecture</span>
           <div class="diagram-controls">
-            <button class="zoom-btn" onclick="zoomDiagram('diag-logical',-0.2)" title="Zoom out">−</button>
-            <span class="zoom-scale" id="diag-logical-scale">100%</span>
-            <button class="zoom-btn" onclick="zoomDiagram('diag-logical', 0.2)" title="Zoom in">+</button>
-            <button class="zoom-btn reset" onclick="resetDiagram('diag-logical')" title="Reset zoom">Reset</button>
+            <button class="zoom-btn" onclick="zoomDiagram('diag-logical',-0.15)" title="Zoom out">−</button>
+            <span class="zoom-scale" id="diag-logical-scale">fit</span>
+            <button class="zoom-btn" onclick="zoomDiagram('diag-logical', 0.15)" title="Zoom in">+</button>
+            <button class="zoom-btn reset" onclick="resetDiagram('diag-logical')" title="Reset to fit">Fit</button>
+            <button class="expand-btn" onclick="expandDiagram('diag-logical','Logical Architecture')" title="Open fullscreen">⛶ Fullscreen</button>
           </div>
         </div>
         <div class="diagram-viewport" id="diag-logical-vp">
@@ -332,16 +374,18 @@ graph TD
   C --> D
           </pre>
         </div>
+        <div class="diagram-hint">Scroll to pan · Use + / − buttons or scroll wheel to zoom · ⛶ Fullscreen for best readability</div>
       </div>
 
       <div class="diagram-block" id="diag-flow">
         <div class="diagram-header">
           <span class="diagram-title">Functional Flow</span>
           <div class="diagram-controls">
-            <button class="zoom-btn" onclick="zoomDiagram('diag-flow',-0.2)" title="Zoom out">−</button>
-            <span class="zoom-scale" id="diag-flow-scale">100%</span>
-            <button class="zoom-btn" onclick="zoomDiagram('diag-flow', 0.2)" title="Zoom in">+</button>
-            <button class="zoom-btn reset" onclick="resetDiagram('diag-flow')" title="Reset zoom">Reset</button>
+            <button class="zoom-btn" onclick="zoomDiagram('diag-flow',-0.15)" title="Zoom out">−</button>
+            <span class="zoom-scale" id="diag-flow-scale">fit</span>
+            <button class="zoom-btn" onclick="zoomDiagram('diag-flow', 0.15)" title="Zoom in">+</button>
+            <button class="zoom-btn reset" onclick="resetDiagram('diag-flow')" title="Reset to fit">Fit</button>
+            <button class="expand-btn" onclick="expandDiagram('diag-flow','Functional Flow')" title="Open fullscreen">⛶ Fullscreen</button>
           </div>
         </div>
         <div class="diagram-viewport" id="diag-flow-vp">
@@ -360,10 +404,28 @@ sequenceDiagram
   API-->>Client: HTTP Response
           </pre>
         </div>
+        <div class="diagram-hint">Scroll to pan · Use + / − buttons or scroll wheel to zoom · ⛶ Fullscreen for best readability</div>
       </div>
 
     </div>
   </section>
+
+  <!-- Fullscreen diagram modal -->
+  <div class="diag-modal" id="diag-modal" onclick="if(event.target===this)closeDiagramModal()">
+    <div class="diag-modal-inner">
+      <div class="diag-modal-header">
+        <span class="diag-modal-title" id="diag-modal-title"></span>
+        <div class="diagram-controls">
+          <button class="zoom-btn" onclick="zoomModal(-0.15)" title="Zoom out">−</button>
+          <span class="zoom-scale" id="modal-scale">fit</span>
+          <button class="zoom-btn" onclick="zoomModal(0.15)" title="Zoom in">+</button>
+          <button class="zoom-btn reset" onclick="resetModal()">Fit</button>
+          <button class="close-btn" onclick="closeDiagramModal()">✕ Close</button>
+        </div>
+      </div>
+      <div class="diag-modal-vp" id="diag-modal-vp"></div>
+    </div>
+  </div>
 
   <!-- Security -->
   <section>
@@ -510,21 +572,16 @@ sequenceDiagram
 
 <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 <script>
-  /* ── Mermaid init ───────────────────────────────────────────── */
+  /* ── Mermaid init ─────────────────────────────────────────────── */
   mermaid.initialize({
     startOnLoad: true,
     theme: 'dark',
     themeVariables: {
-      background: '#1a1d27',
-      primaryColor: '#2d3148',
-      primaryTextColor: '#e2e8f0',
-      primaryBorderColor: '#6c8eff',
-      lineColor: '#8892a4',
-      secondaryColor: '#1a1d27',
-      tertiaryColor: '#0f1117',
-      edgeLabelBackground: '#1a1d27',
-      clusterBkg: '#1a1d27',
-      clusterBorder: '#2d3148',
+      background: '#1a1d27', primaryColor: '#2d3148',
+      primaryTextColor: '#e2e8f0', primaryBorderColor: '#6c8eff',
+      lineColor: '#8892a4', secondaryColor: '#1a1d27',
+      tertiaryColor: '#0f1117', edgeLabelBackground: '#1a1d27',
+      clusterBkg: '#1a1d27', clusterBorder: '#2d3148',
       titleColor: '#e2e8f0',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     },
@@ -532,98 +589,227 @@ sequenceDiagram
     sequence: { actorMargin: 60, messageMargin: 30 }
   });
 
-  /* ── Zoom / Pan controller ──────────────────────────────────── *
-   *  Uses direct SVG width/height attribute scaling — NOT CSS     *
-   *  transform — so the vector re-renders crisp at every zoom     *
-   *  level instead of blurring like a scaled bitmap.              *
+  /* ── Diagram zoom / pan / fullscreen ──────────────────────────── *
+   *                                                                  *
+   *  KEY FIX: Mermaid v10+ sets style="max-width: Xpx" on every     *
+   *  SVG it renders. This overrides the width attribute, making      *
+   *  zoom appear broken. We clear that inline style immediately      *
+   *  after init and use viewBox-based scaling for crisp results.     *
    * ────────────────────────────────────────────────────────────── */
-  const _diag = {};   // { scale, origW, origH }
+  const _diag  = {};   // per-diagram: { scale, nw, nh }
+  const _modal = { scale:1, nw:0, nh:0 };
 
-  function _getSvg(blockId) {
-    const vp = document.getElementById(blockId + '-vp');
-    return vp ? vp.querySelector('svg') : null;
+  function _getSvg(id) {
+    return document.getElementById(id + '-vp')?.querySelector('svg') || null;
   }
 
-  function _applyScale(blockId) {
-    const svg = _getSvg(blockId);
+  function _readDims(svg) {
+    // viewBox is the most reliable source — Mermaid always sets it
+    const vb = (svg.getAttribute('viewBox') || '').trim().split(/[\s,]+/);
+    const nw = parseFloat(vb[2]) || parseFloat(svg.getAttribute('width'))  || svg.getBoundingClientRect().width  || 700;
+    const nh = parseFloat(vb[3]) || parseFloat(svg.getAttribute('height')) || svg.getBoundingClientRect().height || 450;
+    return { nw, nh };
+  }
+
+  function _initDiag(id) {
+    const vp  = document.getElementById(id + '-vp');
+    const svg = _getSvg(id);
+    if (!svg) return false;
+
+    // ← THE FIX: strip mermaid's max-width so width attribute controls size
+    svg.style.maxWidth = 'none';
+    svg.style.width    = '';
+    svg.style.height   = '';
+
+    const { nw, nh } = _readDims(svg);
+    if (!svg.getAttribute('viewBox')) svg.setAttribute('viewBox', `0 0 ${nw} ${nh}`);
+
+    // Auto-fit: scale down to fill viewport, never enlarge beyond 100%
+    const avail = (vp.clientWidth || 820) - 48;
+    const fit   = Math.min(1, avail / nw);
+    _diag[id]   = { scale: fit, nw, nh };
+    _applyDiagScale(id);
+
+    // Scroll-wheel zoom (no Ctrl required)
+    vp.addEventListener('wheel', e => {
+      e.preventDefault();
+      _diag[id].scale = Math.min(5, Math.max(0.1, _diag[id].scale + (e.deltaY < 0 ? 0.15 : -0.15)));
+      _applyDiagScale(id);
+    }, { passive: false });
+
+    // Click-drag pan
+    let drag=false, ox, oy, sl, st;
+    vp.addEventListener('mousedown', e => { drag=true; ox=e.pageX; oy=e.pageY; sl=vp.scrollLeft; st=vp.scrollTop; });
+    vp.addEventListener('mouseleave', () => drag=false);
+    vp.addEventListener('mouseup',   () => drag=false);
+    vp.addEventListener('mousemove', e => { if(!drag) return; vp.scrollLeft=sl-(e.pageX-ox); vp.scrollTop=st-(e.pageY-oy); });
+    return true;
+  }
+
+  function _applyDiagScale(id) {
+    const svg = _getSvg(id);
+    const st  = _diag[id];
+    if (!svg || !st) return;
+    svg.setAttribute('width',  st.nw * st.scale);
+    svg.setAttribute('height', st.nh * st.scale);
+    const lbl = document.getElementById(id + '-scale');
+    if (lbl) lbl.textContent = Math.round(st.scale * 100) + '%';
+  }
+
+  function zoomDiagram(id, delta) {
+    if (!_diag[id]) return;
+    _diag[id].scale = Math.min(5, Math.max(0.1, _diag[id].scale + delta));
+    _applyDiagScale(id);
+  }
+
+  function resetDiagram(id) {
+    if (!_diag[id]) return;
+    const vp    = document.getElementById(id + '-vp');
+    const avail = (vp?.clientWidth || 820) - 48;
+    _diag[id].scale = Math.min(1, avail / _diag[id].nw);
+    _applyDiagScale(id);
+    if (vp) { vp.scrollLeft=0; vp.scrollTop=0; }
+  }
+
+  /* ── Fullscreen modal ─────────────────────────────────────────── */
+  function expandDiagram(id, title) {
+    const srcSvg = _getSvg(id);
+    if (!srcSvg) return;
+
+    const modal   = document.getElementById('diag-modal');
+    const modalVp = document.getElementById('diag-modal-vp');
+    document.getElementById('diag-modal-title').textContent = title || id;
+
+    // Clone SVG (don't move the original — inline diagram stays intact)
+    modalVp.innerHTML = '';
+    const clone = srcSvg.cloneNode(true);
+    clone.id = 'modal-svg';
+    clone.style.maxWidth = 'none';
+    clone.style.display  = 'block';
+    modalVp.appendChild(clone);
+
+    const { nw, nh } = _readDims(srcSvg);
+    _modal.nw = nw; _modal.nh = nh;
+
+    // Fit to modal pane
+    requestAnimationFrame(() => {
+      const mw = (modalVp.clientWidth  || window.innerWidth  * 0.92) - 48;
+      const mh = (modalVp.clientHeight || window.innerHeight * 0.84) - 48;
+      _modal.scale = Math.min(mw / nw, mh / nh, 1);
+      _applyModalScale();
+    });
+
+    modal.classList.add('open');
+    document.addEventListener('keydown', _escClose);
+
+    // Scroll-wheel zoom in modal
+    modalVp._wh && modalVp.removeEventListener('wheel', modalVp._wh);
+    modalVp._wh = e => {
+      e.preventDefault();
+      _modal.scale = Math.min(5, Math.max(0.1, _modal.scale + (e.deltaY < 0 ? 0.15 : -0.15)));
+      _applyModalScale();
+    };
+    modalVp.addEventListener('wheel', modalVp._wh, { passive: false });
+
+    // Drag-to-pan in modal
+    let drag=false, ox, oy, sl, st;
+    ['mousedown','mouseleave','mouseup','mousemove'].forEach(t => {
+      modalVp['_'+t] && modalVp.removeEventListener(t, modalVp['_'+t]);
+    });
+    modalVp._mousedown  = e => { drag=true; ox=e.pageX; oy=e.pageY; sl=modalVp.scrollLeft; st=modalVp.scrollTop; };
+    modalVp._mouseleave = () => drag=false;
+    modalVp._mouseup    = () => drag=false;
+    modalVp._mousemove  = e => { if(!drag) return; modalVp.scrollLeft=sl-(e.pageX-ox); modalVp.scrollTop=st-(e.pageY-oy); };
+    ['mousedown','mouseleave','mouseup','mousemove'].forEach(t => modalVp.addEventListener(t, modalVp['_'+t]));
+  }
+
+  function _applyModalScale() {
+    const svg = document.getElementById('modal-svg');
     if (!svg) return;
-    const st = _diag[blockId];
-    // Scale the SVG by setting its rendered dimensions.
-    // The viewBox stays unchanged, so the browser re-rasterises the
-    // full vector at the new size → always sharp, never blurry.
-    svg.setAttribute('width',  st.origW * st.scale);
-    svg.setAttribute('height', st.origH * st.scale);
-    const label = document.getElementById(blockId + '-scale');
-    if (label) label.textContent = Math.round(st.scale * 100) + '%';
+    svg.setAttribute('width',  _modal.nw * _modal.scale);
+    svg.setAttribute('height', _modal.nh * _modal.scale);
+    const lbl = document.getElementById('modal-scale');
+    if (lbl) lbl.textContent = Math.round(_modal.scale * 100) + '%';
   }
 
-  function zoomDiagram(blockId, delta) {
-    const st = _diag[blockId];
-    if (!st) return;
-    st.scale = Math.min(5, Math.max(0.2, st.scale + delta));
-    _applyScale(blockId);
+  function zoomModal(delta) {
+    _modal.scale = Math.min(5, Math.max(0.1, _modal.scale + delta));
+    _applyModalScale();
   }
 
-  function resetDiagram(blockId) {
-    const st = _diag[blockId];
-    if (!st) return;
-    st.scale = 1;
-    _applyScale(blockId);
-    const vp = document.getElementById(blockId + '-vp');
-    if (vp) { vp.scrollLeft = 0; vp.scrollTop = 0; }
+  function resetModal() {
+    const vp = document.getElementById('diag-modal-vp');
+    const mw = (vp?.clientWidth  || window.innerWidth  * 0.92) - 48;
+    const mh = (vp?.clientHeight || window.innerHeight * 0.84) - 48;
+    _modal.scale = Math.min(mw / _modal.nw, mh / _modal.nh, 1);
+    _applyModalScale();
+    if (vp) { vp.scrollLeft=0; vp.scrollTop=0; }
   }
 
-  /* Wire up after Mermaid finishes rendering the SVGs */
-  document.addEventListener('DOMContentLoaded', function () {
-    const ids = ['diag-logical', 'diag-flow'];
-    let tries = 0;
-    const poll = setInterval(function () {
-      tries++;
-      const allReady = ids.every(id => !!_getSvg(id));
-      if (!allReady && tries < 50) return;
-      clearInterval(poll);
+  function closeDiagramModal() {
+    document.getElementById('diag-modal').classList.remove('open');
+    document.removeEventListener('keydown', _escClose);
+  }
 
-      ids.forEach(function (id) {
-        const svg = _getSvg(id);
-        if (!svg) return;
+  function _escClose(e) { if (e.key === 'Escape') closeDiagramModal(); }
 
-        // Capture natural rendered dimensions as the 100% baseline
-        const bbox = svg.getBoundingClientRect();
-        const origW = parseFloat(svg.getAttribute('width'))  || bbox.width  || 600;
-        const origH = parseFloat(svg.getAttribute('height')) || bbox.height || 400;
-        _diag[id] = { scale: 1, origW, origH };
+  /* ── Init: MutationObserver (replaces unreliable polling) ─────── */
+  document.addEventListener('DOMContentLoaded', () => {
+    const ids     = ['diag-logical', 'diag-flow'];
+    const pending = new Set(ids);
 
-        // Ensure the viewBox is set (needed so the SVG scales correctly)
-        if (!svg.getAttribute('viewBox')) {
-          svg.setAttribute('viewBox', `0 0 ${origW} ${origH}`);
-        }
+    function tryAll() {
+      pending.forEach(id => { if (_initDiag(id)) pending.delete(id); });
+      if (pending.size === 0) obs.disconnect();
+    }
 
-        const vp = document.getElementById(id + '-vp');
-        if (!vp) return;
+    const obs = new MutationObserver(tryAll);
+    obs.observe(document.body, { childList: true, subtree: true });
 
-        /* Ctrl + scroll-wheel → zoom */
-        vp.addEventListener('wheel', function (e) {
-          if (!e.ctrlKey && !e.metaKey) return;
-          e.preventDefault();
-          zoomDiagram(id, e.deltaY < 0 ? 0.15 : -0.15);
-        }, { passive: false });
-
-        /* Click-drag → pan */
-        let drag = false, ox, oy, sl, st2;
-        vp.addEventListener('mousedown', function (e) {
-          drag = true; ox = e.pageX; oy = e.pageY;
-          sl = vp.scrollLeft; st2 = vp.scrollTop;
-        });
-        vp.addEventListener('mouseleave', () => drag = false);
-        vp.addEventListener('mouseup',    () => drag = false);
-        vp.addEventListener('mousemove', function (e) {
-          if (!drag) return;
-          vp.scrollLeft = sl - (e.pageX - ox);
-          vp.scrollTop  = st2 - (e.pageY - oy);
-        });
-      });
-    }, 150);
+    // First attempt after a short delay (Mermaid may already be done)
+    setTimeout(tryAll, 400);
+    // Hard stop after 20 s to avoid memory leak if something goes wrong
+    setTimeout(() => obs.disconnect(), 20000);
   });
+
+  /* ── Theme toggle ─────────────────────────────────────────────── */
+  (function () {
+    // Apply saved preference immediately (before paint) to avoid flash
+    const saved = localStorage.getItem('repo-intel-theme');
+    if (saved === 'light') document.documentElement.classList.add('light');
+    _syncToggleUI();
+  })();
+
+  function toggleTheme() {
+    const isLight = document.documentElement.classList.toggle('light');
+    localStorage.setItem('repo-intel-theme', isLight ? 'light' : 'dark');
+    _syncToggleUI();
+
+    // Re-init Mermaid diagrams so they re-render with the new theme colours
+    if (typeof mermaid !== 'undefined') {
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: isLight ? 'default' : 'dark',
+        themeVariables: isLight
+          ? { primaryColor: '#dde4ff', primaryTextColor: '#1a1d27', primaryBorderColor: '#3b5bdb', lineColor: '#6b7280', background: '#ffffff', edgeLabelBackground: '#ffffff' }
+          : { background: '#1a1d27', primaryColor: '#2d3148', primaryTextColor: '#e2e8f0', primaryBorderColor: '#6c8eff', lineColor: '#8892a4', secondaryColor: '#1a1d27', tertiaryColor: '#0f1117', edgeLabelBackground: '#1a1d27', clusterBkg: '#1a1d27', clusterBorder: '#2d3148', titleColor: '#e2e8f0' },
+        flowchart: { curve: 'basis', padding: 20 },
+        sequence: { actorMargin: 60, messageMargin: 30 }
+      });
+      document.querySelectorAll('.diagram-viewport pre.mermaid, .diagram-viewport div.mermaid').forEach(el => {
+        el.removeAttribute('data-processed');
+      });
+      mermaid.run();
+    }
+  }
+
+  function _syncToggleUI() {
+    const isLight = document.documentElement.classList.contains('light');
+    const icon  = document.getElementById('theme-icon');
+    const label = document.getElementById('theme-label');
+    if (icon)  icon.textContent  = isLight ? '🌙' : '☀️';
+    if (label) label.textContent = isLight ? 'Dark' : 'Light';
+  }
 </script>
 </body>
 </html>
