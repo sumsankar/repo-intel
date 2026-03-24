@@ -1,27 +1,29 @@
 # Skill: Architecture Analysis
 
-Analyze the repository's structure, design patterns, dependencies, and coupling.
+Analyze the repository's structure, design patterns, design principles, dependencies, and coupling.
 
 ---
 
 ## What to detect
 
 ### 1. Project type
+
 Identify what kind of project this is by looking for these files:
 
-| File found | Project type |
-|------------|-------------|
-| `package.json` + `tsconfig.json` | TypeScript / Node.js |
-| `package.json` + React in deps | React app |
-| `next.config.js` | Next.js |
-| `requirements.txt` or `pyproject.toml` | Python |
-| `pom.xml` or `build.gradle` | Java / Kotlin |
-| `go.mod` | Go |
-| `Cargo.toml` | Rust |
-| `Gemfile` | Ruby / Rails |
-| `composer.json` | PHP |
+| File found                             | Project type         |
+| -------------------------------------- | -------------------- |
+| `package.json` + `tsconfig.json`       | TypeScript / Node.js |
+| `package.json` + React in deps         | React app            |
+| `next.config.js`                       | Next.js              |
+| `requirements.txt` or `pyproject.toml` | Python               |
+| `pom.xml` or `build.gradle`            | Java / Kotlin        |
+| `go.mod`                               | Go                   |
+| `Cargo.toml`                           | Rust                 |
+| `Gemfile`                              | Ruby / Rails         |
+| `composer.json`                        | PHP                  |
 
 ### 2. Directory structure & layering
+
 - List top-level directories (excluding `node_modules`, `.git`, `dist`, `build`)
 - Identify if there is a clear layered structure:
   - Good patterns: `src/`, `lib/`, `api/`, `services/`, `models/`, `controllers/`, `middleware/`, `utils/`
@@ -29,7 +31,9 @@ Identify what kind of project this is by looking for these files:
 - Detect monorepo: look for `packages/`, `apps/`, `pnpm-workspace.yaml`, `lerna.json`, `turbo.json`
 
 ### 3. Dependency analysis
+
 **For Node.js — read `package.json`:**
+
 - Count direct dependencies vs devDependencies
 - Flag if direct deps > 50 (bloat risk)
 - Flag exact version pins (e.g. `"lodash": "4.17.21"` vs `"^4.17.21"`) — exact pins block security patches
@@ -37,20 +41,26 @@ Identify what kind of project this is by looking for these files:
 - Check if a lock file exists (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`)
 
 **For Python — read `requirements.txt` or `pyproject.toml`:**
+
 - Count dependencies
 - Flag unpinned dependencies (no version specified)
 
 ### 4. Circular dependency signals (JS/TS)
+
 Scan import statements for obvious cycles:
+
 ```bash
 # Find all import/require statements
 grep -r "from '\.\." src/ --include="*.ts" --include="*.js" | head -50
 grep -r "require('\.\." src/ --include="*.js" | head -50
 ```
+
 Flag if modules in the same layer import each other (e.g. service A imports service B imports service A).
 
 ### 5. Design pattern signals
+
 Look for evidence of:
+
 - **Dependency injection** (constructor parameters, `@Injectable`, DI containers)
 - **Repository pattern** (files named `*Repository`, `*Store`, `*DAO`)
 - **Factory pattern** (files named `*Factory`, `*Builder`, `*Creator`)
@@ -62,9 +72,11 @@ Look for evidence of:
 After completing all other architecture analysis, synthesize your findings into two Mermaid diagrams. These diagrams must reflect only what was actually discovered — do not invent components.
 
 #### Logical Architecture Diagram
+
 Show the **static module structure**: layers, key directories/modules, and how they depend on each other.
 
 Rules:
+
 - Use `graph TD` (top-down) layout
 - Group nodes by layer using `subgraph` blocks (e.g. `subgraph API`, `subgraph Services`, `subgraph Data`)
 - Arrows represent import/call dependencies, not data flow
@@ -73,6 +85,7 @@ Rules:
 - Keep it readable: max ~15 nodes. Collapse similar siblings into one representative node if needed
 
 **Template:**
+
 ```mermaid
 graph TD
   subgraph "Entry Points"
@@ -103,9 +116,11 @@ graph TD
 ```
 
 #### Functional Flow Diagram
+
 Show the **primary runtime flow**: trace the most important user action or request through the system end-to-end.
 
 Rules:
+
 - Use `sequenceDiagram` if the flow crosses multiple services/actors; use `flowchart LR` for a single-process flow
 - Pick the single most representative flow (e.g. "API request → auth → service → DB → response" or "user submits form → validation → persistence → email")
 - Use real module/file names found in the repo, not generic labels
@@ -113,6 +128,7 @@ Rules:
 - Include error/failure paths only if they are architecturally significant
 
 **Template (adapt based on project type):**
+
 ```mermaid
 sequenceDiagram
   participant Client

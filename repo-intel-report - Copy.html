@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Repository Intelligence Report — McKissock StudentAPI</title>
+  <style>
+    /* ── Dark mode (default) ── */
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: #2d3148;
+      --text: #e2e8f0;
+      --muted: #8892a4;
+      --accent: #6c8eff;
+      --green: #22c55e;
+      --yellow: #facc15;
+      --orange: #f97316;
+      --red: #ef4444;
+    }
+
+    /* ── Light mode ── */
+    :root.light {
+      --bg: #f5f6fa;
+      --surface: #ffffff;
+      --border: #d1d5e0;
+      --text: #1a1d27;
+      --muted: #6b7280;
+      --accent: #3b5bdb;
+      --green: #16a34a;
+      --yellow: #ca8a04;
+      --orange: #ea580c;
+      --red: #dc2626;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; }
+
+    /* Header */
+    .report-header {
+      border-left: 4px solid var(--accent);
+      padding: 1.5rem 1.5rem 1.5rem 1.75rem;
+      background: var(--surface);
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 2rem;
+    }
+    .report-header h1 { font-size: 1.75rem; margin-bottom: 0.75rem; }
+    .report-header .meta { color: var(--muted); font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 1.25rem; }
+    .report-header .meta span strong { color: var(--text); }
+
+    /* Section */
+    section { margin-bottom: 2rem; }
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--accent);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.4rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Executive summary */
+    .summary-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    /* Scorecard */
+    .scorecard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+    }
+    .score-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .score-card.overall { border-color: var(--accent); }
+    .score-card .label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .score-card .score { font-size: 2rem; font-weight: 700; line-height: 1; }
+    .score-card .status { font-size: 1.25rem; margin-top: 0.25rem; }
+    .score-legend { margin-top: 0.75rem; font-size: 0.8rem; color: var(--muted); text-align: center; }
+
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      padding: 0.6rem 0.85rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+    th { color: var(--muted); font-weight: 500; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    tr:last-child td { border-bottom: none; }
+    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+
+    /* Findings */
+    .findings-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .finding {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--border);
+      border-radius: 0 6px 6px 0;
+      padding: 0.75rem 1rem;
+      font-size: 0.875rem;
+    }
+    .finding.critical { border-left-color: var(--red); }
+    .finding.high { border-left-color: var(--orange); }
+    .finding.medium { border-left-color: var(--yellow); }
+    .finding.low { border-left-color: var(--green); }
+    .finding .badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.1rem 0.45rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-right: 0.5rem;
+    }
+    .finding.critical .badge { background: rgba(239,68,68,.15); color: var(--red); }
+    .finding.high    .badge { background: rgba(249,115,22,.15); color: var(--orange); }
+    .finding.medium  .badge { background: rgba(250,204,21,.15); color: var(--yellow); }
+    .finding.low     .badge { background: rgba(34,197,94,.15);  color: var(--green); }
+    .finding .location { color: var(--muted); font-family: monospace; font-size: 0.8rem; margin-top: 0.25rem; }
+
+    /* Metrics list */
+    .metrics { color: var(--muted); font-size: 0.9rem; }
+    .metrics li { padding: 0.2rem 0; list-style: none; }
+    .metrics li strong { color: var(--text); }
+
+    /* Checklist */
+    .checklist { list-style: none; display: flex; flex-direction: column; gap: 0.3rem; }
+    .checklist li { font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
+    .checklist .check { width: 16px; height: 16px; border: 1px solid var(--border); border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; }
+    .checklist .check.done { background: var(--green); border-color: var(--green); color: #000; }
+
+    /* Quick wins */
+    .quick-wins ol { padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem; color: var(--muted); }
+    .quick-wins ol li::marker { color: var(--accent); font-weight: 700; }
+    .quick-wins ol li { padding-left: 0.25rem; }
+
+    /* Roadmap */
+    .roadmap { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+    .roadmap-phase { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; }
+    .roadmap-phase h4 { font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+    .roadmap-phase ul { list-style: none; font-size: 0.875rem; color: var(--muted); display: flex; flex-direction: column; gap: 0.3rem; }
+    .roadmap-phase ul li::before { content: "→ "; color: var(--accent); }
+
+    /* Diagram blocks */
+    .diagram-section { display: flex; flex-direction: column; gap: 1.25rem; }
+    .diagram-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .diagram-block .diagram-header { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.75rem 0.5rem 1rem; border-bottom: 1px solid var(--border); }
+    .diagram-block .diagram-title { font-size: 0.8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .diagram-controls { display: flex; align-items: center; gap: 0.35rem; }
+    .zoom-btn { background: var(--bg); border: 1px solid var(--border); color: var(--muted); border-radius: 4px; width: 26px; height: 26px; font-size: 0.95rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: color .15s, border-color .15s; }
+    .zoom-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .zoom-btn.reset { font-size: 0.65rem; font-weight: 700; width: auto; padding: 0 0.45rem; letter-spacing: 0.04em; text-transform: uppercase; }
+    .zoom-scale { font-size: 0.7rem; color: var(--muted); min-width: 2.8rem; text-align: center; font-variant-numeric: tabular-nums; }
+    .expand-btn { background: var(--bg); border: 1px solid var(--border); color: var(--muted); border-radius: 4px; height: 26px; padding: 0 0.5rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; cursor: pointer; white-space: nowrap; transition: color .15s, border-color .15s; }
+    .expand-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .diagram-viewport { overflow: auto; max-height: 480px; cursor: grab; background: var(--surface); }
+    .diagram-viewport:active { cursor: grabbing; }
+    .diagram-viewport .mermaid { padding: 1.5rem; display: inline-block; min-width: 100%; }
+    .diagram-viewport .mermaid svg { display: block; max-width: none !important; shape-rendering: geometricPrecision; text-rendering: geometricPrecision; }
+    .diagram-hint { font-size: 0.7rem; color: var(--muted); padding: 0.25rem 1rem 0.4rem; opacity: 0.6; }
+
+    /* Fullscreen modal */
+    .diag-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 9999; align-items: center; justify-content: center; }
+    .diag-modal.open { display: flex; }
+    .diag-modal-inner { position: relative; width: 96vw; height: 92vh; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+    .diag-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 0.5rem; }
+    .diag-modal-title { font-size: 0.9rem; font-weight: 600; color: var(--accent); flex: 1; }
+    .diag-modal-vp { flex: 1; overflow: auto; cursor: grab; padding: 1.5rem; }
+    .diag-modal-vp:active { cursor: grabbing; }
+    .diag-modal-vp svg { display: block; max-width: none !important; }
+    .close-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 4px; padding: 0.2rem 0.6rem; cursor: pointer; font-size: 0.8rem; transition: color .15s, border-color .15s; }
+    .close-btn:hover { color: var(--red); border-color: var(--red); }
+
+    /* Claude Run Metrics */
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
+    .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
+    .metric-card .m-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; }
+    .metric-card .m-value { font-size: 1.35rem; font-weight: 700; color: var(--text); }
+    .metric-card .m-sub { font-size: 0.75rem; color: var(--muted); margin-top: 0.15rem; }
+    .metric-card.accent { border-color: var(--accent); }
+    .metrics-disclaimer { font-size: 0.75rem; color: var(--muted); font-style: italic; margin-bottom: 1rem; }
+
+    /* Governance */
+    .gov-status { font-size: 1.1rem; font-weight: 700; padding: 0.75rem 1.25rem; border-radius: 8px; margin-bottom: 1rem; }
+    .gov-status.noncompliant { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3); color: var(--red); }
+
+    /* Footer */
+    .report-footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding-top: 1.5rem; border-top: 1px solid var(--border); margin-top: 2rem; }
+
+    /* Theme toggle */
+    .theme-toggle { position: fixed; top: 1rem; right: 1rem; z-index: 1000; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 0.3rem 0.75rem; display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-size: 0.8rem; color: var(--muted); transition: border-color .15s, color .15s; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+    .theme-toggle .toggle-icon { font-size: 1rem; line-height: 1; }
+  </style>
+</head>
+<body>
+
+<button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Switch theme">
+  <span class="toggle-icon" id="theme-icon">☀️</span>
+  <span id="theme-label">Light</span>
+</button>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="report-header">
+    <h1>🔍 Repository Intelligence Report</h1>
+    <div class="meta">
+      <span><strong>Repository:</strong> C:\Work\StudentAPI-dev (McKissock.StudentApi)</span>
+      <span><strong>Analyzed:</strong> 2026-03-18 19:10 local time</span>
+      <span><strong>Skills run:</strong> security, code, architecture, devops, dependency, governance, claude-metrics</span>
+    </div>
+  </div>
+
+  <!-- Executive Summary -->
+  <section>
+    <div class="section-title">Executive Summary</div>
+    <div class="summary-box">
+      McKissock StudentAPI is a .NET Framework 4.0 / Mono REST API built on ServiceStack 4.0.40, serving as the backend for a real-estate education platform's student management system, deployed to AWS ECS via CircleCI and Docker. The project has a functional CI/CD pipeline and a recognizable layered service architecture, but is in a <strong style="color:var(--red);font-style:normal">critically unhealthy security state</strong>: two complete sets of AWS credentials (key ID + secret) are committed in plaintext across three source files, giving any reader with repository access full programmatic control over the production AWS ECR registry and ECS infrastructure. The single most important action is to <strong style="color:var(--text);font-style:normal">immediately rotate all three exposed AWS key IDs, remove them from every source file, and replace them with CircleCI encrypted environment variables backed by AWS Secrets Manager</strong> — everything else is secondary until this credential leak is contained.
+    </div>
+  </section>
+
+  <!-- Health Scorecard -->
+  <section>
+    <div class="section-title">Health Scorecard</div>
+    <div class="scorecard">
+      <div class="score-card">
+        <div class="label">Code Quality</div>
+        <div class="score" style="color:var(--orange)">4/10</div>
+        <div class="status">🟠</div>
+      </div>
+      <div class="score-card">
+        <div class="label">Architecture</div>
+        <div class="score" style="color:var(--yellow)">5/10</div>
+        <div class="status">🟡</div>
+      </div>
+      <div class="score-card">
+        <div class="label">Security</div>
+        <div class="score" style="color:var(--red)">1/10</div>
+        <div class="status">🔴</div>
+      </div>
+      <div class="score-card">
+        <div class="label">DevOps</div>
+        <div class="score" style="color:var(--yellow)">6/10</div>
+        <div class="status">🟡</div>
+      </div>
+      <div class="score-card overall">
+        <div class="label">Overall</div>
+        <div class="score" style="color:var(--red)">3.5/10</div>
+        <div class="status">🔴</div>
+      </div>
+    </div>
+    <div class="score-legend">Scoring guide: 8–10 🟢 Good · 5–7 🟡 Needs work · 3–4 🟠 Poor · 0–2 🔴 Critical · Weighted: Security 30%, Code 25%, Arch 20%, DevOps 15%, Deps 10%</div>
+  </section>
+
+  <!-- Repository Overview -->
+  <section>
+    <div class="section-title">Repository Overview</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Primary Language</td><td>C# (.NET Framework 4.0 / Mono)</td></tr>
+          <tr><td>Project Type</td><td>REST API — ServiceStack 4.0.40 + Entity Framework 6.2, multi-target (IIS, Console/Mono, Linux)</td></tr>
+          <tr><td>Total Files</td><td>566 (source tree, excluding bin/obj/packages)</td></tr>
+          <tr><td>Total Lines of Code</td><td>53,401 lines across 410 .cs files</td></tr>
+          <tr><td>Test Files</td><td>31 (McKissock.StudentApi.Tests + McKissock.StudentApi.Test projects)</td></tr>
+          <tr><td>Estimated Test Coverage</td><td>~7.5% (31 / 410 source files) — Low; below 10% governance threshold</td></tr>
+          <tr><td>CI/CD Platform</td><td>CircleCI v2 — build + deploy_prod / deploy_stage / deploy_test / deploy_dev jobs</td></tr>
+          <tr><td>Docker</td><td>Yes — Mono-based Linux container pushed to AWS ECR</td></tr>
+          <tr><td>IaC Tool</td><td>AWS ECS task definition JSON + AWS CodeBuild buildspec.yml + Polaris SAST</td></tr>
+          <tr><td>Security Risk Level</td><td style="color:var(--red);font-weight:700">🔴 CRITICAL — live AWS credentials committed to source</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Critical & High Priority Findings -->
+  <section>
+    <div class="section-title">🚨 Critical &amp; High Priority Findings</div>
+    <ul class="findings-list">
+
+      <li class="finding critical">
+        <span class="badge">Critical</span> <span style="color:var(--muted);font-size:0.8rem">[security · secrets]</span>
+        Full AWS credential pair hardcoded in plaintext — key ID <code>AKIAJ3T65MZZOIKGBYWQ</code> and complete AWS secret key committed directly in the deploy script. Any reader with repository access can push arbitrary Docker images to production ECR and update live ECS task definitions.
+        <div class="location">publish.sh — lines 17–18</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Rotate this key pair in AWS IAM immediately. Delete lines 17–18 from publish.sh. Store replacements in CircleCI's encrypted environment variable store and reference as <code>$AWS_ACCESS_KEY_ID</code> / <code>$AWS_SECRET_ACCESS_KEY</code> in the script.</div>
+      </li>
+
+      <li class="finding critical">
+        <span class="badge">Critical</span> <span style="color:var(--muted);font-size:0.8rem">[security · secrets]</span>
+        Second full legacy AWS credential pair committed in plaintext — key ID <code>AKIAJYWAQQBS2VYLXMFA</code> and secret key <code>xofvXCDB9HXK6+…</code> — duplicated verbatim across both the API and Console project config files.
+        <div class="location">src/McKissock.StudentApi/app.config — lines 4–5 &nbsp;|&nbsp; src/McKissock.StudentApi.Console/app.config — lines 52–53</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Rotate <code>AKIAJYWAQQBS2VYLXMFA</code> immediately. Replace both config values with runtime lookups via AWS Secrets Manager (AWSSDK.SecretsManager is already in packages.config) or environment variables injected at container start.</div>
+      </li>
+
+      <li class="finding high">
+        <span class="badge">High</span> <span style="color:var(--muted);font-size:0.8rem">[code · complexity]</span>
+        <code>PartnershipItemDetailsReportsService.cs</code> is 3,024 lines — breaching the 3,000-line governance policy limit (GOV-CODE-002). A single class handles every partnership report type with deeply nested conditionals and no test coverage.
+        <div class="location">src/McKissock.StudentApi/Services/PartnershipClasses/Reports/PartnershipItemDetailsReportsService.cs</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Extract each report type into its own class (e.g. <code>ItemDetailsByStudentReport</code>, <code>ItemDetailsByCourseReport</code>). Target ≤500 lines per class with a matching test file.</div>
+      </li>
+
+      <li class="finding high">
+        <span class="badge">High</span> <span style="color:var(--muted);font-size:0.8rem">[code · complexity]</span>
+        Two additional god-class services — <code>CurriculumCalendarService.cs</code> (2,884 lines) and <code>CourseRunnerService.cs</code> (2,047 lines) — concentrate critical business logic into files that are unsafe to modify without comprehensive test coverage.
+        <div class="location">src/McKissock.StudentApi/Services/CurriculumCalendarService.cs &nbsp;|&nbsp; src/McKissock.StudentApi/Services/CourseRunner/CourseRunnerService.cs</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Decompose along functional boundaries (scheduling, query, mutation). Introduce sub-services injected via constructor to enable isolated unit testing.</div>
+      </li>
+
+      <li class="finding high">
+        <span class="badge">High</span> <span style="color:var(--muted);font-size:0.8rem">[devops · ci]</span>
+        The CircleCI <code>build</code> job compiles and packages the Docker image but contains no NUnit test execution step. Regressions are never caught before deployment — the pipeline provides false confidence.
+        <div class="location">circle/config.yml — build job (no nunit3-console invocation)</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Add <code>docker run … mono nunit3-console /srv/src/McKissock.StudentApi.Tests/bin/Release/McKissock.StudentApi.Tests.dll --result=/tmp/test-results.xml</code> as a step after xbuild and before image push. Fail the build on test failure.</div>
+      </li>
+
+      <li class="finding high">
+        <span class="badge">High</span> <span style="color:var(--muted);font-size:0.8rem">[dependency · staleness]</span>
+        ServiceStack is pinned at version 4.0.40, released circa 2014 (~12 years old). This predates numerous security patches, breaking API changes, and the framework's move to a commercial license model. Eleven related ServiceStack packages share the same frozen version.
+        <div class="location">src/McKissock.StudentApi/packages.config — ServiceStack 4.0.40 and 10 related packages</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Evaluate upgrade to ServiceStack v8 (commercial license required) or plan migration to ASP.NET Core / .NET 8 Minimal API as the platform modernization initiative.</div>
+      </li>
+
+      <li class="finding high">
+        <span class="badge">High</span> <span style="color:var(--muted);font-size:0.8rem">[dependency · hygiene]</span>
+        No automated dependency vulnerability scanning is configured. With 32 NuGet packages — many pinned to versions from 2014–2022 — CVEs accumulate silently between infrequent manual reviews.
+        <div class="location">No .github/dependabot.yml present</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Add <code>.github/dependabot.yml</code> with <code>package-ecosystem: nuget</code> on a weekly schedule. This is a 10-line file that takes under 15 minutes to add.</div>
+      </li>
+
+    </ul>
+  </section>
+
+  <!-- Code Quality -->
+  <section>
+    <div class="section-title">📝 Code Quality</div>
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> The codebase has a functional NUnit test suite but critically low coverage (~7.5%), and several service classes have grown into multi-thousand-line monoliths that are difficult to safely modify or independently test.</p>
+    <ul class="metrics" style="margin-bottom:1rem">
+      <li><strong>Languages:</strong> C# (primary, 410 files / 53,401 lines), XML/config (154 files), JavaScript (64 files — Swagger UI assets), PowerShell (23 scripts)</li>
+      <li><strong>Total files / lines:</strong> 566 source files · 53,401 lines of C#</li>
+      <li><strong>Test coverage estimate:</strong> ~7.5% (31 test files / 410 .cs source files) — Low; below 10% governance threshold (GOV-CODE-001 FAIL)</li>
+      <li><strong>TODO/FIXME count:</strong> 56 TODO/FIXME/HACK comments across the codebase</li>
+    </ul>
+    <ul class="findings-list">
+      <li class="finding medium">
+        <span class="badge">Medium</span> <span style="color:var(--muted);font-size:0.8rem">[testing]</span>
+        Test file ratio is 7.5% — below the 10% governance threshold. Existing tests are predominantly integration tests against a live database (CredentialTest, StudentServiceTest) rather than isolated unit tests, making them slow and environment-dependent.
+        <div class="location">src/McKissock.StudentApi.Tests/ · src/McKissock.StudentApi.Test/</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Add unit tests for EnrollmentService, CartService, and ProfileService using a mocked IDbContext. Target 15% test file ratio as an initial milestone before the 10% policy threshold.</div>
+      </li>
+      <li class="finding medium">
+        <span class="badge">Medium</span> <span style="color:var(--muted);font-size:0.8rem">[complexity]</span>
+        Four further service files exceed 500 lines: DataService.cs (1,547), EnrollmentService.cs (1,496), PartnershipService.cs (1,392), CartService.cs (1,375). Combined with the three High-flagged god-classes, over 12,000 lines live in seven files that should each be decomposed.
+        <div class="location">src/McKissock.StudentApi/Services/ — DataService, EnrollmentService, PartnershipService, CartService</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Apply Single Responsibility Principle during the next major sprint. Prioritize EnrollmentService and CartService as they handle revenue-critical flows.</div>
+      </li>
+      <li class="finding low">
+        <span class="badge">Low</span> <span style="color:var(--muted);font-size:0.8rem">[docs]</span>
+        56 TODO/FIXME comments are scattered across the codebase with no corresponding issue tracker entries — deferred decisions that risk permanent deferral.
+        <div class="location">Codebase-wide</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Triage TODOs in a single team session; convert actionable ones to GitHub Issues and delete stale commentary.</div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- Architecture -->
+  <section>
+    <div class="section-title">🏗️ Architecture</div>
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> The project has a recognizable layered structure (AppHost → Services → Data/EF) and supports three deployment targets (IIS, Linux Console/Mono, standalone Console), but its .NET Framework 4.0 foundation limits modernization options and its god-class services undermine the otherwise sound layering.</p>
+    <ul class="metrics" style="margin-bottom:1rem">
+      <li><strong>Project type:</strong> .NET Framework 4.0 REST API — ServiceStack 4.0.40 framework, Entity Framework 6.2.0 ORM, SQL Server backend</li>
+      <li><strong>Direct dependencies:</strong> 32 NuGet packages — AWSSDK suite (9 packages), CyberSource 1.4.3, EPPlus 5.4.2, NLog 4.7.5, RestSharp 105.2.3, ServiceStack suite (11 packages)</li>
+      <li><strong>Monorepo:</strong> Yes — 6 projects in one solution: StudentApi, StudentApi.Asp, StudentApi.Console, StudentApi.Pipeline, StudentApi.Tests, McKissock.Vc5Auth</li>
+      <li><strong>Layered structure:</strong> Present — AppHost (entry) → Services/ → Data/ (EF context + DataService) → Models/Dto → Config/Helpers; migrations/ for DB schema</li>
+    </ul>
+    <ul class="findings-list">
+      <li class="finding medium">
+        <span class="badge">Medium</span> <span style="color:var(--muted);font-size:0.8rem">[structure]</span>
+        <code>DataService.cs.orig</code> is committed alongside the live <code>DataService.cs</code>. Backup/diff files committed to version control create ambiguity about which is canonical and can inadvertently expose removed code.
+        <div class="location">src/McKissock.StudentApi/Data/DataService.cs.orig</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Delete <code>DataService.cs.orig</code> and commit the deletion. Git history is the canonical way to view past states.</div>
+      </li>
+      <li class="finding medium">
+        <span class="badge">Medium</span> <span style="color:var(--muted);font-size:0.8rem">[structure]</span>
+        Mercurial migration artifacts (<code>.hgignore</code>, <code>.hgtags</code>) remain at the repository root, serving no purpose in a Git-managed repository and signalling an incomplete VCS migration.
+        <div class="location">.hgignore · .hgtags (root)</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Delete both files; ensure relevant ignore patterns from <code>.hgignore</code> are duplicated in <code>.gitignore</code>.</div>
+      </li>
+      <li class="finding low">
+        <span class="badge">Low</span> <span style="color:var(--muted);font-size:0.8rem">[structure]</span>
+        AWS Account ID <code>577839833053</code> is hardcoded in Dockerfile and both buildspec files. While not a secret, it simplifies enumeration and reconnaissance of the AWS account.
+        <div class="location">Dockerfile · buildspec.yml · buildspec-workloads.yml</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Parameterize as a CircleCI / CodeBuild environment variable <code>$AWS_ACCOUNT_ID</code>.</div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- Architecture Diagrams — MANDATORY -->
+  <section>
+    <div class="section-title">🗺️ Architecture Diagrams</div>
+    <div class="diagram-section">
+
+      <div class="diagram-block" id="diag-logical">
+        <div class="diagram-header">
+          <span class="diagram-title">Logical Architecture</span>
+          <div class="diagram-controls">
+            <button class="zoom-btn" onclick="zoomDiagram('diag-logical',-0.15)" title="Zoom out">−</button>
+            <span class="zoom-scale" id="diag-logical-scale">fit</span>
+            <button class="zoom-btn" onclick="zoomDiagram('diag-logical', 0.15)" title="Zoom in">+</button>
+            <button class="zoom-btn reset" onclick="resetDiagram('diag-logical')" title="Reset to fit">Fit</button>
+            <button class="expand-btn" onclick="expandDiagram('diag-logical','Logical Architecture')" title="Open fullscreen">⛶ Fullscreen</button>
+          </div>
+        </div>
+        <div class="diagram-viewport" id="diag-logical-vp">
+          <pre class="mermaid">
+graph TD
+  subgraph "Entry Points"
+    A1[McKissock.StudentApi.Asp\nIIS / ASP.NET host]
+    A2[McKissock.StudentApi.Console\nMono / Linux host]
+  end
+  subgraph "App Bootstrap"
+    B[AppHost.cs\nServiceStack AppHostBase]
+  end
+  subgraph "API Layer"
+    C1[Services/\nEnrollmentService · CartService\nProfileService · LicenseService]
+    C2[Pipeline/\nPipelineAction handlers]
+  end
+  subgraph "Business Logic"
+    D1[Services/CourseRunner/\nCourseRunnerService\nQuizRunnerService]
+    D2[Services/PartnershipClasses/\nPartnershipService · Reports/]
+    D3[AmazonHelpers · Payments/CyberSource\nHubspot · Rustici · Saba]
+  end
+  subgraph "Data Layer"
+    E1[Data/MagiContext.cs\nEntity Framework DbContext]
+    E2[Data/DataService.cs\nRaw SQL helpers]
+    E3[migrations/\nDB schema scripts]
+  end
+  subgraph "Shared"
+    F1[Config · Constants · Helpers · Cache]
+    F2[Models · Dto · Request]
+  end
+
+  A1 --> B
+  A2 --> B
+  B --> C1
+  B --> C2
+  C1 --> D1
+  C1 --> D2
+  C1 --> D3
+  C2 --> D1
+  D1 --> E1
+  D2 --> E1
+  C1 --> E2
+  E1 --> E3
+  C1 --> F1
+  C1 --> F2
+          </pre>
+        </div>
+        <div class="diagram-hint">Scroll to pan · Use + / − buttons or scroll wheel to zoom · ⛶ Fullscreen for best readability</div>
+      </div>
+
+      <div class="diagram-block" id="diag-flow">
+        <div class="diagram-header">
+          <span class="diagram-title">Functional Flow — Student Enrollment Request</span>
+          <div class="diagram-controls">
+            <button class="zoom-btn" onclick="zoomDiagram('diag-flow',-0.15)" title="Zoom out">−</button>
+            <span class="zoom-scale" id="diag-flow-scale">fit</span>
+            <button class="zoom-btn" onclick="zoomDiagram('diag-flow', 0.15)" title="Zoom in">+</button>
+            <button class="zoom-btn reset" onclick="resetDiagram('diag-flow')" title="Reset to fit">Fit</button>
+            <button class="expand-btn" onclick="expandDiagram('diag-flow','Functional Flow')" title="Open fullscreen">⛶ Fullscreen</button>
+          </div>
+        </div>
+        <div class="diagram-viewport" id="diag-flow-vp">
+          <pre class="mermaid">
+sequenceDiagram
+  participant Client as HTTP Client
+  participant AppHost as AppHost.cs
+  participant Auth as Security/VC5Auth
+  participant Enroll as EnrollmentService
+  participant Cart as CartService
+  participant Pay as Payments/CyberSource
+  participant DB as MagiContext + SQL Server
+
+  Client->>AppHost: POST /enrollment
+  AppHost->>Auth: Validate session token
+  Auth-->>AppHost: Student identity context
+  AppHost->>Enroll: Handle(EnrollmentRequest)
+  Enroll->>Cart: ValidateCart(studentId, courseId)
+  Cart->>DB: SELECT cart + pricing + eligibility
+  DB-->>Cart: Cart data
+  Cart-->>Enroll: CartValidationResult
+  Enroll->>Pay: Charge(amount, cyberSourceToken)
+  Pay-->>Enroll: PaymentConfirmation
+  Enroll->>DB: INSERT Enrollment + UPDATE StudentCourse
+  DB-->>Enroll: Persisted record
+  Enroll-->>AppHost: EnrollmentResponse
+  AppHost-->>Client: 200 OK + enrollment details
+          </pre>
+        </div>
+        <div class="diagram-hint">Scroll to pan · Use + / − buttons or scroll wheel to zoom · ⛶ Fullscreen for best readability</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Fullscreen diagram modal -->
+  <div class="diag-modal" id="diag-modal" onclick="if(event.target===this)closeDiagramModal()">
+    <div class="diag-modal-inner">
+      <div class="diag-modal-header">
+        <span class="diag-modal-title" id="diag-modal-title"></span>
+        <div class="diagram-controls">
+          <button class="zoom-btn" onclick="zoomModal(-0.15)" title="Zoom out">−</button>
+          <span class="zoom-scale" id="modal-scale">fit</span>
+          <button class="zoom-btn" onclick="zoomModal(0.15)" title="Zoom in">+</button>
+          <button class="zoom-btn reset" onclick="resetModal()">Fit</button>
+          <button class="close-btn" onclick="closeDiagramModal()">✕ Close</button>
+        </div>
+      </div>
+      <div class="diag-modal-vp" id="diag-modal-vp"></div>
+    </div>
+  </div>
+
+  <!-- Security -->
+  <section>
+    <div class="section-title">🔒 Security</div>
+    <p style="margin-bottom:.75rem;font-size:.9rem">
+      <strong>Risk Level:</strong>
+      <span style="color:var(--red);font-weight:700">🔴 CRITICAL — Live AWS credentials committed to version-controlled source files</span>
+    </p>
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> Two distinct complete AWS credential pairs are present in plaintext across three committed files; either set grants an attacker full programmatic access to push Docker images to production ECR and update running ECS services. A Polaris/Synopsys SAST scan is configured (positive signal) but no SECURITY.md or Dependabot exists to close the vulnerability disclosure and auto-patching gaps.</p>
+    <ul class="findings-list">
+      <li class="finding medium">
+        <span class="badge">Medium</span> <span style="color:var(--muted);font-size:0.8rem">[injection]</span>
+        Raw SQL string interpolation with database-derived integer IDs is used in test cleanup code. The pattern signals insufficient parameterized-query discipline and risks spreading to production service code.
+        <div class="location">src/McKissock.StudentApi.Tests/CredentialTest.cs — lines 51, 267–268</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Replace <code>ExecuteSql($"… {studentId}")</code> with a parameterized overload. Establish a team coding standard: no string interpolation in any SQL context, test or production.</div>
+      </li>
+      <li class="finding medium">
+        <span class="badge">Medium</span> <span style="color:var(--muted);font-size:0.8rem">[hygiene]</span>
+        No <code>SECURITY.md</code> exists at the repository root or under <code>.github/</code>. Security researchers and internal staff have no defined channel to report vulnerabilities responsibly.
+        <div class="location">Repository root / .github/ — SECURITY.md absent</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Add <code>SECURITY.md</code> specifying a disclosure contact email and a target response-time SLA (e.g. acknowledge within 48 hours, patch within 30 days).</div>
+      </li>
+      <li class="finding low">
+        <span class="badge">Low</span> <span style="color:var(--muted);font-size:0.8rem">[config]</span>
+        The <code>.gitignore</code> does not cover <code>.env</code> or <code>*.env.*</code> patterns. A developer who introduces a local <code>.env</code> file for secrets would commit it by default.
+        <div class="location">.gitignore (root)</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Append <code>.env</code>, <code>.env.*</code>, <code>*.key</code>, and <code>*.pem</code> to <code>.gitignore</code> as a precautionary baseline.</div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- DevOps -->
+  <section>
+    <div class="section-title">⚙️ DevOps</div>
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> CI/CD is well-structured with CircleCI handling branch-to-environment promotion (dev → test → stage → prod) and Docker images version-tagged per build, but the pipeline never runs tests, the Dockerfiles run as root, and there is no .dockerignore to prevent local artifacts from entering the image.</p>
+    <ul class="checklist" style="margin-bottom:1rem">
+      <li><span class="check done">✓</span> CI/CD pipeline (CircleCI v2 with build + 4 deploy jobs)</li>
+      <li><span class="check" style="color:var(--red);border-color:var(--red)">✗</span> Tests in CI (no NUnit step in build job)</li>
+      <li><span class="check done">✓</span> Docker (Dockerfile + ECR push pipeline)</li>
+      <li><span class="check done">✓</span> IaC (ECS task definition JSON, buildspec.yml, Polaris SAST config)</li>
+      <li><span class="check done">✓</span> README (readme.md — substantive, 80+ lines with setup and deployment docs)</li>
+      <li><span class="check" style="color:var(--red);border-color:var(--red)">✗</span> LICENSE (no LICENSE file)</li>
+      <li><span class="check" style="color:var(--red);border-color:var(--red)">✗</span> CHANGELOG (no CHANGELOG.md)</li>
+      <li><span class="check done">✓</span> Lock file (NuGet packages.config present)</li>
+    </ul>
+    <ul class="findings-list">
+      <li class="finding medium">
+        <span class="badge">Medium</span> <span style="color:var(--muted);font-size:0.8rem">[docker]</span>
+        The main Dockerfile pulls a base image using a parameterized tag (<code>:latest</code> variant) without a pinned SHA digest, so builds are not reproducible if the upstream image changes.
+        <div class="location">Dockerfile — line 2 (FROM … :latest)</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Pin the ECR base image to a specific version tag or SHA256 digest in the build arg default. Rotate the pin on a deliberate cadence.</div>
+      </li>
+      <li class="finding medium">
+        <span class="badge">Medium</span> <span style="color:var(--muted);font-size:0.8rem">[docker]</span>
+        Neither <code>Dockerfile</code> nor <code>docker/Dockerfile.base</code> includes a <code>USER</code> instruction, so the container runs as root. This increases blast radius if the application process is compromised.
+        <div class="location">Dockerfile · docker/Dockerfile.base</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Add <code>RUN adduser --disabled-password appuser &amp;&amp; USER appuser</code> before the CMD instruction in both Dockerfiles.</div>
+      </li>
+      <li class="finding low">
+        <span class="badge">Low</span> <span style="color:var(--muted);font-size:0.8rem">[docker]</span>
+        No <code>.dockerignore</code> file is present. The <code>COPY ./src ./src</code> instruction may include local build artifacts, IDE state files, or config overrides in the image layer.
+        <div class="location">Repository root — .dockerignore absent</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Add <code>.dockerignore</code> excluding <code>**/bin/</code>, <code>**/obj/</code>, <code>.vs/</code>, <code>*.user</code>, <code>*.suo</code>, and environment-specific config transforms.</div>
+      </li>
+      <li class="finding low">
+        <span class="badge">Low</span> <span style="color:var(--muted);font-size:0.8rem">[hygiene]</span>
+        No <code>CHANGELOG.md</code> exists, so there is no auditable record of what changed between releases — complicating incident root-cause analysis and customer communication.
+        <div class="location">Repository root — CHANGELOG.md absent</div>
+        <div style="margin-top:0.35rem;color:var(--muted)"><strong style="color:var(--text)">Fix:</strong> Adopt conventional commits and add <code>standard-version</code> or <code>release-please</code> to auto-generate changelogs on each release tag.</div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- Governance Assessment -->
+  <section>
+    <div class="section-title">🏛️ Governance Assessment</div>
+    <div class="gov-status noncompliant">❌ NON-COMPLIANT — 2 blocking policy violations (GOV-SEC-001, GOV-SEC-002)</div>
+    <p style="color:var(--muted);font-size:0.875rem;margin-bottom:1rem">
+      <strong style="color:var(--text)">Overall Score:</strong> 3.5/10 🔴 &nbsp;|&nbsp;
+      <strong style="color:var(--text)">Risk Posture Index:</strong> 40/100 🟠 High Risk
+    </p>
+    <div class="table-wrap" style="margin-bottom:1rem">
+      <table>
+        <thead><tr><th>Dimension</th><th>Score</th><th>Weight</th><th>Contribution</th></tr></thead>
+        <tbody>
+          <tr><td>Security</td><td style="color:var(--red)">1/10</td><td>30%</td><td>0.30</td></tr>
+          <tr><td>Code Quality</td><td style="color:var(--orange)">4/10</td><td>25%</td><td>1.00</td></tr>
+          <tr><td>Architecture</td><td style="color:var(--yellow)">5/10</td><td>20%</td><td>1.00</td></tr>
+          <tr><td>DevOps</td><td style="color:var(--yellow)">6/10</td><td>15%</td><td>0.90</td></tr>
+          <tr><td>Dependency Risk</td><td style="color:var(--orange)">3/10</td><td>10%</td><td>0.30</td></tr>
+          <tr><td><strong>Overall</strong></td><td><strong style="color:var(--red)">3.5/10</strong></td><td>100%</td><td><strong>3.50</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Policy</th><th>Status</th><th>Impact</th></tr></thead>
+        <tbody>
+          <tr><td>GOV-SEC-001 — No committed secrets</td><td style="color:var(--red)">❌ FAIL (BLOCKING)</td><td>Critical</td></tr>
+          <tr><td>GOV-SEC-002 — Security score ≥ 5</td><td style="color:var(--red)">❌ FAIL (BLOCKING) — score is 1/10</td><td>High</td></tr>
+          <tr><td>GOV-DEP-001 — No critical CVEs (known)</td><td style="color:var(--green)">✅ PASS</td><td>—</td></tr>
+          <tr><td>GOV-CODE-001 — Test ratio ≥ 10%</td><td style="color:var(--orange)">❌ FAIL (advisory) — 7.5%</td><td>High</td></tr>
+          <tr><td>GOV-CODE-002 — No files &gt; 3,000 lines</td><td style="color:var(--orange)">❌ FAIL (advisory) — PartnershipItemDetailsReportsService.cs: 3,024 lines</td><td>Medium</td></tr>
+          <tr><td>GOV-DEV-001 — CI/CD pipeline exists</td><td style="color:var(--green)">✅ PASS (CircleCI)</td><td>—</td></tr>
+          <tr><td>GOV-DEV-002 — Tests run in CI</td><td style="color:var(--orange)">❌ FAIL (advisory) — no NUnit step in build job</td><td>High</td></tr>
+          <tr><td>GOV-ARCH-001 — Dependency manifest exists</td><td style="color:var(--green)">✅ PASS (packages.config)</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="color:var(--muted);font-size:0.8rem;margin-top:0.5rem">
+      <strong>3/8 policies passed (38%) — ❌ NON-COMPLIANT</strong> · RPI: (2×25)+(5×10)+(5×3)+(4×1) = 119 → RPI = 100−59.5 = <strong>40/100 🟠 High Risk</strong>
+    </p>
+  </section>
+
+  <!-- Top 3 Quick Wins -->
+  <section class="quick-wins">
+    <div class="section-title">🎯 Top 3 Quick Wins</div>
+    <p style="color:var(--muted);font-size:.875rem;margin-bottom:.75rem">Things that can be fixed in under an hour with high impact:</p>
+    <ol>
+      <li><strong>Remove hardcoded AWS credentials from <code>publish.sh</code> lines 17–18.</strong> Delete the two <code>export</code> lines, add equivalent encrypted environment variables in CircleCI project settings, and push. Simultaneously rotate both exposed key pairs in AWS IAM. Also remove the matching values from both <code>app.config</code> files and replace with Secrets Manager lookups. <em>Eliminates both Critical findings immediately.</em></li>
+      <li><strong>Delete <code>src/McKissock.StudentApi/Data/DataService.cs.orig</code>.</strong> A single-line deletion commit removes a confusing backup artifact from the data layer with zero functional risk. <em>Resolves a Medium finding in under 2 minutes.</em></li>
+      <li><strong>Add <code>.github/dependabot.yml</code> for NuGet.</strong> A 10-line YAML config enables automated weekly vulnerability alerts across all 32 packages. Copy the template from GitHub Docs, set <code>package-ecosystem: nuget</code> and <code>interval: weekly</code>. <em>Resolves the Dependabot High finding in 15 minutes.</em></li>
+    </ol>
+  </section>
+
+  <!-- Roadmap -->
+  <section>
+    <div class="section-title">🗺️ Recommended Roadmap</div>
+    <div class="roadmap">
+      <div class="roadmap-phase">
+        <h4>This week — critical fixes</h4>
+        <ul>
+          <li>Rotate all 3 exposed AWS key IDs in IAM</li>
+          <li>Remove credentials from publish.sh and both app.config files</li>
+          <li>Inject secrets via CircleCI env vars + AWS Secrets Manager</li>
+          <li>Delete DataService.cs.orig</li>
+          <li>Add .dockerignore and .env/* to .gitignore</li>
+        </ul>
+      </div>
+      <div class="roadmap-phase">
+        <h4>This month — quality improvements</h4>
+        <ul>
+          <li>Add NUnit test step to CircleCI build job</li>
+          <li>Write unit tests to reach ≥10% coverage threshold</li>
+          <li>Split PartnershipItemDetailsReportsService.cs (3,024 lines)</li>
+          <li>Add SECURITY.md with disclosure policy</li>
+          <li>Configure Dependabot for NuGet (weekly)</li>
+          <li>Add non-root USER to both Dockerfiles</li>
+        </ul>
+      </div>
+      <div class="roadmap-phase">
+        <h4>This quarter — strategic improvements</h4>
+        <ul>
+          <li>Evaluate migration from .NET 4.0/Mono to .NET 8 LTS</li>
+          <li>Upgrade or replace ServiceStack 4.0.40 (~12 years old)</li>
+          <li>Decompose CurriculumCalendarService and CourseRunnerService</li>
+          <li>Enforce parameterized SQL — remove all string-interpolated queries</li>
+          <li>Add CHANGELOG.md with conventional commit tooling</li>
+          <li>Parameterize AWS Account ID in Dockerfile and buildspec</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Findings Summary -->
+  <section>
+    <div class="section-title">Findings Summary</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Severity</th><th>Count</th></tr></thead>
+        <tbody>
+          <tr><td>🔴 Critical</td><td>2</td></tr>
+          <tr><td>🟠 High</td><td>5</td></tr>
+          <tr><td>🟡 Medium</td><td>7</td></tr>
+          <tr><td>🔵 Low</td><td>5</td></tr>
+          <tr><td><strong>Total</strong></td><td><strong>19</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Claude Run Metrics -->
+  <section>
+    <div class="section-title">&#x1F916; Claude Run Metrics</div>
+    <p class="metrics-disclaimer">Token counts are <strong>estimates</strong> derived from file sizes and conversation content &mdash; not values read from an API response.</p>
+    <div class="metrics-grid">
+      <div class="metric-card accent">
+        <div class="m-label">Model</div>
+        <div class="m-value" style="font-size:1rem">claude-sonnet-4-6</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-label">Input Tokens (est.)</div>
+        <div class="m-value">~54,000</div>
+        <div class="m-sub">tokens consumed</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-label">Output Tokens (est.)</div>
+        <div class="m-value">~7,500</div>
+        <div class="m-sub">tokens generated</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-label">Total Tokens (est.)</div>
+        <div class="m-value">~61,500</div>
+        <div class="m-sub">of 200,000 window</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-label">Context Utilization</div>
+        <div class="m-value">~30.8%</div>
+        <div class="m-sub">🟡 Moderate</div>
+      </div>
+      <div class="metric-card">
+        <div class="m-label">Run Duration</div>
+        <div class="m-value">~12 min</div>
+        <div class="m-sub">2026-03-18</div>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Detail</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Memory files loaded</td><td>MEMORY.md index — C:\Users\nagasankar.j\.claude\projects\C--Work-Personal-repo-intel\memory\</td></tr>
+          <tr><td>Tool calls — total</td><td>~42</td></tr>
+          <tr><td>&nbsp;&nbsp;Bash</td><td>~22 (grep scans, ls, wc, cat)</td></tr>
+          <tr><td>&nbsp;&nbsp;Read</td><td>~12 (7 skill files + security.md re-read + readme.md + Dockerfile + report-template.html + app.config)</td></tr>
+          <tr><td>&nbsp;&nbsp;Write / Edit</td><td>1 (this report)</td></tr>
+          <tr><td>&nbsp;&nbsp;Grep / Glob</td><td>0</td></tr>
+          <tr><td>&nbsp;&nbsp;Agent (subagents)</td><td>0</td></tr>
+          <tr><td>Repo files inspected</td><td>~18 files directly read or scanned (out of 566 total)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="report-footer">
+    Generated by repo-intel · Analysis of C:\Work\StudentAPI-dev (McKissock.StudentApi) · 2026-03-18
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>
+  /* ── Mermaid init ─────────────────────────────────────────────── */
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      background: '#1a1d27', primaryColor: '#2d3148',
+      primaryTextColor: '#e2e8f0', primaryBorderColor: '#6c8eff',
+      lineColor: '#8892a4', secondaryColor: '#1a1d27',
+      tertiaryColor: '#0f1117', edgeLabelBackground: '#1a1d27',
+      clusterBkg: '#1a1d27', clusterBorder: '#2d3148',
+      titleColor: '#e2e8f0',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    },
+    flowchart: { curve: 'basis', padding: 20 },
+    sequence: { actorMargin: 60, messageMargin: 30 }
+  });
+
+  /* ── Diagram zoom / pan / fullscreen ──────────────────────────── *
+   *  KEY FIX: Mermaid v10+ sets style="max-width: Xpx" on every     *
+   *  SVG it renders. We clear that inline style immediately          *
+   *  after init and use viewBox-based scaling for crisp results.     *
+   * ────────────────────────────────────────────────────────────── */
+  const _diag  = {};
+  const _modal = { scale:1, nw:0, nh:0 };
+
+  function _getSvg(id) {
+    return document.getElementById(id + '-vp')?.querySelector('svg') || null;
+  }
+
+  function _readDims(svg) {
+    const vb = (svg.getAttribute('viewBox') || '').trim().split(/[\s,]+/);
+    const nw = parseFloat(vb[2]) || parseFloat(svg.getAttribute('width'))  || svg.getBoundingClientRect().width  || 700;
+    const nh = parseFloat(vb[3]) || parseFloat(svg.getAttribute('height')) || svg.getBoundingClientRect().height || 450;
+    return { nw, nh };
+  }
+
+  function _initDiag(id) {
+    const vp  = document.getElementById(id + '-vp');
+    const svg = _getSvg(id);
+    if (!svg) return false;
+
+    svg.style.maxWidth = 'none';
+    svg.style.width    = '';
+    svg.style.height   = '';
+
+    const { nw, nh } = _readDims(svg);
+    if (!svg.getAttribute('viewBox')) svg.setAttribute('viewBox', `0 0 ${nw} ${nh}`);
+
+    const avail = (vp.clientWidth || 820) - 48;
+    const fit   = Math.min(1, avail / nw);
+    _diag[id]   = { scale: fit, nw, nh };
+    _applyDiagScale(id);
+
+    vp.addEventListener('wheel', e => {
+      e.preventDefault();
+      _diag[id].scale = Math.min(5, Math.max(0.1, _diag[id].scale + (e.deltaY < 0 ? 0.15 : -0.15)));
+      _applyDiagScale(id);
+    }, { passive: false });
+
+    let drag=false, ox, oy, sl, st;
+    vp.addEventListener('mousedown', e => { drag=true; ox=e.pageX; oy=e.pageY; sl=vp.scrollLeft; st=vp.scrollTop; });
+    vp.addEventListener('mouseleave', () => drag=false);
+    vp.addEventListener('mouseup',   () => drag=false);
+    vp.addEventListener('mousemove', e => { if(!drag) return; vp.scrollLeft=sl-(e.pageX-ox); vp.scrollTop=st-(e.pageY-oy); });
+    return true;
+  }
+
+  function _applyDiagScale(id) {
+    const svg = _getSvg(id);
+    const st  = _diag[id];
+    if (!svg || !st) return;
+    svg.setAttribute('width',  st.nw * st.scale);
+    svg.setAttribute('height', st.nh * st.scale);
+    const lbl = document.getElementById(id + '-scale');
+    if (lbl) lbl.textContent = Math.round(st.scale * 100) + '%';
+  }
+
+  function zoomDiagram(id, delta) {
+    if (!_diag[id]) return;
+    _diag[id].scale = Math.min(5, Math.max(0.1, _diag[id].scale + delta));
+    _applyDiagScale(id);
+  }
+
+  function resetDiagram(id) {
+    if (!_diag[id]) return;
+    const vp    = document.getElementById(id + '-vp');
+    const avail = (vp?.clientWidth || 820) - 48;
+    _diag[id].scale = Math.min(1, avail / _diag[id].nw);
+    _applyDiagScale(id);
+    if (vp) { vp.scrollLeft=0; vp.scrollTop=0; }
+  }
+
+  function expandDiagram(id, title) {
+    const srcSvg = _getSvg(id);
+    if (!srcSvg) return;
+
+    const modal   = document.getElementById('diag-modal');
+    const modalVp = document.getElementById('diag-modal-vp');
+    document.getElementById('diag-modal-title').textContent = title || id;
+
+    modalVp.innerHTML = '';
+    const clone = srcSvg.cloneNode(true);
+    clone.id = 'modal-svg';
+    clone.style.maxWidth = 'none';
+    clone.style.display  = 'block';
+    modalVp.appendChild(clone);
+
+    const { nw, nh } = _readDims(srcSvg);
+    _modal.nw = nw; _modal.nh = nh;
+
+    requestAnimationFrame(() => {
+      const mw = (modalVp.clientWidth  || window.innerWidth  * 0.92) - 48;
+      const mh = (modalVp.clientHeight || window.innerHeight * 0.84) - 48;
+      _modal.scale = Math.min(mw / nw, mh / nh, 1);
+      _applyModalScale();
+    });
+
+    modal.classList.add('open');
+    document.addEventListener('keydown', _escClose);
+
+    modalVp._wh && modalVp.removeEventListener('wheel', modalVp._wh);
+    modalVp._wh = e => {
+      e.preventDefault();
+      _modal.scale = Math.min(5, Math.max(0.1, _modal.scale + (e.deltaY < 0 ? 0.15 : -0.15)));
+      _applyModalScale();
+    };
+    modalVp.addEventListener('wheel', modalVp._wh, { passive: false });
+
+    let drag=false, ox, oy, sl, st;
+    ['mousedown','mouseleave','mouseup','mousemove'].forEach(t => {
+      modalVp['_'+t] && modalVp.removeEventListener(t, modalVp['_'+t]);
+    });
+    modalVp._mousedown  = e => { drag=true; ox=e.pageX; oy=e.pageY; sl=modalVp.scrollLeft; st=modalVp.scrollTop; };
+    modalVp._mouseleave = () => drag=false;
+    modalVp._mouseup    = () => drag=false;
+    modalVp._mousemove  = e => { if(!drag) return; modalVp.scrollLeft=sl-(e.pageX-ox); modalVp.scrollTop=st-(e.pageY-oy); };
+    ['mousedown','mouseleave','mouseup','mousemove'].forEach(t => modalVp.addEventListener(t, modalVp['_'+t]));
+  }
+
+  function _applyModalScale() {
+    const svg = document.getElementById('modal-svg');
+    if (!svg) return;
+    svg.setAttribute('width',  _modal.nw * _modal.scale);
+    svg.setAttribute('height', _modal.nh * _modal.scale);
+    const lbl = document.getElementById('modal-scale');
+    if (lbl) lbl.textContent = Math.round(_modal.scale * 100) + '%';
+  }
+
+  function zoomModal(delta) {
+    _modal.scale = Math.min(5, Math.max(0.1, _modal.scale + delta));
+    _applyModalScale();
+  }
+
+  function resetModal() {
+    const vp = document.getElementById('diag-modal-vp');
+    const mw = (vp?.clientWidth  || window.innerWidth  * 0.92) - 48;
+    const mh = (vp?.clientHeight || window.innerHeight * 0.84) - 48;
+    _modal.scale = Math.min(mw / _modal.nw, mh / _modal.nh, 1);
+    _applyModalScale();
+    if (vp) { vp.scrollLeft=0; vp.scrollTop=0; }
+  }
+
+  function closeDiagramModal() {
+    document.getElementById('diag-modal').classList.remove('open');
+    document.removeEventListener('keydown', _escClose);
+  }
+
+  function _escClose(e) { if (e.key === 'Escape') closeDiagramModal(); }
+
+  /* ── Init: MutationObserver (replaces unreliable polling) ─────── */
+  document.addEventListener('DOMContentLoaded', () => {
+    const ids     = ['diag-logical', 'diag-flow'];
+    const pending = new Set(ids);
+
+    function tryAll() {
+      pending.forEach(id => { if (_initDiag(id)) pending.delete(id); });
+      if (pending.size === 0) obs.disconnect();
+    }
+
+    const obs = new MutationObserver(tryAll);
+    obs.observe(document.body, { childList: true, subtree: true });
+
+    setTimeout(tryAll, 400);
+    setTimeout(() => obs.disconnect(), 20000);
+  });
+
+  /* ── Theme toggle ─────────────────────────────────────────────── */
+  (function () {
+    const saved = localStorage.getItem('repo-intel-theme');
+    if (saved === 'light') document.documentElement.classList.add('light');
+    _syncToggleUI();
+  })();
+
+  function toggleTheme() {
+    const isLight = document.documentElement.classList.toggle('light');
+    localStorage.setItem('repo-intel-theme', isLight ? 'light' : 'dark');
+    _syncToggleUI();
+
+    if (typeof mermaid !== 'undefined') {
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: isLight ? 'default' : 'dark',
+        themeVariables: isLight
+          ? { primaryColor: '#dde4ff', primaryTextColor: '#1a1d27', primaryBorderColor: '#3b5bdb', lineColor: '#6b7280', background: '#ffffff', edgeLabelBackground: '#ffffff' }
+          : { background: '#1a1d27', primaryColor: '#2d3148', primaryTextColor: '#e2e8f0', primaryBorderColor: '#6c8eff', lineColor: '#8892a4', secondaryColor: '#1a1d27', tertiaryColor: '#0f1117', edgeLabelBackground: '#1a1d27', clusterBkg: '#1a1d27', clusterBorder: '#2d3148', titleColor: '#e2e8f0' },
+        flowchart: { curve: 'basis', padding: 20 },
+        sequence: { actorMargin: 60, messageMargin: 30 }
+      });
+      document.querySelectorAll('.diagram-viewport pre.mermaid, .diagram-viewport div.mermaid').forEach(el => {
+        el.removeAttribute('data-processed');
+      });
+      mermaid.run();
+    }
+  }
+
+  function _syncToggleUI() {
+    const isLight = document.documentElement.classList.contains('light');
+    const icon  = document.getElementById('theme-icon');
+    const label = document.getElementById('theme-label');
+    if (icon)  icon.textContent  = isLight ? '🌙' : '☀️';
+    if (label) label.textContent = isLight ? 'Dark' : 'Light';
+  }
+</script>
+</body>
+</html>
