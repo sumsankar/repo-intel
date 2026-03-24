@@ -56,28 +56,77 @@ Analyze the repository for code quality, maintainability, and test coverage.
 
 ---
 
+### 6. Error handling patterns
+
+Look for anti-patterns across all languages:
+
+```bash
+# Empty catch blocks (swallowed exceptions)
+grep -rn "catch.*{" --include="*.cs" --include="*.java" --include="*.ts" --include="*.js" . \
+  --exclude-dir={node_modules,.git,bin,obj,target} -A1 | grep -B1 "^\s*}"
+
+# Catching generic exceptions
+grep -rn "catch (Exception\b\|catch (Error\b\|except Exception\|except:\s*$" \
+  --include="*.cs" --include="*.java" --include="*.py" --include="*.ts" . \
+  --exclude-dir={node_modules,.git,bin,obj,target}
+
+# Console.log / print statements left in production code (not test files)
+grep -rn "console.log\|Console.WriteLine\|System.out.println\|print(" \
+  --include="*.ts" --include="*.js" --include="*.cs" --include="*.java" --include="*.py" . \
+  --exclude-dir={node_modules,.git,bin,obj,target} | grep -v test | grep -v Test | grep -v spec
+```
+
+### 7. Code style and consistency
+
+- Check for mixed indentation (tabs vs spaces) in the same file
+- Check for inconsistent naming conventions (camelCase mixed with snake_case)
+- Look for commented-out code blocks (dead code)
+
+```bash
+# Commented-out code (large blocks)
+grep -rn "^\s*//.*=\|^\s*#.*def \|^\s*//.*function\|^\s*//.*class " \
+  --include="*.cs" --include="*.java" --include="*.ts" --include="*.js" --include="*.py" . \
+  --exclude-dir={node_modules,.git,bin,obj,target} | head -20
+```
+
+---
+
 ## How to analyze
 
-Run these commands to gather data:
+Run these commands to gather data. **Scan ALL source files**, not just a subset:
 
 ```bash
 # File and language counts
-find . -type f | grep -v node_modules | grep -v .git | sed 's/.*\.//' | sort | uniq -c | sort -rn | head -20
+find . -type f | grep -v node_modules | grep -v .git | grep -v bin/ | grep -v obj/ | grep -v target/ | grep -v dist/ | grep -v build/ | sed 's/.*\.//' | sort | uniq -c | sort -rn | head -30
 
-# Total lines of code
-find . -type f \( -name "*.js" -o -name "*.ts" -o -name "*.py" -o -name "*.go" -o -name "*.java" -o -name "*.rb" \) \
-  | grep -v node_modules | grep -v .git | xargs wc -l 2>/dev/null | tail -1
+# Total lines of code (all languages)
+find . -type f \( -name "*.js" -o -name "*.ts" -o -name "*.tsx" -o -name "*.jsx" \
+  -o -name "*.py" -o -name "*.go" -o -name "*.java" -o -name "*.kt" \
+  -o -name "*.cs" -o -name "*.rb" -o -name "*.php" -o -name "*.rs" \
+  -o -name "*.swift" -o -name "*.scala" -o -name "*.dart" \) \
+  | grep -v node_modules | grep -v .git | grep -v bin/ | grep -v obj/ | grep -v target/ \
+  | xargs wc -l 2>/dev/null | tail -1
 
-# Test files
-find . -type f | grep -v node_modules | grep -E "(test|spec|__tests__)" | wc -l
+# Test files (all languages)
+find . -type f | grep -v node_modules | grep -v .git | grep -v bin/ | grep -v obj/ | \
+  grep -iE "(test|spec|__tests__|\.test\.|\.spec\.|_test\.|Tests/|Test/)" | wc -l
 
-# TODO/FIXME count
-grep -r "TODO\|FIXME\|HACK\|XXX" --include="*.js" --include="*.ts" --include="*.py" \
-  -l . | grep -v node_modules | wc -l
+# TODO/FIXME count (all languages)
+grep -r "TODO\|FIXME\|HACK\|XXX\|WORKAROUND\|TEMP\|KLUDGE" \
+  --include="*.js" --include="*.ts" --include="*.py" --include="*.cs" --include="*.java" \
+  --include="*.go" --include="*.rb" --include="*.rs" --include="*.kt" \
+  -l . | grep -v node_modules | grep -v bin/ | grep -v obj/ | wc -l
 
-# Long files (over 500 lines)
-find . -type f \( -name "*.js" -o -name "*.ts" -o -name "*.py" \) \
-  | grep -v node_modules | xargs wc -l 2>/dev/null | awk '$1 > 500' | sort -rn | head -10
+# Long files (over 500 lines) — ALL languages
+find . -type f \( -name "*.js" -o -name "*.ts" -o -name "*.tsx" -o -name "*.py" \
+  -o -name "*.cs" -o -name "*.java" -o -name "*.go" -o -name "*.rb" -o -name "*.rs" \) \
+  | grep -v node_modules | grep -v bin/ | grep -v obj/ | grep -v target/ \
+  | xargs wc -l 2>/dev/null | awk '$1 > 500' | sort -rn
+
+# Very long files (over 1000 lines) — potential god classes
+find . -type f \( -name "*.js" -o -name "*.ts" -o -name "*.py" -o -name "*.cs" -o -name "*.java" \) \
+  | grep -v node_modules | grep -v bin/ | grep -v obj/ | grep -v target/ \
+  | xargs wc -l 2>/dev/null | awk '$1 > 1000' | sort -rn
 ```
 
 ---

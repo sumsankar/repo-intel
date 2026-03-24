@@ -56,20 +56,91 @@ Check that `.gitignore` includes:
 - `node_modules/`
 - `dist/`, `build/`
 
-### 4. Dangerous code patterns
-```bash
-# JavaScript/TypeScript
-grep -rn "eval(" . --include="*.js" --include="*.ts" --exclude-dir={node_modules,.git}
-grep -rn "innerHTML\s*=" . --include="*.js" --include="*.ts" --include="*.jsx" --include="*.tsx" --exclude-dir={node_modules,.git}
-grep -rn "dangerouslySetInnerHTML" . --include="*.jsx" --include="*.tsx" --exclude-dir={node_modules,.git}
-grep -rn "execSync\|exec(" . --include="*.js" --include="*.ts" --exclude-dir={node_modules,.git}
+### 4. Dangerous code patterns (OWASP Top 10 coverage)
 
-# Python
+**A03:2021 — Injection (SQL, Command, Code):**
+```bash
+# JavaScript/TypeScript — SQL injection
+grep -rn "query.*+.*req\.\|query.*\`.*\${" . --include="*.js" --include="*.ts" --exclude-dir={node_modules,.git}
+
+# JavaScript/TypeScript — code injection
+grep -rn "eval(" . --include="*.js" --include="*.ts" --exclude-dir={node_modules,.git}
+grep -rn "execSync\|exec(" . --include="*.js" --include="*.ts" --exclude-dir={node_modules,.git}
+grep -rn "new Function(" . --include="*.js" --include="*.ts" --exclude-dir={node_modules,.git}
+
+# Python — injection
 grep -rn "pickle.loads\|eval(\|exec(" . --include="*.py" --exclude-dir={.git}
 grep -rn "shell=True" . --include="*.py" --exclude-dir={.git}
+grep -rn "os.system\|subprocess.call" . --include="*.py" --exclude-dir={.git}
 
-# SQL injection signals
-grep -rn "query.*+.*req\.\|query.*\`.*\${" . --include="*.js" --include="*.ts" --exclude-dir={node_modules,.git}
+# C# / .NET — SQL injection
+grep -rn "SqlCommand.*\".*+\|string.Format.*SqlCommand\|FromSqlRaw.*\$\"\|ExecuteSqlRaw.*\$\"" . --include="*.cs" --exclude-dir={bin,obj,.git}
+
+# C# / .NET — command injection
+grep -rn "Process.Start\|ProcessStartInfo" . --include="*.cs" --exclude-dir={bin,obj,.git}
+
+# Java — SQL injection
+grep -rn "createQuery.*+\|executeQuery.*+\|Statement.*execute" . --include="*.java" --exclude-dir={target,.git,build}
+
+# Go — SQL injection
+grep -rn "fmt.Sprintf.*SELECT\|fmt.Sprintf.*INSERT\|fmt.Sprintf.*UPDATE" . --include="*.go" --exclude-dir={vendor,.git}
+```
+
+**A02:2021 — Cryptographic Failures:**
+```bash
+# Weak hashing algorithms
+grep -rn "MD5\|SHA1\|SHA-1" . --include="*.cs" --include="*.java" --include="*.py" --include="*.js" --include="*.ts" --exclude-dir={node_modules,.git,bin,obj,target}
+
+# Hardcoded encryption keys
+grep -rn "AES\|DES\|Rijndael" . --include="*.cs" --include="*.java" --exclude-dir={bin,obj,target,.git} | grep -i "key\|secret\|password"
+
+# Insecure random number generation
+grep -rn "Math.random\|Random()" . --include="*.js" --include="*.ts" --include="*.cs" --include="*.java" --exclude-dir={node_modules,.git,bin,obj}
+```
+
+**A07:2021 — Cross-Site Scripting (XSS):**
+```bash
+# JavaScript/React
+grep -rn "innerHTML\s*=" . --include="*.js" --include="*.ts" --include="*.jsx" --include="*.tsx" --exclude-dir={node_modules,.git}
+grep -rn "dangerouslySetInnerHTML" . --include="*.jsx" --include="*.tsx" --exclude-dir={node_modules,.git}
+grep -rn "document.write" . --include="*.js" --include="*.ts" --exclude-dir={node_modules,.git}
+
+# C# / ASP.NET — XSS
+grep -rn "Html.Raw\|@Html.Raw" . --include="*.cshtml" --include="*.razor" --exclude-dir={bin,obj,.git}
+
+# Java / JSP
+grep -rn "<%=\|out.println" . --include="*.jsp" --exclude-dir={target,.git}
+```
+
+**A01:2021 — Broken Access Control:**
+```bash
+# Missing authorization attributes (.NET)
+grep -rn "\[HttpGet\]\|\[HttpPost\]\|\[HttpPut\]\|\[HttpDelete\]" . --include="*.cs" --exclude-dir={bin,obj,.git} | grep -v "Authorize"
+
+# Open endpoints (Express.js)
+grep -rn "app.get\|app.post\|app.put\|app.delete\|router.get\|router.post" . --include="*.js" --include="*.ts" --exclude-dir={node_modules,.git}
+
+# CORS misconfiguration
+grep -rn "AllowAnyOrigin\|Access-Control-Allow-Origin.*\*\|cors({.*origin.*true\|cors()" . --include="*.cs" --include="*.js" --include="*.ts" --exclude-dir={node_modules,.git,bin,obj}
+```
+
+**A05:2021 — Security Misconfiguration:**
+```bash
+# Debug mode in production configs
+grep -rn "debug.*true\|DEBUG.*True\|Debug.*true" . --include="*.json" --include="*.yaml" --include="*.yml" --include="*.py" --include="*.cs" --exclude-dir={node_modules,.git,bin,obj,test,Test}
+
+# HTTPS disabled
+grep -rn "https.*false\|HttpsRedirection.*false\|ssl_verify.*false\|verify=False" . --exclude-dir={node_modules,.git,bin,obj}
+
+# Default error pages with stack traces
+grep -rn "app.UseDeveloperExceptionPage\|SHOW_ERRORS.*true\|DEBUG=True" . --include="*.cs" --include="*.py" --exclude-dir={bin,obj,.git}
+```
+
+**A08:2021 — Software and Data Integrity:**
+```bash
+# Deserialization vulnerabilities
+grep -rn "BinaryFormatter\|XmlSerializer\|JavaScriptSerializer\|ObjectInputStream" . --include="*.cs" --include="*.java" --exclude-dir={bin,obj,target,.git}
+grep -rn "yaml.load\b" . --include="*.py" --exclude-dir={.git}  # should be yaml.safe_load
 ```
 
 ### 5. Dependency vulnerabilities

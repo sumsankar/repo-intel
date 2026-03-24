@@ -7,17 +7,25 @@ Analyze CI/CD pipelines, containerization, infrastructure as code, and repo hygi
 ## What to check
 
 ### 1. CI/CD pipeline
-Check for pipeline configuration files:
+Check for **all** pipeline configuration files:
 
 ```bash
 # GitHub Actions
 ls .github/workflows/ 2>/dev/null
+cat .github/workflows/*.yml 2>/dev/null
 
 # GitLab CI
-cat .gitlab-ci.yml 2>/dev/null | head -30
+cat .gitlab-ci.yml 2>/dev/null | head -50
+
+# Azure DevOps Pipelines
+cat azure-pipelines.yml 2>/dev/null
+find . -name "*.yml" -path "*pipelines*" -o -name "*.yaml" -path "*pipelines*" 2>/dev/null | head -5
+
+# Jenkins
+cat Jenkinsfile 2>/dev/null
 
 # Other CI
-ls Jenkinsfile .circleci/config.yml .travis.yml azure-pipelines.yml buildkite.yml 2>/dev/null
+ls .circleci/config.yml .travis.yml buildkite.yml bitbucket-pipelines.yml 2>/dev/null
 ```
 
 **If GitHub Actions found**, inspect each workflow:
@@ -25,13 +33,25 @@ ls Jenkinsfile .circleci/config.yml .travis.yml azure-pipelines.yml buildkite.ym
 cat .github/workflows/*.yml
 ```
 Check each workflow for:
-- ✅ Test step (`test`, `jest`, `pytest`, `go test`)
-- ✅ Lint step (`lint`, `eslint`, `flake8`, `golint`)
-- ✅ Build step
-- ✅ Security scan (`codeql`, `snyk`, `trivy`, `semgrep`)
+- ✅ Test step (`test`, `jest`, `pytest`, `go test`, `dotnet test`, `mvn test`)
+- ✅ Lint step (`lint`, `eslint`, `flake8`, `golint`, `dotnet format`)
+- ✅ Build step (`build`, `dotnet build`, `mvn package`, `go build`)
+- ✅ Security scan (`codeql`, `snyk`, `trivy`, `semgrep`, `dotnet-security-scan`)
 - ✅ Deploy/release step
+- ✅ Artifact publishing (NuGet, npm, Docker registry)
 - ⚠️ Hardcoded secrets (should use `${{ secrets.NAME }}` not literal values)
 - ⚠️ Using `actions/checkout@v1` or `v2` (flag as outdated, recommend v4)
+- ⚠️ Using `pull_request_target` without careful input sanitization
+
+**If Azure DevOps Pipelines found**, check:
+```bash
+cat azure-pipelines.yml 2>/dev/null
+```
+- ✅ Pipeline uses templates (not inline scripts for everything)
+- ✅ Uses `checkout: self` with `fetchDepth: 1` for performance
+- ✅ Uses service connections (not hardcoded credentials)
+- ⚠️ Uses deprecated task versions
+- ⚠️ Missing `pool` specification (should pin vmImage version)
 
 **If no CI found**: flag as high severity — no automated quality gates.
 

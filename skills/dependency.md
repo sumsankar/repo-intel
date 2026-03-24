@@ -8,19 +8,31 @@ Analyze the repository's external dependencies for known vulnerabilities, licens
 
 ### 1. Dependency manifest detection
 
-Identify what package managers are in use:
+Identify **all** package managers in use across all projects:
 
 ```bash
-# Detect package managers
-ls package.json package-lock.json yarn.lock pnpm-lock.yaml \
-   requirements.txt pyproject.toml poetry.lock Pipfile Pipfile.lock \
-   go.mod go.sum \
-   pom.xml build.gradle \
-   *.csproj *.sln \
-   Gemfile Gemfile.lock \
-   composer.json composer.lock \
-   Cargo.toml Cargo.lock \
-   2>/dev/null
+# Detect package managers — scan the entire repo
+find . -maxdepth 4 -type f \( \
+  -name "package.json" -o -name "package-lock.json" -o -name "yarn.lock" -o -name "pnpm-lock.yaml" \
+  -o -name "requirements.txt" -o -name "pyproject.toml" -o -name "poetry.lock" -o -name "Pipfile" \
+  -o -name "go.mod" -o -name "go.sum" \
+  -o -name "pom.xml" -o -name "build.gradle" -o -name "build.gradle.kts" \
+  -o -name "*.csproj" -o -name "*.sln" -o -name "Directory.Packages.props" -o -name "packages.config" \
+  -o -name "Gemfile" -o -name "Gemfile.lock" \
+  -o -name "composer.json" -o -name "composer.lock" \
+  -o -name "Cargo.toml" -o -name "Cargo.lock" \
+  -o -name "pubspec.yaml" -o -name "mix.exs" \
+  \) | grep -v node_modules | grep -v .git | grep -v bin/ | grep -v obj/ | grep -v target/
+
+# For .NET — list all NuGet package references across all projects
+find . -name "*.csproj" -exec grep -H "PackageReference" {} \; | grep -v bin/ | grep -v obj/
+
+# For .NET — check for centralized package management
+find . -name "Directory.Packages.props" -o -name "Directory.Build.props" | head -5
+cat Directory.Packages.props 2>/dev/null
+
+# For .NET — check for legacy packages.config
+find . -name "packages.config" | head -5
 ```
 
 ### 2. Lock file presence (CRITICAL for supply chain)
@@ -104,6 +116,56 @@ for line in sys.stdin:
 " 2>/dev/null
 ```
 
+### 4.1. .NET known vulnerable packages
+
+```bash
+# Check for known vulnerable NuGet packages
+find . -name "*.csproj" -exec cat {} \; 2>/dev/null | python3 -c "
+import sys, re
+risky = {
+    'System.Text.Json': 'CVEs in older versions — ensure >= 8.0.0',
+    'Newtonsoft.Json': 'Deserialization attacks in old versions — ensure >= 13.0.3',
+    'log4net': 'Multiple CVEs — ensure >= 2.0.15',
+    'System.Drawing.Common': 'Security issues on non-Windows — ensure >= 8.0.0',
+    'Microsoft.AspNetCore.Mvc': 'Ensure using latest LTS framework version',
+    'System.IdentityModel.Tokens.Jwt': 'Algorithm confusion — ensure >= 7.0.0',
+    'BouncyCastle': 'Timing attacks in old versions — check for updates',
+}
+for line in sys.stdin:
+    for pkg, note in risky.items():
+        if pkg.lower() in line.lower():
+            version = re.search(r'Version=\"([^\"]+)\"', line)
+            ver = version.group(1) if version else 'unknown'
+            print(f'FOUND: {pkg} {ver} → {note}')
+" 2>/dev/null
+
+# Check for outdated .NET framework targets
+find . -name "*.csproj" -exec grep -H "TargetFramework" {} \; | grep -E "net[0-9]\.[0-9]|netcoreapp|netstandard"
+# Flag: netcoreapp3.1, net5.0, net6.0 (out of support); recommend net8.0+
+```
+
+### 4.2. Java known vulnerable packages
+
+```bash
+# Check for known vulnerable Java packages in pom.xml
+cat pom.xml 2>/dev/null | python3 -c "
+import sys
+risky = {
+    'log4j-core': 'Log4Shell (CVE-2021-44228) — ensure >= 2.17.1',
+    'spring-boot': 'Spring4Shell — ensure >= 2.7.x or 3.x',
+    'commons-collections': 'Deserialization attacks — ensure >= 3.2.2',
+    'jackson-databind': 'Multiple CVEs — ensure >= 2.15.0',
+    'snakeyaml': 'CVE-2022-1471 — ensure >= 2.0',
+    'commons-text': 'Text4Shell — ensure >= 1.10.0',
+    'hibernate-core': 'SQL injection in older versions — ensure >= 5.6.x',
+}
+for line in sys.stdin:
+    for pkg, note in risky.items():
+        if pkg.lower() in line.lower():
+            print(f'FOUND: {pkg} → {note}')
+" 2>/dev/null
+```
+
 ### 5. Deprecated / unmaintained packages
 
 ```bash
@@ -121,6 +183,9 @@ deprecated = {
     'tslint':       'Deprecated — migrate to ESLint',
     'cz-conventional-changelog': 'Check if maintained',
     'istanbul':     'Deprecated — use nyc or c8',
+    'node-sass':    'Deprecated — migrate to sass (dart-sass)',
+    'create-react-class': 'Use ES6 classes or function components',
+    'react-router-dom': 'If v5 — migrate to v6',
 }
 for pkg, note in deprecated.items():
     if pkg in deps:

@@ -29,16 +29,27 @@ Overall = (security × 0.30) + (code × 0.25) + (architecture × 0.20) + (devops
 
 Evaluate each policy rule against the findings:
 
-| Policy ID | Rule | Blocking |
-|-----------|------|---------|
-| GOV-SEC-001 | No critical secrets findings | YES |
-| GOV-SEC-002 | Security score ≥ 5 | YES |
-| GOV-DEP-001 | No critical CVEs | YES |
-| GOV-CODE-001 | Test file ratio ≥ 10% | NO |
-| GOV-CODE-002 | No files > 3000 lines | NO |
-| GOV-DEV-001 | CI/CD pipeline exists | NO |
-| GOV-DEV-002 | Tests run in CI | NO |
-| GOV-ARCH-001 | Lock file exists | NO |
+| Policy ID | Rule | Blocking | Category |
+|-----------|------|---------|----------|
+| GOV-SEC-001 | No critical secrets findings | YES | Security |
+| GOV-SEC-002 | Security score ≥ 5 | YES | Security |
+| GOV-SEC-003 | No SQL injection or command injection patterns | YES | Security |
+| GOV-SEC-004 | CORS not set to allow all origins in production | NO | Security |
+| GOV-DEP-001 | No critical CVEs | YES | Dependency |
+| GOV-DEP-002 | No deprecated runtime dependencies | NO | Dependency |
+| GOV-DEP-003 | No GPL/AGPL licensed dependencies (commercial projects) | NO | Dependency |
+| GOV-CODE-001 | Test file ratio ≥ 10% | NO | Code Quality |
+| GOV-CODE-002 | No files > 3000 lines | NO | Code Quality |
+| GOV-CODE-003 | No empty catch blocks / swallowed exceptions | NO | Code Quality |
+| GOV-CODE-004 | No TODO/FIXME in critical paths | NO | Code Quality |
+| GOV-DEV-001 | CI/CD pipeline exists | NO | DevOps |
+| GOV-DEV-002 | Tests run in CI | NO | DevOps |
+| GOV-DEV-003 | Docker images use pinned versions (not :latest) | NO | DevOps |
+| GOV-DEV-004 | README exists and is substantive (>20 lines) | NO | DevOps |
+| GOV-ARCH-001 | Lock file exists | NO | Architecture |
+| GOV-ARCH-002 | No circular project/package dependencies | NO | Architecture |
+| GOV-ARCH-003 | Consistent framework versions across all projects | NO | Architecture |
+| GOV-ARCH-004 | Clear layered structure (not flat src/) | NO | Architecture |
 
 **Blocking policies:** a single failure = NON-COMPLIANT status
 
@@ -149,13 +160,21 @@ Always end the governance section with this table:
 ```markdown
 | Policy | Status | Impact |
 |--------|--------|--------|
-| No committed secrets | ❌ FAIL (BLOCKING) | Critical |
-| Security score ≥ 5 | ❌ FAIL (BLOCKING) | High |
-| No critical CVEs | ✅ PASS | — |
-| Test coverage ≥ 10% | ❌ FAIL (advisory) | High |
-| CI/CD pipeline | ❌ FAIL (advisory) | High |
-| Lock file exists | ✅ PASS | — |
-| No files > 3000 lines | ✅ PASS | — |
+| GOV-SEC-001: No committed secrets | ❌ FAIL (BLOCKING) | Critical |
+| GOV-SEC-002: Security score ≥ 5 | ❌ FAIL (BLOCKING) | High |
+| GOV-SEC-003: No injection patterns | ✅ PASS | — |
+| GOV-DEP-001: No critical CVEs | ✅ PASS | — |
+| GOV-DEP-002: No deprecated deps | ❌ FAIL (advisory) | Medium |
+| GOV-CODE-001: Test coverage ≥ 10% | ❌ FAIL (advisory) | High |
+| GOV-CODE-002: No files > 3000 lines | ✅ PASS | — |
+| GOV-CODE-003: No empty catch blocks | ❌ FAIL (advisory) | Medium |
+| GOV-DEV-001: CI/CD pipeline | ❌ FAIL (advisory) | High |
+| GOV-DEV-002: Tests run in CI | ❌ FAIL (advisory) | High |
+| GOV-DEV-003: Pinned Docker images | ✅ PASS | — |
+| GOV-ARCH-001: Lock file exists | ✅ PASS | — |
+| GOV-ARCH-002: No circular deps | ✅ PASS | — |
+| GOV-ARCH-003: Consistent frameworks | ✅ PASS | — |
+| GOV-ARCH-004: Layered structure | ❌ FAIL (advisory) | Medium |
 
-**Overall: 2/7 policies passed (29%) — ❌ NON-COMPLIANT**
+**Overall: 8/15 policies passed (53%) — ❌ NON-COMPLIANT (2 blocking failures)**
 ```

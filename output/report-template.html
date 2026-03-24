@@ -262,6 +262,11 @@
         <div class="score"><!-- x -->/10</div>
         <div class="status"><!-- 🔴🟠🟡🟢 --></div>
       </div>
+      <div class="score-card">
+        <div class="label">Dependency Risk</div>
+        <div class="score"><!-- x -->/10</div>
+        <div class="status"><!-- 🔴🟠🟡🟢 --></div>
+      </div>
       <div class="score-card overall">
         <div class="label">Overall</div>
         <div class="score"><!-- x -->/10</div>
@@ -447,26 +452,66 @@ sequenceDiagram
     <ul class="checklist" style="margin-bottom:1rem">
       <li><span class="check"><!-- ✓ if done --></span> CI/CD pipeline</li>
       <li><span class="check"><!-- ✓ if done --></span> Tests in CI</li>
+      <li><span class="check"><!-- ✓ if done --></span> Security scan in CI</li>
       <li><span class="check"><!-- ✓ if done --></span> Docker</li>
       <li><span class="check"><!-- ✓ if done --></span> IaC</li>
       <li><span class="check"><!-- ✓ if done --></span> README</li>
       <li><span class="check"><!-- ✓ if done --></span> LICENSE</li>
       <li><span class="check"><!-- ✓ if done --></span> CHANGELOG</li>
       <li><span class="check"><!-- ✓ if done --></span> Lock file</li>
+      <li><span class="check"><!-- ✓ if done --></span> SECURITY.md</li>
+      <li><span class="check"><!-- ✓ if done --></span> Dependabot / Renovate</li>
     </ul>
     <ul class="findings-list">
       <!-- medium and low findings -->
     </ul>
   </section>
 
-  <!-- Top 3 Quick Wins -->
+  <!-- Dependency Risk -->
+  <section>
+    <div class="section-title">📦 Dependency Risk</div>
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> <!-- one sentence --></p>
+    <ul class="metrics" style="margin-bottom:1rem">
+      <li><strong>Package manager:</strong> </li>
+      <li><strong>Lock file present:</strong> </li>
+      <li><strong>Critical CVEs:</strong> </li>
+      <li><strong>High CVEs:</strong> </li>
+      <li><strong>Deprecated packages:</strong> </li>
+      <li><strong>License issues:</strong> </li>
+    </ul>
+    <ul class="findings-list">
+      <!-- dependency findings -->
+    </ul>
+  </section>
+
+  <!-- Governance Assessment -->
+  <section>
+    <div class="section-title">🏛️ Governance Assessment</div>
+    <p style="margin-bottom:.5rem;font-size:.9rem">
+      <strong>Compliance Status:</strong>
+      <span style="font-weight:700"><!-- ✅ COMPLIANT / ⚠️ CONDITIONALLY COMPLIANT / ❌ NON-COMPLIANT --></span>
+    </p>
+    <p style="margin-bottom:.5rem;font-size:.9rem"><strong>Overall Score:</strong> <!-- x.x/10 --></p>
+    <p style="margin-bottom:1rem;font-size:.9rem"><strong>Risk Posture Index:</strong> <!-- RPI/100 🔴🟠🟡🟢 --></p>
+    <div class="table-wrap" style="margin-bottom:1rem">
+      <table>
+        <thead><tr><th>Policy</th><th>Status</th><th>Impact</th></tr></thead>
+        <tbody>
+          <!-- Policy rows: e.g. <tr><td>GOV-SEC-001: No committed secrets</td><td>✅ PASS</td><td>—</td></tr> -->
+        </tbody>
+      </table>
+    </div>
+    <ul class="findings-list">
+      <!-- governance findings -->
+    </ul>
+  </section>
+
+  <!-- Quick Wins -->
   <section class="quick-wins">
-    <div class="section-title">🎯 Top 3 Quick Wins</div>
+    <div class="section-title">🎯 Quick Wins</div>
     <p style="color:var(--muted);font-size:.875rem;margin-bottom:.75rem">Things that can be fixed in under an hour with high impact:</p>
     <ol>
-      <li><!-- specific, actionable, with file reference --></li>
-      <li><!-- specific, actionable, with file reference --></li>
-      <li><!-- specific, actionable, with file reference --></li>
+      <!-- List ALL quick wins identified. Each should be specific, actionable, with file reference -->
     </ol>
   </section>
 

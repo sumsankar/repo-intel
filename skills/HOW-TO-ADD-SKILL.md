@@ -73,12 +73,13 @@ That's it. Next time you run an analysis, Claude Code will use your skill.
 
 ## Skill ideas to build next
 
-| Skill | What it would check |
-|-------|-------------------|
-| `accessibility.md` | Missing alt tags, ARIA roles, color contrast issues in HTML/JSX |
-| `performance.md` | N+1 query patterns, missing indexes, large bundle signals |
-| `api-design.md` | REST conventions, versioning, error response consistency |
-| `logging.md` | Structured logging, sensitive data in logs, missing error logging |
-| `database.md` | Migration files, ORM usage, raw SQL patterns, connection pooling |
-| `i18n.md` | Hardcoded strings, missing translation keys, locale file structure |
-| `documentation.md` | JSDoc/docstring coverage, stale comments, README quality |
+| Skill | What it would check | Priority |
+|-------|-------------------|----------|
+| `performance.md` | N+1 query patterns, missing DB indexes, bundle size, memory leaks, async anti-patterns, lazy loading | High |
+| `api-design.md` | REST conventions, versioning, error response consistency, OpenAPI/Swagger validation, rate limiting | Medium |
+| `database.md` | Migration files, ORM usage, raw SQL patterns, connection pooling, index coverage, N+1 detection | Medium |
+| `logging.md` | Structured logging, sensitive data in logs, missing error logging, correlation IDs, tracing headers | Medium |
+| `accessibility.md` | Missing alt tags, ARIA roles, color contrast issues in HTML/JSX/Razor, keyboard navigation | Medium |
+| `i18n.md` | Hardcoded strings, missing translation keys, locale file structure, RTL support | Low |
+| `documentation.md` | JSDoc/docstring coverage, stale comments, README quality, API docs, changelog accuracy | Low |
+| `testing.md` | Test quality, mocking patterns, integration vs unit ratio, flaky test detection, assertion coverage | Medium |

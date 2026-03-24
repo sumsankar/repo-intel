@@ -18,23 +18,26 @@ Deliver a working analysis tool using Claude Code as the intelligence layer, wit
 
 | Component | Description | Status |
 |-----------|-------------|--------|
-| `ANALYZE.md` | Orchestration prompt | ✅ Done |
-| `skills/code.md` | Code quality skill | ✅ Done |
-| `skills/architecture.md` | Architecture skill | ✅ Done |
-| `skills/security.md` | Security skill | ✅ Done |
-| `skills/devops.md` | DevOps skill | ✅ Done |
+| `ANALYZE.md` | Orchestration prompt with parallel agent execution | ✅ Done |
+| `skills/code.md` | Code quality skill (multi-language, error patterns) | ✅ Done |
+| `skills/architecture.md` | Architecture skill (SOLID, multi-project, diagrams) | ✅ Done |
+| `skills/security.md` | Security skill (OWASP Top 10, .NET/Java/Go patterns) | ✅ Done |
+| `skills/devops.md` | DevOps skill (GitHub Actions, Azure DevOps, GitLab CI) | ✅ Done |
+| `skills/dependency.md` | Dependency/supply chain skill (NuGet, Maven, npm, pip) | ✅ Done |
+| `skills/governance.md` | Governance scoring skill (19 policies, RPI) | ✅ Done |
+| `skills/claude-metrics.md` | Claude run metrics tracking | ✅ Done |
 | `output/report-template.md` | Markdown report template | ✅ Done |
-| `output/report-template.html` | HTML report template | ✅ Done |
+| `output/report-template.html` | HTML report template (dark/light mode, diagrams) | ✅ Done |
 | `examples/` | Sample report | ✅ Done |
-| `skills/dependency.md` | Dependency/supply chain skill | 🔲 Todo |
-| `skills/governance.md` | Governance scoring skill | 🔲 Todo |
+| `CLAUDE.md` | Claude Code guidance file | ✅ Done |
 
 ### Phase 1 Gaps (inputs to Phase 2)
-- Manual process — no automation
+- Manual process — no automation (but uses Claude subagents for parallel skill execution)
 - No persistent storage of analysis history
 - No multi-repo portfolio view
 - No webhook integration
 - Limited to repos accessible from Claude Code's environment
+- No programmatic skill execution (prompt-based only)
 
 ---
 
@@ -190,13 +193,20 @@ These features are planned but not yet scheduled:
 | Feature | Description | Priority |
 |---------|-------------|---------|
 | PR-level analysis | Analyze only changed files in a PR, with inline GitHub comments | High |
-| Multi-language deep parsing | Language-specific analyzers (C#, Java, Go) beyond tree-sitter | High |
+| Multi-language deep parsing | Language-specific analyzers (C#, Java, Go, Rust) beyond tree-sitter | High |
+| Performance skill | N+1 queries, missing indexes, bundle size, memory leaks, async anti-patterns | High |
+| API design skill | REST conventions, versioning, error response consistency, OpenAPI validation | Medium |
+| Database skill | Migration files, ORM usage, raw SQL, connection pooling, index coverage | Medium |
 | Architecture diff | Compare architecture between two commits or branches | Medium |
 | Custom rule authoring | UI for writing and testing custom governance rules | Medium |
 | SBOM generation | Software Bill of Materials export (SPDX/CycloneDX) | Medium |
+| Accessibility skill | Missing alt tags, ARIA roles, color contrast in HTML/JSX/Razor | Medium |
+| Logging/observability skill | Structured logging, sensitive data in logs, missing error logging, tracing | Medium |
 | IDE plugin | VS Code extension for real-time analysis | Low |
 | SonarQube integration | Import SonarQube findings into unified governance view | Low |
 | Self-hosted runner | On-premise deployment for air-gapped environments | High (enterprise) |
+| Multi-repo comparison | Side-by-side comparison of two or more repos with delta analysis | Medium |
+| Historical trend analysis | Track score changes over multiple analysis runs | High |
 
 ---
 
@@ -204,17 +214,19 @@ These features are planned but not yet scheduled:
 
 | Requirement | Current State | Phase to address |
 |-------------|--------------|-----------------|
-| Repository ingestion from GitHub/GitLab | Manual clone in ANALYZE.md | Phase 2 |
-| Code parsing and indexing | Claude code reading | Phase 2 (tree-sitter) |
-| Architecture discovery | `skills/architecture.md` | Phase 2 (automated) |
-| Static code analysis | `skills/code.md` | Phase 2 (automated) |
-| Security vulnerability analysis | `skills/security.md` | Phase 2 + Semgrep |
-| Dependency and supply chain analysis | **Missing** | Phase 2 + `skills/dependency.md` |
-| CI/CD and infrastructure analysis | `skills/devops.md` | Phase 2 (automated) |
-| Code knowledge graph generation | **Missing** | Phase 3 |
-| AI reasoning over codebase | Manual (Claude Code) | Phase 4 |
-| Automated architecture documentation | Partial (report template) | Phase 4 |
-| Governance scoring and reporting | **Missing** | Phase 5 |
+| Repository ingestion from GitHub/GitLab | Manual clone via ANALYZE.md Step 1 | Phase 2 (API-driven) |
+| Code parsing and indexing | Claude code reading + bash commands | Phase 2 (tree-sitter AST) |
+| Architecture discovery | `skills/architecture.md` — SOLID, multi-project, diagrams | Phase 2 (automated) |
+| Static code analysis | `skills/code.md` — multi-language, error patterns | Phase 2 (automated) |
+| Security vulnerability analysis | `skills/security.md` — OWASP Top 10, multi-language | Phase 2 + Semgrep |
+| Dependency and supply chain analysis | `skills/dependency.md` — NuGet, Maven, npm, pip, Go, Rust | Phase 2 (automated) |
+| CI/CD and infrastructure analysis | `skills/devops.md` — GitHub Actions, Azure DevOps, GitLab CI | Phase 2 (automated) |
+| Governance scoring and reporting | `skills/governance.md` — 19 policies, RPI, compliance | Phase 5 (policy engine UI) |
+| Code knowledge graph generation | **Not started** | Phase 3 |
+| AI reasoning over codebase | Claude Code with parallel subagents | Phase 4 (programmatic LLM) |
+| Automated architecture documentation | Mermaid diagrams in report template | Phase 4 (enhanced) |
+| Multi-project/solution analysis | ANALYZE.md Step 1.5 discovery scan | Phase 2 (automated) |
+| Design principles assessment | `skills/architecture.md` — SOLID, DRY, KISS | Phase 2 (automated scoring) |
 
 ---
 
