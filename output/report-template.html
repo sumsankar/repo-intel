@@ -9,6 +9,7 @@
     :root {
       --bg: #0f1117;
       --surface: #1a1d27;
+      --surface2: #22263a;
       --border: #2d3148;
       --text: #e2e8f0;
       --muted: #8892a4;
@@ -17,12 +18,14 @@
       --yellow: #facc15;
       --orange: #f97316;
       --red: #ef4444;
+      --blue: #74c0fc;
     }
 
     /* ── Light mode ── */
     :root.light {
       --bg: #f5f6fa;
       --surface: #ffffff;
+      --surface2: #f0f2f8;
       --border: #d1d5e0;
       --text: #1a1d27;
       --muted: #6b7280;
@@ -31,6 +34,7 @@
       --yellow: #ca8a04;
       --orange: #ea580c;
       --red: #dc2626;
+      --blue: #2980b9;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -78,6 +82,22 @@
       color: var(--muted);
       font-style: italic;
     }
+
+    /* Color utilities */
+    .red { color: var(--red); } .orange { color: var(--orange); } .yellow { color: var(--yellow); } .green { color: var(--green); } .blue { color: var(--blue); }
+
+    /* Inline code */
+    code { background: var(--surface2); padding: 2px 6px; border-radius: 4px; font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.85em; }
+
+    /* Status bar */
+    .status-bar { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+    .status-pill { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 6px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+
+    /* Table of contents */
+    .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px; margin-bottom: 32px; }
+    .toc ul { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; }
+    .toc li a { font-size: 0.88rem; color: var(--muted); }
+    .toc li a:hover { color: var(--accent); }
 
     /* Scorecard */
     .scorecard {
@@ -140,6 +160,25 @@
     .finding.low     .badge { background: rgba(34,197,94,.15);  color: var(--green); }
     .finding .location { color: var(--muted); font-family: monospace; font-size: 0.8rem; margin-top: 0.25rem; }
 
+    /* Enhanced finding cards */
+    .finding-title { font-weight: 600; margin-bottom: 4px; }
+    .finding-meta { font-size: 0.78rem; color: var(--muted); margin-bottom: 6px; }
+    .finding-fix { font-size: 0.85rem; background: var(--surface2); padding: 8px 12px; border-radius: 6px; margin-top: 8px; }
+    .finding-fix::before { content: "Fix: "; font-weight: 600; }
+
+    /* Severity badges (standalone) */
+    .badge-critical { background: rgba(239,68,68,.13); color: var(--red); border: 1px solid rgba(239,68,68,.33); }
+    .badge-high { background: rgba(249,115,22,.13); color: var(--orange); border: 1px solid rgba(249,115,22,.33); }
+    .badge-medium { background: rgba(250,204,21,.13); color: var(--yellow); border: 1px solid rgba(250,204,21,.33); }
+    .badge-low { background: rgba(116,192,252,.13); color: var(--blue); border: 1px solid rgba(116,192,252,.33); }
+    .badge-pass { background: rgba(34,197,94,.13); color: var(--green); border: 1px solid rgba(34,197,94,.33); }
+
+    /* Compliance box */
+    .compliance-box { border-radius: 8px; padding: 20px 24px; margin-bottom: 20px; }
+    .compliance-box.noncompliant { background: rgba(239,68,68,.07); border: 1px solid rgba(239,68,68,.27); }
+    .compliance-box.compliant { background: rgba(34,197,94,.07); border: 1px solid rgba(34,197,94,.27); }
+    .compliance-box.conditional { background: rgba(250,204,21,.07); border: 1px solid rgba(250,204,21,.27); }
+
     /* Metrics list */
     .metrics { color: var(--muted); font-size: 0.9rem; }
     .metrics li { padding: 0.2rem 0; list-style: none; }
@@ -152,9 +191,8 @@
     .checklist .check.done { background: var(--green); border-color: var(--green); color: #000; }
 
     /* Quick wins */
-    .quick-wins ol { padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem; color: var(--muted); }
-    .quick-wins ol li::marker { color: var(--accent); font-weight: 700; }
-    .quick-wins ol li { padding-left: 0.25rem; }
+    .quick-win { background: var(--surface); border: 1px solid rgba(34,197,94,.27); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: flex; gap: 12px; align-items: flex-start; }
+    .qw-num { background: var(--green); color: #000; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; flex-shrink: 0; margin-top: 2px; }
 
     /* Roadmap */
     .roadmap { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
@@ -178,7 +216,8 @@
     .diagram-viewport { overflow: auto; max-height: 480px; cursor: grab; background: #ffffff; }
     .diagram-viewport:active { cursor: grabbing; }
     .diagram-viewport .mermaid { padding: 1.5rem; display: inline-block; min-width: 100%; }
-    .diagram-viewport .mermaid svg { display: block; max-width: none !important; shape-rendering: geometricPrecision; text-rendering: geometricPrecision; }
+    .diagram-viewport .mermaid svg, .diagram-viewport > svg { display: block; max-width: none !important; shape-rendering: geometricPrecision; text-rendering: geometricPrecision; }
+    .diag-modal-vp svg { max-width: none !important; }
     .diagram-hint { font-size: 0.7rem; color: var(--muted); padding: 0.25rem 1rem 0.4rem; opacity: 0.6; }
 
     /* Fullscreen modal */
@@ -230,6 +269,32 @@
     </div>
   </div>
 
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div class="status-pill"><!-- ✅ COMPLIANT / ⚠️ CONDITIONAL / ❌ NON-COMPLIANT --></div>
+    <div class="status-pill">Overall Score: <strong><!-- x.x / 10 --></strong></div>
+    <div class="status-pill">RPI: <strong><!-- x / 100 --></strong></div>
+    <div class="status-pill">Findings: <!-- e.g. 4 Critical · 20 High · 18 Medium · 8 Low --></div>
+  </div>
+
+  <!-- Table of Contents -->
+  <div class="toc">
+    <h3 style="margin-bottom:12px;font-size:0.95rem;font-weight:600;">Contents</h3>
+    <ul>
+      <li><a href="#overview">1. Repository Overview</a></li>
+      <li><a href="#scorecard">2. Health Scorecard</a></li>
+      <li><a href="#security">3. Security Findings</a></li>
+      <li><a href="#code">4. Code Quality</a></li>
+      <li><a href="#architecture">5. Architecture</a></li>
+      <li><a href="#devops">6. DevOps / CI-CD</a></li>
+      <li><a href="#dependency">7. Dependency Risk</a></li>
+      <li><a href="#governance">8. Governance Assessment</a></li>
+      <li><a href="#quickwins">9. Quick Wins</a></li>
+      <li><a href="#roadmap">10. Remediation Roadmap</a></li>
+      <li><a href="#metrics">11. Claude Run Metrics</a></li>
+    </ul>
+  </div>
+
   <!-- Executive Summary -->
   <section>
     <div class="section-title">Executive Summary</div>
@@ -238,8 +303,30 @@
     </div>
   </section>
 
+  <!-- Repository Overview -->
+  <section id="overview">
+    <div class="section-title">Repository Overview</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Primary Language</td><td></td></tr>
+          <tr><td>Project Type</td><td></td></tr>
+          <tr><td>Total Files</td><td></td></tr>
+          <tr><td>Total Lines of Code</td><td></td></tr>
+          <tr><td>Test Files</td><td></td></tr>
+          <tr><td>Estimated Test Coverage</td><td></td></tr>
+          <tr><td>CI/CD Platform</td><td></td></tr>
+          <tr><td>Docker</td><td></td></tr>
+          <tr><td>IaC Tool</td><td></td></tr>
+          <tr><td>Security Risk Level</td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
   <!-- Health Scorecard -->
-  <section>
+  <section id="scorecard">
     <div class="section-title">Health Scorecard</div>
     <div class="scorecard">
       <div class="score-card">
@@ -274,42 +361,52 @@
       </div>
     </div>
     <div class="score-legend">Scoring guide: 8–10 🟢 Good · 5–7 🟡 Needs work · 3–4 🟠 Poor · 0–2 🔴 Critical</div>
-  </section>
-
-  <!-- Repository Overview -->
-  <section>
-    <div class="section-title">Repository Overview</div>
-    <div class="table-wrap">
+    <div class="table-wrap" style="margin-top:1rem">
       <table>
-        <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+        <thead><tr><th>Dimension</th><th>Score</th><th>Weight</th><th>Contribution</th><th>Key Driver</th></tr></thead>
         <tbody>
-          <tr><td>Primary Language</td><td></td></tr>
-          <tr><td>Project Type</td><td></td></tr>
-          <tr><td>Total Files</td><td></td></tr>
-          <tr><td>Total Lines of Code</td><td></td></tr>
-          <tr><td>Test Files</td><td></td></tr>
-          <tr><td>Estimated Test Coverage</td><td></td></tr>
-          <tr><td>CI/CD Platform</td><td></td></tr>
-          <tr><td>Docker</td><td></td></tr>
-          <tr><td>IaC Tool</td><td></td></tr>
-          <tr><td>Security Risk Level</td><td></td></tr>
+          <!-- e.g. <tr><td>Security</td><td class="red">3.5/10</td><td>30%</td><td>1.05</td><td>description</td></tr> -->
+          <tr><td>Security</td><td><!-- x/10 --></td><td>30%</td><td><!-- score × weight --></td><td></td></tr>
+          <tr><td>Code Quality</td><td><!-- x/10 --></td><td>25%</td><td><!-- score × weight --></td><td></td></tr>
+          <tr><td>Architecture</td><td><!-- x/10 --></td><td>20%</td><td><!-- score × weight --></td><td></td></tr>
+          <tr><td>DevOps</td><td><!-- x/10 --></td><td>15%</td><td><!-- score × weight --></td><td></td></tr>
+          <tr><td>Dependency Risk</td><td><!-- x/10 --></td><td>10%</td><td><!-- score × weight --></td><td></td></tr>
+          <tr><td><strong>Overall</strong></td><td><strong><!-- x/10 --></strong></td><td>100%</td><td><strong><!-- total --></strong></td><td></td></tr>
         </tbody>
       </table>
     </div>
+  </section>
+
+  <!-- Security -->
+  <section id="security">
+    <div class="section-title">🔒 Security</div>
+    <p style="margin-bottom:.75rem;font-size:.9rem">
+      <strong>Risk Level:</strong>
+      <span style="color:var(--red);font-weight:700"><!-- CRITICAL / HIGH / MEDIUM / LOW --></span>
+    </p>
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> <!-- one sentence --></p>
+    <ul class="findings-list">
+      <!-- all security findings -->
+    </ul>
   </section>
 
   <!-- Critical & High Priority Findings -->
   <section>
     <div class="section-title">🚨 Critical &amp; High Priority Findings</div>
     <ul class="findings-list">
-      <!-- Example entries — replace or remove: -->
-      <!-- <li class="finding critical"><span class="badge">Critical</span> SKILL · Finding — <span class="location">File:line</span><div>Fix description</div></li> -->
-      <!-- <li class="finding high"><span class="badge">High</span> SKILL · Finding — <span class="location">File:line</span><div>Fix description</div></li> -->
+      <!-- Example format for findings:
+      <li class="finding critical">
+        <div class="finding-title"><span class="badge">Critical</span> [category] Finding title</div>
+        <div class="finding-meta">File: path/to/file.ext · Lines X–Y</div>
+        <p>Description of the finding.</p>
+        <div class="finding-fix">Specific remediation steps.</div>
+      </li>
+      -->
     </ul>
   </section>
 
   <!-- Code Quality -->
-  <section>
+  <section id="code">
     <div class="section-title">📝 Code Quality</div>
     <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> <!-- one sentence --></p>
     <ul class="metrics" style="margin-bottom:1rem">
@@ -324,7 +421,7 @@
   </section>
 
   <!-- Architecture -->
-  <section>
+  <section id="architecture">
     <div class="section-title">🏗️ Architecture</div>
     <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> <!-- one sentence --></p>
     <ul class="metrics" style="margin-bottom:1rem">
@@ -432,21 +529,8 @@ sequenceDiagram
     </div>
   </div>
 
-  <!-- Security -->
-  <section>
-    <div class="section-title">🔒 Security</div>
-    <p style="margin-bottom:.75rem;font-size:.9rem">
-      <strong>Risk Level:</strong>
-      <span style="color:var(--red);font-weight:700"><!-- CRITICAL / HIGH / MEDIUM / LOW --></span>
-    </p>
-    <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> <!-- one sentence --></p>
-    <ul class="findings-list">
-      <!-- all security findings -->
-    </ul>
-  </section>
-
   <!-- DevOps -->
-  <section>
+  <section id="devops">
     <div class="section-title">⚙️ DevOps</div>
     <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> <!-- one sentence --></p>
     <ul class="checklist" style="margin-bottom:1rem">
@@ -468,7 +552,7 @@ sequenceDiagram
   </section>
 
   <!-- Dependency Risk -->
-  <section>
+  <section id="dependency">
     <div class="section-title">📦 Dependency Risk</div>
     <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> <!-- one sentence --></p>
     <ul class="metrics" style="margin-bottom:1rem">
@@ -485,7 +569,7 @@ sequenceDiagram
   </section>
 
   <!-- Governance Assessment -->
-  <section>
+  <section id="governance">
     <div class="section-title">🏛️ Governance Assessment</div>
     <p style="margin-bottom:.5rem;font-size:.9rem">
       <strong>Compliance Status:</strong>
@@ -493,6 +577,26 @@ sequenceDiagram
     </p>
     <p style="margin-bottom:.5rem;font-size:.9rem"><strong>Overall Score:</strong> <!-- x.x/10 --></p>
     <p style="margin-bottom:1rem;font-size:.9rem"><strong>Risk Posture Index:</strong> <!-- RPI/100 🔴🟠🟡🟢 --></p>
+    <!-- Compliance status box — use class "noncompliant", "compliant", or "conditional" -->
+    <div class="compliance-box">
+      <!-- <h3>Status: ✅ COMPLIANT / ⚠️ CONDITIONALLY COMPLIANT / ❌ NON-COMPLIANT</h3> -->
+      <!-- <p>Description of blocking failures if any</p> -->
+    </div>
+
+    <h4 style="font-size:0.95rem;margin:1rem 0 0.5rem;">RPI Calculation</h4>
+    <div class="table-wrap" style="margin-bottom:1rem">
+      <table>
+        <thead><tr><th>Severity</th><th>Count</th><th>Weight</th><th>Raw Score</th></tr></thead>
+        <tbody>
+          <tr><td>Critical</td><td><!-- n --></td><td>×25</td><td><!-- n×25 --></td></tr>
+          <tr><td>High</td><td><!-- n --></td><td>×10</td><td><!-- n×10 --></td></tr>
+          <tr><td>Medium</td><td><!-- n --></td><td>×3</td><td><!-- n×3 --></td></tr>
+          <tr><td>Low</td><td><!-- n --></td><td>×1</td><td><!-- n×1 --></td></tr>
+          <tr><td colspan="3"><strong>Total Raw Score</strong></td><td><strong><!-- total --></strong></td></tr>
+          <tr><td colspan="3"><strong>RPI = max(0, 100 − total/2)</strong></td><td><strong><!-- RPI/100 --></strong></td></tr>
+        </tbody>
+      </table>
+    </div>
     <div class="table-wrap" style="margin-bottom:1rem">
       <table>
         <thead><tr><th>Policy</th><th>Status</th><th>Impact</th></tr></thead>
@@ -507,16 +611,19 @@ sequenceDiagram
   </section>
 
   <!-- Quick Wins -->
-  <section class="quick-wins">
+  <section id="quickwins">
     <div class="section-title">🎯 Quick Wins</div>
     <p style="color:var(--muted);font-size:.875rem;margin-bottom:.75rem">Things that can be fixed in under an hour with high impact:</p>
-    <ol>
-      <!-- List ALL quick wins identified. Each should be specific, actionable, with file reference -->
-    </ol>
+    <!-- Example:
+    <div class="quick-win">
+      <div class="qw-num">1</div>
+      <div><strong>Short title.</strong> Description with specific file reference.</div>
+    </div>
+    -->
   </section>
 
   <!-- Roadmap -->
-  <section>
+  <section id="roadmap">
     <div class="section-title">🗺️ Recommended Roadmap</div>
     <div class="roadmap">
       <div class="roadmap-phase">
@@ -541,7 +648,7 @@ sequenceDiagram
   </section>
 
   <!-- Findings Summary -->
-  <section>
+  <section id="summary">
     <div class="section-title">Findings Summary</div>
     <div class="table-wrap">
       <table>
@@ -558,7 +665,7 @@ sequenceDiagram
   </section>
 
   <!-- Claude Run Metrics -->
-  <section>
+  <section id="metrics">
     <div class="section-title">&#x1F916; Claude Run Metrics</div>
     <p class="metrics-disclaimer">Token counts are <strong>estimates</strong> derived from file sizes and conversation content &mdash; not values read from an API response.</p>
     <div class="metrics-grid">
@@ -645,7 +752,8 @@ sequenceDiagram
   const _modal = { scale:1, nw:0, nh:0 };
 
   function _getSvg(id) {
-    return document.getElementById(id + '-vp')?.querySelector('svg') || null;
+    const vp = document.getElementById(id + '-vp');
+    return vp?.querySelector('svg') || null;
   }
 
   function _readDims(svg) {
@@ -658,13 +766,20 @@ sequenceDiagram
 
   function _initDiag(id) {
     const vp  = document.getElementById(id + '-vp');
-    const svg = _getSvg(id);
+    // Mermaid v11 may render the SVG as a sibling of the <pre> or replace it entirely
+    const svg = vp?.querySelector('svg');
     if (!svg) return false;
 
-    // ← THE FIX: strip mermaid's max-width so width attribute controls size
+    // Strip all Mermaid inline styles that interfere with zoom scaling
     svg.style.maxWidth = 'none';
     svg.style.width    = '';
     svg.style.height   = '';
+    // Also strip max-width from any Mermaid wrapper <div> if present
+    const wrapper = svg.parentElement;
+    if (wrapper && wrapper !== vp) {
+      wrapper.style.maxWidth = 'none';
+      wrapper.style.width    = '100%';
+    }
 
     const { nw, nh } = _readDims(svg);
     if (!svg.getAttribute('viewBox')) svg.setAttribute('viewBox', `0 0 ${nw} ${nh}`);
@@ -695,6 +810,8 @@ sequenceDiagram
     const svg = _getSvg(id);
     const st  = _diag[id];
     if (!svg || !st) return;
+    // Re-enforce: Mermaid may re-apply max-width on resize/mutation
+    svg.style.maxWidth = 'none';
     svg.setAttribute('width',  st.nw * st.scale);
     svg.setAttribute('height', st.nh * st.scale);
     const lbl = document.getElementById(id + '-scale');
@@ -725,14 +842,21 @@ sequenceDiagram
     const modalVp = document.getElementById('diag-modal-vp');
     document.getElementById('diag-modal-title').textContent = title || id;
 
-    // Clone SVG (don't move the original — inline diagram stays intact)
-    modalVp.innerHTML = '';
-    const clone = srcSvg.cloneNode(true);
-    clone.id = 'modal-svg';
+    // Serialize SVG and remap internal ID references to avoid style breakage.
+    // Mermaid embeds <style> blocks with selectors like "#mermaid-1234 .node rect".
+    // A simple cloneNode + id change breaks those selectors → invisible diagram.
+    const origId = srcSvg.id || '';
+    const newId  = 'modal-svg-' + Date.now();
+    let svgHtml  = srcSvg.outerHTML;
+    if (origId) {
+      svgHtml = svgHtml.split(origId).join(newId);
+    }
+    modalVp.innerHTML = svgHtml;
+    const clone = modalVp.querySelector('svg');
+    if (!clone) return;
     clone.style.maxWidth    = 'none';
     clone.style.display     = 'block';
     clone.style.background  = '#ffffff';
-    modalVp.appendChild(clone);
 
     const { nw, nh } = _readDims(srcSvg);
     _modal.nw = nw; _modal.nh = nh;
@@ -770,7 +894,7 @@ sequenceDiagram
   }
 
   function _applyModalScale() {
-    const svg = document.getElementById('modal-svg');
+    const svg = document.getElementById('diag-modal-vp').querySelector('svg');
     if (!svg) return;
     svg.setAttribute('width',  _modal.nw * _modal.scale);
     svg.setAttribute('height', _modal.nh * _modal.scale);
@@ -799,7 +923,7 @@ sequenceDiagram
 
   function _escClose(e) { if (e.key === 'Escape') closeDiagramModal(); }
 
-  /* ── Init: MutationObserver (replaces unreliable polling) ─────── */
+  /* ── Init: MutationObserver + Mermaid callback ──────────────── */
   document.addEventListener('DOMContentLoaded', () => {
     const ids     = ['diag-logical', 'diag-flow'];
     const pending = new Set(ids);
@@ -814,6 +938,9 @@ sequenceDiagram
 
     // First attempt after a short delay (Mermaid may already be done)
     setTimeout(tryAll, 400);
+    // Retry at 1s and 2s in case Mermaid renders slowly
+    setTimeout(tryAll, 1000);
+    setTimeout(tryAll, 2000);
     // Hard stop after 20 s to avoid memory leak if something goes wrong
     setTimeout(() => obs.disconnect(), 20000);
   });

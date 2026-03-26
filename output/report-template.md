@@ -6,26 +6,16 @@
 
 ---
 
-## Executive Summary
-
-<!-- 3–4 sentences. Answer: What is this project? How healthy is it? What is the single most important thing to fix? -->
+**Status:** <!-- ✅ COMPLIANT / ⚠️ CONDITIONALLY COMPLIANT / ❌ NON-COMPLIANT -->
+| Overall Score | RPI | Critical | High | Medium | Low | Total Findings |
+| ------------- | --- | -------- | ---- | ------ | --- | -------------- |
+| <!-- x.x/10 --> | <!-- x/100 --> | <!-- n --> | <!-- n --> | <!-- n --> | <!-- n --> | <!-- n --> |
 
 ---
 
-## Health Scorecard
+## Executive Summary
 
-| Dimension       | Score         | Status            |
-| --------------- | ------------- | ----------------- |
-| Security        | <!-- x/10 --> | <!-- 🔴🟠🟡🟢 --> |
-| Code Quality    | <!-- x/10 --> | <!-- 🔴🟠🟡🟢 --> |
-| Architecture    | <!-- x/10 --> | <!-- 🔴🟠🟡🟢 --> |
-| DevOps          | <!-- x/10 --> | <!-- 🔴🟠🟡🟢 --> |
-| Dependency Risk | <!-- x/10 --> | <!-- 🔴🟠🟡🟢 --> |
-| **Overall**     | <!-- x/10 --> | <!-- 🔴🟠🟡🟢 --> |
-
-**Scoring guide:** 8–10 🟢 Good · 5–7 🟡 Needs work · 3–4 🟠 Poor · 0–2 🔴 Critical
-
-**Overall score** = (security × 0.30) + (code × 0.25) + (architecture × 0.20) + (devops × 0.15) + (dependency × 0.10)
+<!-- 3–4 sentences. Answer: What is this project? How healthy is it? What is the single most important thing to fix? -->
 
 ---
 
@@ -48,10 +38,50 @@
 
 ---
 
-## 🚨 Critical & High Priority Findings
+## Health Scorecard
 
-<!-- List ALL critical and high findings here, regardless of skill category -->
-<!-- Format: SEVERITY · SKILL · Finding — File:line — Fix -->
+| Dimension       | Score         | Status            |
+| --------------- | ------------- | ----------------- |
+| Security        | <!-- x/10 --> | <!-- 🔴🟠🟡🟢 --> |
+| Code Quality    | <!-- x/10 --> | <!-- 🔴🟠🟡🟢 --> |
+| Architecture    | <!-- x/10 --> | <!-- 🔴🟠🟡🟢 --> |
+| DevOps          | <!-- x/10 --> | <!-- 🔴🟠🟡🟢 --> |
+| Dependency Risk | <!-- x/10 --> | <!-- 🔴🟠🟡🟢 --> |
+| **Overall**     | <!-- x/10 --> | <!-- 🔴🟠🟡🟢 --> |
+
+**Scoring guide:** 8–10 🟢 Good · 5–7 🟡 Needs work · 3–4 🟠 Poor · 0–2 🔴 Critical
+
+**Overall score** = (security × 0.30) + (code × 0.25) + (architecture × 0.20) + (devops × 0.15) + (dependency × 0.10)
+
+### Score Breakdown
+
+| Dimension       | Score         | Weight | Contribution       | Key Driver |
+| --------------- | ------------- | ------ | ------------------ | ---------- |
+| Security        | <!-- x/10 --> | 30%    | <!-- score×0.30 --> |            |
+| Code Quality    | <!-- x/10 --> | 25%    | <!-- score×0.25 --> |            |
+| Architecture    | <!-- x/10 --> | 20%    | <!-- score×0.20 --> |            |
+| DevOps          | <!-- x/10 --> | 15%    | <!-- score×0.15 --> |            |
+| Dependency Risk | <!-- x/10 --> | 10%    | <!-- score×0.10 --> |            |
+| **Overall**     | <!-- x/10 --> | 100%   | <!-- total -->      |            |
+
+---
+
+## 🔒 Security Findings
+
+**Risk Level:** <!-- CRITICAL / HIGH / MEDIUM / LOW -->
+
+**Summary:** <!-- one sentence -->
+
+**Findings:**
+
+<!-- Format for each finding:
+### SEVERITY · [category] Finding title
+**File:** path/to/file.ext · Lines X–Y
+
+Description of the finding.
+
+**Fix:** Specific remediation steps.
+-->
 
 ---
 
@@ -130,18 +160,6 @@ sequenceDiagram
 
 ---
 
-## 🔒 Security
-
-**Risk Level:** <!-- CRITICAL / HIGH / MEDIUM / LOW -->
-
-**Summary:** <!-- one sentence -->
-
-**Findings:**
-
-<!-- all security findings including those already listed above -->
-
----
-
 ## ⚙️ DevOps
 
 **Summary:** <!-- one sentence -->
@@ -191,6 +209,18 @@ sequenceDiagram
 **Overall Score:** <!-- x.x/10 -->
 **Risk Posture Index:** <!-- RPI/100 🔴🟠🟡🟢 -->
 
+### RPI Calculation
+
+| Severity  | Count        | Weight | Raw Score          |
+| --------- | ------------ | ------ | ------------------ |
+| Critical  | <!-- n -->   | ×25    | <!-- n×25 -->      |
+| High      | <!-- n -->   | ×10    | <!-- n×10 -->      |
+| Medium    | <!-- n -->   | ×3     | <!-- n×3 -->       |
+| Low       | <!-- n -->   | ×1     | <!-- n×1 -->       |
+| **Total** |              |        | **<!-- total -->**  |
+
+**RPI = max(0, 100 − total/2)** → <!-- RPI/100 -->
+
 **Policy Results:**
 
 | Policy                | Status           | Severity |
@@ -202,6 +232,18 @@ sequenceDiagram
 | CI/CD pipeline exists | <!-- ✅ / ❌ --> | High     |
 | Lock file present     | <!-- ✅ / ❌ --> | Medium   |
 | No files > 3000 lines | <!-- ✅ / ❌ --> | Medium   |
+| No SQL/command injection  | <!-- ✅ / ❌ --> | Critical |
+| CORS not wildcard in prod | <!-- ✅ / ❌ --> | High     |
+| No deprecated runtime deps| <!-- ✅ / ❌ --> | High     |
+| No GPL/AGPL licensed deps | <!-- ✅ / ❌ --> | Medium   |
+| Tests run in CI           | <!-- ✅ / ❌ --> | High     |
+| Docker images pinned      | <!-- ✅ / ❌ --> | Medium   |
+| README substantive        | <!-- ✅ / ❌ --> | Low      |
+| No circular dependencies  | <!-- ✅ / ❌ --> | Medium   |
+| Consistent framework vers | <!-- ✅ / ❌ --> | Medium   |
+| Clear layered structure   | <!-- ✅ / ❌ --> | Medium   |
+| No empty catch blocks     | <!-- ✅ / ❌ --> | Medium   |
+| No TODO in critical paths | <!-- ✅ / ❌ --> | Low      |
 
 <!-- Describe blocking violations and advisory violations -->
 
@@ -211,7 +253,10 @@ sequenceDiagram
 
 Things that can be fixed in under an hour with high impact:
 
-<!-- List ALL quick wins identified. Each should be specific, actionable, with file reference -->
+<!-- Format:
+1. **Short title.** Description with specific file reference.
+2. **Short title.** Description.
+-->
 
 ---
 
