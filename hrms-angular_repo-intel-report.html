@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HRMS Angular — repo-intel Report</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f1117; --surface: #1a1d27; --surface2: #22263a;
+      --border: #2e3250; --text: #e2e8f0; --muted: #8892b0;
+      --accent: #7c83ff; --red: #ff6b6b; --orange: #ffa94d;
+      --yellow: #ffe066; --green: #69db7c; --blue: #74c0fc;
+    }
+    [data-theme="light"] {
+      --bg: #f8f9fc; --surface: #ffffff; --surface2: #f0f2f8;
+      --border: #dde1f0; --text: #1a1d2e; --muted: #5c6380;
+      --accent: #4f56e8; --red: #d63031; --orange: #e67e22;
+      --yellow: #c0940a; --green: #27ae60; --blue: #2980b9;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 15px; line-height: 1.6; }
+    a { color: var(--accent); text-decoration: none; }
+    header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; }
+    header h1 { font-size: 1.3rem; font-weight: 700; }
+    header .meta { font-size: 0.82rem; color: var(--muted); margin-top: 4px; }
+    .theme-toggle { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
+    main { max-width: 1200px; margin: 0 auto; padding: 28px 24px 60px; }
+    section { margin-bottom: 40px; }
+    h2 { font-size: 1.15rem; font-weight: 700; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    h3 { font-size: 1rem; font-weight: 600; margin: 18px 0 10px; }
+    p { margin-bottom: 10px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; }
+    .scorecard { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 28px; }
+    .score-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+    .score-item .label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .score-item .value { font-size: 2rem; font-weight: 800; }
+    .score-item .sub { font-size: 0.78rem; color: var(--muted); margin-top: 4px; }
+    .red { color: var(--red); } .orange { color: var(--orange); } .yellow { color: var(--yellow); } .green { color: var(--green); } .blue { color: var(--blue); }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+    .badge-critical { background: #ff6b6b22; color: var(--red); border: 1px solid #ff6b6b55; }
+    .badge-high { background: #ffa94d22; color: var(--orange); border: 1px solid #ffa94d55; }
+    .badge-medium { background: #ffe06622; color: var(--yellow); border: 1px solid #ffe06655; }
+    .badge-low { background: #74c0fc22; color: var(--blue); border: 1px solid #74c0fc55; }
+    .badge-pass { background: #69db7c22; color: var(--green); border: 1px solid #69db7c55; }
+    .finding { background: var(--surface); border-left: 4px solid var(--border); border-radius: 0 8px 8px 0; padding: 14px 16px; margin-bottom: 10px; }
+    .finding.critical { border-left-color: var(--red); }
+    .finding.high { border-left-color: var(--orange); }
+    .finding.medium { border-left-color: var(--yellow); }
+    .finding.low { border-left-color: var(--blue); }
+    .finding-title { font-weight: 600; margin-bottom: 4px; }
+    .finding-meta { font-size: 0.78rem; color: var(--muted); margin-bottom: 6px; }
+    .finding-fix { font-size: 0.85rem; background: var(--surface2); padding: 8px 12px; border-radius: 6px; margin-top: 8px; }
+    .finding-fix::before { content: "Fix: "; font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.87rem; margin-bottom: 16px; }
+    th { background: var(--surface2); padding: 9px 12px; text-align: left; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+    td { padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    code { background: var(--surface2); padding: 2px 6px; border-radius: 4px; font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.85em; }
+    .diagram-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 16px; overflow-x: auto; }
+    .status-bar { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+    .status-pill { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 6px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+    .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 32px; }
+    .toc ul { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; }
+    .toc li a { font-size: 0.88rem; color: var(--muted); }
+    .toc li a:hover { color: var(--accent); }
+    .metric-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .metric-item { background: var(--surface2); border-radius: 8px; padding: 14px; }
+    .metric-item .m-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .metric-item .m-value { font-size: 1.1rem; font-weight: 700; }
+    .quick-win { background: var(--surface); border: 1px solid #69db7c44; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: flex; gap: 12px; align-items: flex-start; }
+    .qw-num { background: var(--green); color: #000; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; flex-shrink: 0; margin-top: 2px; }
+    .roadmap-phase { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 14px; }
+    .roadmap-phase h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 12px; }
+    .roadmap-phase ul { padding-left: 18px; }
+    .roadmap-phase li { margin-bottom: 6px; font-size: 0.88rem; }
+    .compliance-box { border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; }
+    .compliance-box.noncompliant { background: #ff6b6b11; border: 1px solid #ff6b6b44; }
+    footer { text-align: center; padding: 24px; color: var(--muted); font-size: 0.8rem; border-top: 1px solid var(--border); margin-top: 40px; }
+    .bloat-table { font-size: 0.8rem; }
+    .bloat-table td:first-child { width: 70px; font-weight: 700; }
+  </style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>🔍 HRMS Angular — Repository Intelligence Report</h1>
+    <div class="meta">
+      Repository: <code>gitlab.pal.tech/internal-apps/hrms/hrms-angular</code> &nbsp;·&nbsp;
+      Branch: <code>main</code> &nbsp;·&nbsp;
+      Analysis Date: 2026-03-24 &nbsp;·&nbsp;
+      Stack: Angular 17 / TypeScript / nginx
+    </div>
+  </div>
+  <button class="theme-toggle" onclick="toggleTheme()">☀ Light</button>
+</header>
+
+<main>
+
+  <!-- STATUS BAR -->
+  <div class="status-bar" style="margin-top:24px;">
+    <div class="status-pill"><span class="red">❌</span> <strong>NON-COMPLIANT</strong></div>
+    <div class="status-pill"><span class="orange">🟠</span> Overall Score: <strong>4.2 / 10</strong></div>
+    <div class="status-pill"><span class="red">🔴</span> RPI: <strong>0 / 100 — Critical Risk</strong></div>
+    <div class="status-pill">Findings: <span class="red">4 Critical</span> · <span class="orange">20 High</span> · <span class="yellow">18 Medium</span> · <span class="blue">8 Low</span></div>
+  </div>
+
+  <!-- TABLE OF CONTENTS -->
+  <div class="toc">
+    <h3 style="margin-bottom:12px;">Contents</h3>
+    <ul>
+      <li><a href="#overview">1. Repository Overview</a></li>
+      <li><a href="#scorecard">2. Health Scorecard</a></li>
+      <li><a href="#security">3. Security Findings</a></li>
+      <li><a href="#code">4. Code Quality</a></li>
+      <li><a href="#architecture">5. Architecture</a></li>
+      <li><a href="#devops">6. DevOps / CI-CD</a></li>
+      <li><a href="#dependency">7. Dependency Risk</a></li>
+      <li><a href="#governance">8. Governance Assessment</a></li>
+      <li><a href="#quickwins">9. Quick Wins</a></li>
+      <li><a href="#roadmap">10. Remediation Roadmap</a></li>
+      <li><a href="#metrics">11. Claude Run Metrics</a></li>
+    </ul>
+  </div>
+
+  <!-- OVERVIEW -->
+  <section id="overview">
+    <h2>1. Repository Overview</h2>
+    <div class="card">
+      <table>
+        <tr><td style="width:200px;color:var(--muted)">Repository</td><td><code>gitlab.pal.tech/internal-apps/hrms/hrms-angular</code></td></tr>
+        <tr><td style="color:var(--muted)">Application Type</td><td>Single-Page Application (SPA) — Angular 17</td></tr>
+        <tr><td style="color:var(--muted)">Language / Framework</td><td>TypeScript 5.4, Angular 17.3.5, Angular Material, PrimeNG</td></tr>
+        <tr><td style="color:var(--muted)">UI Libraries</td><td>Angular Material, PrimeNG, @pt/uikit (internal), Highcharts, ngx-datatable, Leaflet</td></tr>
+        <tr><td style="color:var(--muted)">State Management</td><td>RxJS BehaviorSubjects (no NgRx/Akita)</td></tr>
+        <tr><td style="color:var(--muted)">Auth Pattern</td><td>SSO redirect → tokens in URL query params → localStorage</td></tr>
+        <tr><td style="color:var(--muted)">Build / Serving</td><td>Angular CLI → nginx:alpine container</td></tr>
+        <tr><td style="color:var(--muted)">CI/CD</td><td>GitLab CI + Jenkins (dual pipelines)</td></tr>
+        <tr><td style="color:var(--muted)">Source Files</td><td>~1,690 total (701 TypeScript source, 107 spec, 218 HTML, 386 SCSS)</td></tr>
+        <tr><td style="color:var(--muted)">Module Directories</td><td>~135 component folders across hrms/, shared/, services/</td></tr>
+        <tr><td style="color:var(--muted)">Key Feature Areas</td><td>Employee profile, Leave, Attendance, Timesheets (v1/v2/v3), Settings, Organization, Reports</td></tr>
+        <tr><td style="color:var(--muted)">Feature Flags</td><td>Unleash proxy client (frontend)</td></tr>
+      </table>
+    </div>
+
+    <h3>Application Architecture</h3>
+    <div class="diagram-wrap">
+      <div class="mermaid">
+graph TD
+  subgraph BROWSER["Browser"]
+    APP[AppModule<br/>Bootstrap]
+    ROUTER[AppRoutingModule<br/>Lazy-loaded routes]
+  end
+
+  subgraph MODULES["Feature Modules (Lazy-loaded)"]
+    AUTH[auth<br/>LoginComponent]
+    CB[call-back<br/>SSO token receive]
+    HRMS[hrms<br/>Main feature shell]
+  end
+
+  subgraph HRMS_FEAT["hrms sub-modules"]
+    ME[me/<br/>Leave · Attendance · Timesheet v2/v3]
+    MT[my-team/<br/>Leave · Attendance · Timesheet v1/v2/v3]
+    ORG[organization/<br/>Employees · Consent docs]
+    SET[settings/<br/>Policies · Departments · Jobs]
+    HOME[home/<br/>Events · Dashboard]
+    EP[employee-profile/<br/>Profile tabs]
+  end
+
+  subgraph SERVICES["Services Layer"]
+    DS[DataStoreService<br/>localStorage tokens]
+    INT[InterceptorService<br/>Bearer token injection]
+    CFG[ConfigService<br/>app-config.json]
+    FLAG[FlagService<br/>Unleash feature flags]
+    EMP[EmployeeService]
+    TS[TimesheetService]
+    LV[LeaveService]
+  end
+
+  subgraph INFRA["Infrastructure"]
+    NGINX[nginx:alpine<br/>Static file server]
+    API[HRMS API<br/>ASP.NET Core]
+    SSO[SSO Server<br/>pal.tech]
+    UNLEASH[Unleash Server<br/>Feature flags]
+  end
+
+  APP --> ROUTER
+  ROUTER -->|loadChildren| AUTH
+  ROUTER -->|loadChildren| CB
+  ROUTER -->|loadChildren| HRMS
+  HRMS --> ME & MT & ORG & SET & HOME & EP
+  ME & MT & ORG & SET --> SERVICES
+  SERVICES --> DS
+  INT --> DS
+  CFG -->|loads| FLAG
+  FLAG -->|isEnabled| ROUTER
+  SERVICES -->|HTTP| API
+  DS -->|token refresh| SSO
+  FLAG -->|SSE| UNLEASH
+  NGINX -->|serves SPA| BROWSER
+      </div>
+    </div>
+
+    <h3>SSO Authentication Flow</h3>
+    <div class="diagram-wrap">
+      <div class="mermaid">
+sequenceDiagram
+  participant U as User
+  participant SPA as Angular SPA
+  participant SSO as SSO Server
+  participant API as HRMS API
+  participant LS as localStorage
+
+  U->>SPA: Navigate to /dashboard
+  SPA->>LS: getItem('AccessToken')
+  LS-->>SPA: null (not logged in)
+  SPA->>SSO: window.location.href → /Auth/SSOLogin
+  SSO->>SSO: OIDC login flow
+  SSO-->>SPA: Redirect to /callback?AccessToken=...&RefreshToken=...&IdToken=...
+  Note over SPA,SSO: ⚠️ Tokens exposed in URL — visible in browser history & server logs
+  SPA->>LS: setItem('AccessToken', queryParams['AccessToken'])
+  SPA->>LS: setItem('RefreshToken', queryParams['RefreshToken'])
+  SPA->>LS: setItem('IdToken', queryParams['IdToken'])
+  Note over SPA,LS: ⚠️ Tokens in localStorage — accessible to any JS (XSS risk)
+  SPA->>API: GET /GetMyDetails (Authorization: Bearer token)
+  API-->>SPA: Employee data
+  SPA->>U: Redirect to /dashboard
+  Note over SPA,API: Token refresh: interceptor catches 401, calls /Account/RefreshToken
+      </div>
+    </div>
+  </section>
+
+  <!-- SCORECARD -->
+  <section id="scorecard">
+    <h2>2. Health Scorecard</h2>
+    <div class="scorecard">
+      <div class="score-item">
+        <div class="label">Security</div>
+        <div class="value red">3.5</div>
+        <div class="sub">/ 10 · 🔴 Critical</div>
+      </div>
+      <div class="score-item">
+        <div class="label">Code Quality</div>
+        <div class="value red">3.5</div>
+        <div class="sub">/ 10 · 🔴 Critical</div>
+      </div>
+      <div class="score-item">
+        <div class="label">Architecture</div>
+        <div class="value yellow">5.5</div>
+        <div class="sub">/ 10 · 🟡 Medium</div>
+      </div>
+      <div class="score-item">
+        <div class="label">DevOps</div>
+        <div class="value orange">4.5</div>
+        <div class="sub">/ 10 · 🟠 High Risk</div>
+      </div>
+      <div class="score-item">
+        <div class="label">Dependency Risk</div>
+        <div class="value orange">4.0</div>
+        <div class="sub">/ 10 · 🟠 High Risk</div>
+      </div>
+      <div class="score-item" style="border-color: var(--orange);">
+        <div class="label">Overall</div>
+        <div class="value orange">4.2</div>
+        <div class="sub">/ 10 · Weighted</div>
+      </div>
+    </div>
+    <div class="card">
+      <table>
+        <thead><tr><th>Dimension</th><th>Score</th><th>Weight</th><th>Contribution</th><th>Driver</th></tr></thead>
+        <tbody>
+          <tr><td>Security</td><td class="red">3.5/10</td><td>30%</td><td>1.05</td><td>Tokens in URL/localStorage, missing nginx headers, source maps in prod</td></tr>
+          <tr><td>Code Quality</td><td class="red">3.5/10</td><td>25%</td><td>0.88</td><td>God components, triple-versioned timesheet, 452 <code>any</code> uses, zero real tests</td></tr>
+          <tr><td>Architecture</td><td class="yellow">5.5/10</td><td>20%</td><td>1.10</td><td>Good lazy loading &amp; service layer; undermined by duplication and feature flag debt</td></tr>
+          <tr><td>DevOps</td><td class="orange">4.5/10</td><td>15%</td><td>0.68</td><td>No test/lint/security stages in CI; hardcoded webhooks; no coverage thresholds</td></tr>
+          <tr><td>Dependency Risk</td><td class="orange">4.0/10</td><td>10%</td><td>0.40</td><td>Deprecated moment.js, pdfjs-dist 2.x, xlsx license risk, @types/node v12</td></tr>
+          <tr><td><strong>Overall</strong></td><td class="orange"><strong>4.2/10</strong></td><td>100%</td><td><strong>4.11</strong></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECURITY -->
+  <section id="security">
+    <h2>3. Security Findings</h2>
+
+    <div class="finding critical">
+      <div class="finding-title">🔴 <span class="badge badge-critical">CRITICAL</span> &nbsp;[auth] JWT tokens delivered via URL query parameters</div>
+      <div class="finding-meta">File: src/app/modules/call-back/call-back.component.ts · Lines 26–29</div>
+      <p>The SSO callback URL delivers <code>AccessToken</code>, <code>RefreshToken</code>, and <code>IdToken</code> as plain URL query parameters (<code>/callback?AccessToken=eyJ...&amp;RefreshToken=...</code>). These tokens are permanently logged in:</p>
+      <ul style="padding-left:18px;margin:8px 0;font-size:0.87rem;">
+        <li>Browser history (visible to anyone with device access)</li>
+        <li>Web server / proxy / CDN access logs</li>
+        <li>The <code>Referer</code> header of any subsequent navigation to a third-party resource</li>
+        <li>GitLab CI runner logs if callback is triggered during automation</li>
+      </ul>
+      <p>This violates OAuth 2.0 best practices (RFC 9700 / OAuth 2.1) which mandate tokens be delivered via fragment identifiers (<code>#</code>) or POST bodies, never query strings.</p>
+      <div class="finding-fix">Use the Authorization Code flow with PKCE. Receive the authorization <em>code</em> (not tokens) in the callback URL, then exchange it for tokens via a backend POST to the token endpoint. Tokens never appear in the URL. If that is not possible, use the hash fragment (<code>#access_token=...</code>) which is not sent to servers or logged.</div>
+    </div>
+
+    <div class="finding critical">
+      <div class="finding-title">🔴 <span class="badge badge-critical">CRITICAL</span> &nbsp;[auth] JWT tokens stored in <code>localStorage</code> — accessible to any JavaScript</div>
+      <div class="finding-meta">File: src/app/services/data-store.service.ts · Lines 33–39 · Also: interceptor.service.ts, auth.guard.ts</div>
+      <p><code>AccessToken</code>, <code>RefreshToken</code>, and <code>IdToken</code> are stored in <code>localStorage</code> via the <code>DataStoreService.setItem()</code> wrapper. <code>localStorage</code> is accessible to <em>any JavaScript running on the page</em>, including injected scripts from third-party libraries, browser extensions, or XSS payloads. A single XSS vulnerability in any of the 30+ third-party dependencies can result in full session takeover.</p>
+      <div class="finding-fix">Store tokens in <code>httpOnly</code> cookies (set by the server, not readable by JavaScript). The backend API should set <code>Set-Cookie: AccessToken=...; HttpOnly; Secure; SameSite=Strict</code> on login. The Angular interceptor then automatically sends cookies with each request via <code>withCredentials: true</code> (already partially wired in <code>auth.service.ts</code>). This eliminates the entire localStorage token attack surface.</div>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-title">🟠 <span class="badge badge-high">HIGH</span> &nbsp;[config] <code>production: false</code> committed in <code>app-config.json</code></div>
+      <div class="finding-meta">File: src/assets/config/app-config.json · Line 2</div>
+      <p>The committed <code>app-config.json</code> file has <code>"production": false</code>. This is the default config that ships in the built image and is overridden at deploy time via <code>docker cp</code>. However, if the CI inject step fails silently, the container runs in non-production mode against whatever backend URL is in the file — currently a <code>localhost</code> backend that would fail all API calls, or a dev environment. The risk is that the failure mode is invisible to users (white-screen rather than a meaningful error).</p>
+      <div class="finding-fix">Set <code>"production": true</code> as the default in the committed template. The inject step should be treated as critical — add a health check after the config inject that verifies the container returns HTTP 200 before the deploy stage marks success.</div>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-title">🟠 <span class="badge badge-high">HIGH</span> &nbsp;[headers] All HTTP security headers missing from nginx.conf</div>
+      <div class="finding-meta">File: nginx.conf</div>
+      <p>The nginx server block contains zero security headers. Five critical headers are absent:</p>
+      <ul style="padding-left:18px;margin:8px 0;font-size:0.87rem;">
+        <li><code>X-Content-Type-Options: nosniff</code> — MIME-type sniffing attacks</li>
+        <li><code>X-Frame-Options: DENY</code> — clickjacking (embed in iframe)</li>
+        <li><code>Content-Security-Policy</code> — XSS, data injection, mixed content</li>
+        <li><code>Strict-Transport-Security</code> — HTTPS downgrade attacks</li>
+        <li><code>Referrer-Policy: no-referrer-when-downgrade</code> — token leakage via Referer header</li>
+      </ul>
+      <div class="finding-fix">Add to the <code>server {}</code> block: <br/><code>add_header X-Content-Type-Options "nosniff" always;</code><br/><code>add_header X-Frame-Options "DENY" always;</code><br/><code>add_header Content-Security-Policy "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline';" always;</code><br/><code>add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;</code><br/><code>add_header Referrer-Policy "no-referrer-when-downgrade" always;</code></div>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-title">🟠 <span class="badge badge-high">HIGH</span> &nbsp;[cors] Wildcard CORS on <code>/assets</code> exposes <code>app-config.json</code> to any origin</div>
+      <div class="finding-meta">File: nginx.conf · Lines 18–20</div>
+      <p>The <code>/assets</code> location sets <code>add_header Access-Control-Allow-Origin *;</code>. This makes <em>all</em> assets — including <code>app-config.json</code> which contains the Unleash client key, internal API base URLs, and SSO URL — accessible to arbitrary cross-origin requests from any website.</p>
+      <div class="finding-fix">Replace the wildcard with the application's own origin: <code>add_header Access-Control-Allow-Origin "https://hrms.pal.tech" always;</code> or remove the header entirely if cross-origin asset loading is not intentionally required.</div>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-title">🟠 <span class="badge badge-high">HIGH</span> &nbsp;[build] Source maps enabled and optimization disabled in production Angular build</div>
+      <div class="finding-meta">File: angular.json · Lines 128–131 (<code>production</code> configuration)</div>
+      <p><code>"optimization": false</code> and <code>"sourceMap": true</code> are set in the <strong>production</strong> build configuration. This means:</p>
+      <ul style="padding-left:18px;margin:8px 0;font-size:0.87rem;">
+        <li>Full TypeScript source code is served to every end-user browser via <code>.map</code> files</li>
+        <li>No tree-shaking, no minification — bundle size is 3–10× larger than necessary</li>
+        <li>Internal service names, API endpoint paths, business logic, and model structures are exposed</li>
+      </ul>
+      <div class="finding-fix">Set <code>"optimization": true</code> and <code>"sourceMap": false</code> in the <code>production</code> configuration. If error tracking (Sentry, etc.) needs source maps, use <code>"sourceMap": {"scripts": false, "styles": false, "hidden": true}</code> to generate server-side-only source maps that are never served publicly.</div>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-title">🟠 <span class="badge badge-high">HIGH</span> &nbsp;[xss] <code>bypassSecurityTrustResourceUrl</code> used without URL validation</div>
+      <div class="finding-meta">Files: consent-documents.component.ts:250, 326 · document-status.component.ts:574</div>
+      <p>Three calls to <code>DomSanitizer.bypassSecurityTrustResourceUrl()</code> bypass Angular's built-in sanitization for resource URLs. If <code>this.fileUrl</code> or <code>fileUrl</code> is derived from user input, an API response, or a URL parameter without strict validation, an attacker could inject a <code>javascript:</code> or <code>data:</code> URI to execute arbitrary code in the iframe context.</p>
+      <div class="finding-fix">Before calling <code>bypassSecurityTrustResourceUrl()</code>, validate that the URL matches a strict allowlist pattern (e.g., must start with <code>https://storage.pal.tech/</code>). Reject any URL not matching the pattern. Add a unit test that asserts rejection of <code>javascript:</code> and <code>data:</code> schemes.</div>
+    </div>
+
+    <div class="finding medium">
+      <div class="finding-title">🟡 <span class="badge badge-medium">MEDIUM</span> &nbsp;[secrets] Unleash client key committed to <code>app-config.json</code></div>
+      <div class="finding-meta">File: src/assets/config/app-config.json</div>
+      <p>The Unleash frontend client key (<code>hrms:development.87ac9fdac02ec9a3469ee508c76513d43a1fddd15048a354eb397424</code>) is committed to the repository. While frontend Unleash keys are considered lower-risk (read-only, public-facing), they should not be tracked in source control because: (1) the committed value is the dev key, which may differ from prod; (2) rotation requires a code change and redeploy rather than a config change.</p>
+      <div class="finding-fix">Move the Unleash key to the runtime <code>app-config.json</code> injected at deploy time. The committed file should contain a placeholder: <code>"clientKey": "REPLACE_AT_DEPLOY"</code>.</div>
+    </div>
+
+    <div class="finding medium">
+      <div class="finding-title">🟡 <span class="badge badge-medium">MEDIUM</span> &nbsp;[secrets] Hardcoded Microsoft Teams webhook URLs in Jenkinsfile</div>
+      <div class="finding-meta">File: Jenkinsfile · <code>post { always { ... } }</code> block</div>
+      <p>Two live Teams incoming webhook URLs are hardcoded in the Jenkinsfile committed to source control. Anyone with read access to the repository can post arbitrary messages to internal Teams channels used for deployment notifications.</p>
+      <div class="finding-fix">Move both webhook URLs to the Jenkins credentials store as <code>Secret text</code> credentials. Reference via <code>withCredentials([string(credentialsId: 'teams-webhook-dev', variable: 'TEAMS_HOOK')]).</code> Rotate the existing webhook endpoints.</div>
+    </div>
+
+    <div class="finding low">
+      <div class="finding-title">🔵 <span class="badge badge-low">LOW</span> &nbsp;[auth] HTTP status 0 treated identically to 401 in interceptor</div>
+      <div class="finding-meta">File: src/app/services/interceptor.service.ts · Line 54 · Comment: "Don't change to 401"</div>
+      <p>The interceptor triggers the token refresh flow on both <code>status === 0</code> (network error / CORS failure) and <code>status === 401</code> (unauthorized). A network failure will attempt to refresh the token and potentially expose the refresh token over a broken connection. The comment in the code actively discourages fixing this.</p>
+      <div class="finding-fix">Handle <code>status === 0</code> separately — surface a network error to the user rather than attempting a token refresh. Fix the underlying issue that originally required treating 0 as 401.</div>
+    </div>
+  </section>
+
+  <!-- CODE QUALITY -->
+  <section id="code">
+    <h2>4. Code Quality</h2>
+    <div class="card">
+      <table>
+        <thead><tr><th>Metric</th><th>Value</th><th>Target</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>TypeScript source files</td><td>701</td><td>—</td><td>—</td></tr>
+          <tr><td>Spec (test) files</td><td>107</td><td>—</td><td>—</td></tr>
+          <tr><td>Test file ratio</td><td>15.3%</td><td>≥10%</td><td class="green">✅ Pass (ratio)</td></tr>
+          <tr><td>Meaningful test coverage</td><td>~0%</td><td>≥60%</td><td class="red">❌ All stubs</td></tr>
+          <tr><td>Files &gt; 500 lines</td><td>44 files</td><td>0</td><td class="red">❌ 6.3% of codebase</td></tr>
+          <tr><td>Largest file (timesheet-form-v2)</td><td>2,939 lines</td><td>&lt;300</td><td class="red">❌ 9.8× over limit</td></tr>
+          <tr><td>TypeScript <code>: any</code> usages</td><td>452</td><td>0</td><td class="red">❌ Strict mode not enforced</td></tr>
+          <tr><td><code>console.log/error/warn</code> in source</td><td>38</td><td>0</td><td class="orange">⚠ In production code</td></tr>
+          <tr><td>TODO/FIXME comments</td><td>8</td><td>0</td><td class="yellow">⚠ Untracked debt</td></tr>
+          <tr><td>Commented-out code lines</td><td>~2,370</td><td>0</td><td class="orange">⚠ Dead code in-tree</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="finding critical">
+      <div class="finding-title">🔴 <span class="badge badge-critical">CRITICAL</span> &nbsp;[complexity] God Components — timesheet module</div>
+      <div class="finding-meta">Multiple files in src/app/modules/hrms/my-team/time-sheet-v2/</div>
+      <p>Five components exceed 1,000 lines — the largest is the God Component anti-pattern in Angular at its worst:</p>
+      <table class="bloat-table" style="margin-top:10px;">
+        <tr><td>2,939 lines</td><td><code>timesheet-form-v2.component.ts</code> — ~95 methods, ~185 conditional branches</td></tr>
+        <tr><td>2,126 lines</td><td><code>timesheet-form-field-v2.component.ts</code></td></tr>
+        <tr><td>1,592 lines</td><td><code>timesheet-data-v2.component.ts</code></td></tr>
+        <tr><td>1,503 lines</td><td><code>leave.component.ts</code> — 16 constructor dependencies</td></tr>
+        <tr><td>1,135 lines</td><td><code>create-edit-component.ts</code> (policies-documents)</td></tr>
+      </table>
+      <div class="finding-fix">Decompose using the Facade pattern: create <code>TimesheetPageFacade</code> and <code>LeavePageFacade</code> services that aggregate collaborators. Extract sub-forms, dialogs, and async data-fetching into dedicated components/services. Enforce a 300-line limit via ESLint <code>max-lines</code> rule.</div>
+    </div>
+
+    <div class="finding critical">
+      <div class="finding-title">🔴 <span class="badge badge-critical">CRITICAL</span> &nbsp;[duplication] Triple timesheet implementation — v1, v2, v3 all in-tree simultaneously</div>
+      <div class="finding-meta">Paths: modules/hrms/my-team/time-sheet/, time-sheet-v2/, me/time-sheet/, time-sheet-v2/, time-sheet-v3/</div>
+      <p>Three full parallel implementations of the timesheet feature coexist in the repository: v1 (8 components), v2 (22 components), v3 (10 components), plus duplicate v1/v2 under both <code>my-team/</code> and <code>me/</code>. Feature flags route between them at runtime. The TODO in both v1 and v2 files (<em>"TODO Buzz, please fix this flag"</em>) confirms these are known dead-code awaiting cleanup. Estimated 4,000+ lines of dead component code remain in-tree.</p>
+      <div class="finding-fix">Once v3 is the active flag globally, delete all v1 and v2 component trees and remove all <code>FlagService.isEnabled('Timesheet-V3')</code> checks. Do not keep multiple feature versions in-tree long-term. Use Git tags/branches for version history instead.</div>
+    </div>
+
+    <div class="finding critical">
+      <div class="finding-title">🔴 <span class="badge badge-critical">CRITICAL</span> &nbsp;[architecture] <code>HttpClient</code> injected directly into two components</div>
+      <div class="finding-meta">Files: timesheet-form-v2.component.ts:300 · timesheet-form-field-v2.component.ts:218</div>
+      <p>Two components inject <code>HttpClient</code> directly and make raw HTTP calls, bypassing the service layer. This makes the HTTP logic untestable, duplicates error handling, and breaks the component-as-view-controller contract.</p>
+      <div class="finding-fix">Move all HTTP calls into dedicated service classes. Components should only call service methods, never <code>HttpClient</code> directly.</div>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-title">🟠 <span class="badge badge-high">HIGH</span> &nbsp;[testing] 107 spec files exist but all contain only boilerplate — zero business logic tested</div>
+      <div class="finding-meta">All *.spec.ts files</div>
+      <p>Every spec file contains only the Angular CLI-generated scaffold test (<code>it('should create', ...)</code>). No service methods, no guard logic, no component interactions, no form validation, no state management are tested. The karma.conf.js has no coverage thresholds. Test coverage is effectively 0% for business logic.</p>
+      <div class="finding-fix">Set coverage thresholds in <code>karma.conf.js</code> (<code>statements: 60, branches: 50, functions: 60, lines: 60</code>). Set <code>singleRun: true</code> and <code>browsers: ['ChromeHeadless']</code>. Prioritize: LeaveService, TimesheetService, InterceptorService, AuthGuard.</div>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-title">🟠 <span class="badge badge-high">HIGH</span> &nbsp;[types] 452 uses of <code>: any</code> across source files — TypeScript strict mode not enforced</div>
+      <div class="finding-meta">Multiple files — concentrated in timesheet components</div>
+      <p>452 occurrences of <code>: any</code> in production TypeScript files. In <code>timesheet-form-v2.component.ts</code> alone: <code>timesheetEntriesData: any</code> (line 194), <code>addTimeSheetEntry(event?: any, index?: number, timesheetFormField?: any)</code> (line 459). This defeats TypeScript's core safety guarantees and enables runtime errors that the compiler would otherwise catch at build time.</p>
+      <div class="finding-fix">Enable <code>"strict": true</code> in <code>tsconfig.json</code>. The models directory already contains typed interfaces — use them. Address violations incrementally: start with service layer, then guards, then components.</div>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-title">🟠 <span class="badge badge-high">HIGH</span> &nbsp;[hygiene] 38 <code>console.log/error/warn</code> calls in production source files</div>
+      <div class="finding-meta">Multiple files — examples: mobile-timesheet-v3.component.ts:528,531 · reports.component.ts:315 · resignation.component.ts:393</div>
+      <p>Debug logging is left throughout production code. Notably: <code>console.log('callled OpenFavourite Method')</code> (typo in the debug message), <code>console.log(err)</code> in resignation.component — raw error objects containing stack traces are logged to the user's browser console, potentially exposing internal service names and API paths.</p>
+      <div class="finding-fix">Remove all <code>console.log</code> calls. For error logging, use the existing <code>GlobalErrorService</code>. Add ESLint rule <code>"no-console": "error"</code> to prevent recurrence.</div>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-title">🟠 <span class="badge badge-high">HIGH</span> &nbsp;[hygiene] <code>mock-data.ts</code> committed to repository root — never deleted</div>
+      <div class="finding-meta">File: /mock-data.ts (root level)</div>
+      <p>A <code>MockData</code> class with hardcoded test data sits at the repository root with the comment <em>"Mockdata to be used for testing and should be deleted after it is implemented"</em>. It contains <code>PolicyDropdownList</code>, <code>IPAddressList</code>, <code>LeaveTypes</code>, and other data structures. It is outside the <code>src/</code> tree. It also contains a typo: <code>'Quaterly'</code> (should be <code>'Quarterly'</code>).</p>
+      <div class="finding-fix">Delete the file. Move any still-needed mock data into test fixtures under <code>src/testing/</code> or inline in <code>*.spec.ts</code> files.</div>
+    </div>
+
+    <div class="finding medium">
+      <div class="finding-title">🟡 <span class="badge badge-medium">MEDIUM</span> &nbsp;[hygiene] ~2,370 lines of commented-out code across the codebase</div>
+      <div class="finding-meta">Multiple files</div>
+      <p>Large swaths of commented-out code throughout the repository, including duplicate commented <code>APP_INITIALIZER</code> blocks, commented API call variations, and forgotten debug lines like <code>//console.log(this.filteredEmployeeRequests)</code>. These create false readability signals and maintenance confusion.</p>
+      <div class="finding-fix">Remove all commented-out code. Use git history (<code>git log -p</code>) to recover removed code when needed.</div>
+    </div>
+
+    <div class="finding medium">
+      <div class="finding-title">🟡 <span class="badge badge-medium">MEDIUM</span> &nbsp;[naming] Inconsistent directory casing: <code>TimesheetReports/</code> uses PascalCase</div>
+      <div class="finding-meta">Path: src/app/modules/hrms/my-team/TimesheetReports/</div>
+      <p>All other directories use <code>kebab-case</code>. One directory uses PascalCase, breaking tooling assumptions, case-sensitive filesystem portability (Linux CI vs Windows dev), and import discoverability.</p>
+      <div class="finding-fix">Rename to <code>timesheet-reports/</code>. Update all imports referencing the old path.</div>
+    </div>
+
+    <div class="finding medium">
+      <div class="finding-title">🟡 <span class="badge badge-medium">MEDIUM</span> &nbsp;[debt] Feature flag versioning debt — permanent conditional branches in production components</div>
+      <div class="finding-meta">Files: timesheet-form-v2.component.ts:312 · timesheet-data-v2.component.ts:218 · timesheet-favourite-form-field-v2.component.ts:286</div>
+      <p><code>FlagService.isEnabled('Timesheet-V3')</code> is called inside v2 components to conditionally render v2 vs v3 behavior. These components are permanently in a transitional state. Feature flags are meant to be short-lived; embedding them inside already-oversized components compounds complexity indefinitely.</p>
+      <div class="finding-fix">Complete the v3 migration fully. Enable the flag globally in all environments. Delete v1/v2 trees and remove all flag checks in one coordinated cleanup sprint.</div>
+    </div>
+
+    <div class="finding low">
+      <div class="finding-title">🔵 <span class="badge badge-low">LOW</span> &nbsp;[hygiene] <code>tslint:disable</code> comment in spec file — TSLint has been deprecated</div>
+      <div class="finding-meta">File: src/app/modules/auth/auth.service.spec.ts:1</div>
+      <div class="finding-fix">Remove the comment. TSLint was replaced by ESLint. The project already uses ESLint.</div>
+    </div>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section id="architecture">
+    <h2>5. Architecture</h2>
+    <div class="card">
+      <table>
+        <thead><tr><th>Check</th><th>Status</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>Lazy-loaded route modules</td><td class="green">✅ Excellent</td><td>All 4 top-level routes use <code>loadChildren()</code></td></tr>
+          <tr><td>Service layer separation</td><td class="green">✅ Present</td><td>Dedicated <code>services/</code> directory; most components use services</td></tr>
+          <tr><td>No circular module dependencies</td><td class="green">✅ Pass</td><td>Module graph is acyclic</td></tr>
+          <tr><td>Consistent Angular version</td><td class="green">✅ Angular 17.3.5</td><td>All @angular/* packages pinned consistently</td></tr>
+          <tr><td>Lock file exists</td><td class="green">✅ package-lock.json</td><td>Deterministic npm install</td></tr>
+          <tr><td>Direct HttpClient in components</td><td class="red">❌ 2 violations</td><td>timesheet-form-v2, timesheet-form-field-v2</td></tr>
+          <tr><td>Standalone component adoption</td><td class="orange">⚠ Not started</td><td>All modules use NgModule — Angular 17 makes standalone the default</td></tr>
+          <tr><td>Directory naming consistency</td><td class="yellow">⚠ Partial</td><td>1 PascalCase directory, services has mixed case subdirectories</td></tr>
+          <tr><td>Feature flag lifecycle management</td><td class="red">❌ Poor</td><td>Long-lived flags embedded in large components creating permanent debt</td></tr>
+          <tr><td>State management pattern</td><td class="yellow">⚠ Ad-hoc</td><td>BehaviorSubject directly in services — functional but undisciplined</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-title">🟠 <span class="badge badge-high">HIGH</span> &nbsp;[architecture] Three parallel timesheet implementations violate DRY at the module level</div>
+      <div class="finding-meta">Paths: my-team/time-sheet/, my-team/time-sheet-v2/, my-team/time-sheet-v3/, me/time-sheet/, me/time-sheet-v2/, me/time-sheet-v3/</div>
+      <p>The architectural decision to keep all versions of the timesheet in parallel (rather than replacing) has resulted in a module-level violation of DRY. The v2 files at 2,939 + 2,126 + 1,592 lines represent a massive in-tree maintenance burden. Any bug fix to timesheet behavior must be evaluated across all three versions to determine which is active.</p>
+      <div class="finding-fix">Define a migration completion date for Timesheet V3 across all environments. Delete v1 and v2 in a single sprint. The feature flag system should have a maximum lifetime policy (e.g., 2 sprints) to prevent this pattern from recurring.</div>
+    </div>
+
+    <div class="finding medium">
+      <div class="finding-title">🟡 <span class="badge badge-medium">MEDIUM</span> &nbsp;[architecture] Mixed guard patterns — class-based and functional guards coexist</div>
+      <div class="finding-meta">Files: guards/auth.guard.ts (class-based) · guards/flag.guard.ts (functional)</div>
+      <p>Angular 15+ deprecates class-based guards in favor of functional guards (using <code>inject()</code> and <code>CanActivateFn</code>). The repository has both: <code>AuthGuard</code> is a class implementing <code>CanActivate</code>, while <code>featureFlagGuard</code> uses the new functional pattern. In Angular 17, class-based guards show deprecation warnings.</p>
+      <div class="finding-fix">Migrate <code>AuthGuard</code>, <code>AccessGuard</code>, <code>CheckRolesGuard</code>, <code>ConsentDocumentGuard</code>, and <code>TimesheetAccessGuard</code> to functional guards using <code>export const authGuard: CanActivateFn = () =&gt; { ... }</code>.</div>
+    </div>
+
+    <div class="finding medium">
+      <div class="finding-title">🟡 <span class="badge badge-medium">MEDIUM</span> &nbsp;[architecture] Services directory has inconsistent naming — <code>Roles/</code>, <code>Reports/</code>, <code>EmployeeRequest/</code> use PascalCase</div>
+      <div class="finding-meta">Path: src/app/services/common/</div>
+      <p>Most service subdirectories follow <code>kebab-case</code> but three use PascalCase: <code>Roles/</code>, <code>Reports/</code>, <code>EmployeeRequest/</code>. This breaks consistency and causes case-sensitivity issues on Linux CI runners.</p>
+      <div class="finding-fix">Rename to <code>roles/</code>, <code>reports/</code>, <code>employee-request/</code>. Update all imports. Run on the CI runner to verify no case-sensitivity errors.</div>
+    </div>
+
+    <div class="finding medium">
+      <div class="finding-title">🟡 <span class="badge badge-medium">MEDIUM</span> &nbsp;[architecture] No standalone component migration plan for Angular 17</div>
+      <div class="finding-meta">All feature modules</div>
+      <p>Angular 17 makes standalone components the default. The project uses entirely class-based NgModules. While functional, this means the team cannot benefit from standalone components' tree-shaking improvements, simplified imports, and the Angular signals reactivity model. Future Angular upgrades (v18, v19) may deprecate NgModule patterns.</p>
+      <div class="finding-fix">Create a migration plan: start with <code>SharedModule</code> components (smaller scope), then work outward. Angular provides a schematic: <code>ng generate @angular/core:standalone</code>.</div>
+    </div>
+
+    <div class="finding low">
+      <div class="finding-title">🔵 <span class="badge badge-low">LOW</span> &nbsp;[architecture] Duplicate empty route redirects in <code>app.routing.ts</code></div>
+      <div class="finding-meta">File: src/app/app.routing.ts · Lines 33–42</div>
+      <p>Two catch-all routes both redirect to <code>'dashboard'</code> — one for <code>''</code> (empty path) and one for <code>'**'</code> (wildcard). The empty-path redirect is unnecessary since the main module's child routes likely handle <code>''</code>.</p>
+      <div class="finding-fix">Remove the redundant <code>''</code> redirect. Keep only the <code>'**'</code> wildcard redirect.</div>
+    </div>
+  </section>
+
+  <!-- DEVOPS -->
+  <section id="devops">
+    <h2>6. DevOps / CI-CD</h2>
+    <div class="card">
+      <table>
+        <thead><tr><th>Check</th><th>Status</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td>CI/CD pipeline exists</td><td class="green">✅ Present</td><td>GitLab CI + Jenkins (dual pipelines)</td></tr>
+          <tr><td>Build step in CI</td><td class="green">✅ Present</td><td><code>npm run build-prod</code> in both pipelines</td></tr>
+          <tr><td>Docker credentials — Jenkins</td><td class="green">✅ Secure</td><td>Uses <code>withCredentials</code> + <code>--password-stdin</code> ✅</td></tr>
+          <tr><td>Docker credentials — GitLab CI</td><td class="green">✅ Secure</td><td>Uses CI variables + <code>--password-stdin</code> ✅</td></tr>
+          <tr><td>Tests run in CI</td><td class="red">❌ Missing</td><td>No <code>ng test</code> stage in either pipeline</td></tr>
+          <tr><td>Test coverage thresholds</td><td class="red">❌ Missing</td><td>karma.conf.js has no thresholds; <code>singleRun: false</code></td></tr>
+          <tr><td>Lint stage in CI</td><td class="red">❌ Missing</td><td>ESLint runs via pre-commit hook only — bypassable</td></tr>
+          <tr><td>Security scanning</td><td class="red">❌ Missing</td><td>No SAST, no npm audit, no container scan</td></tr>
+          <tr><td>npm install caching</td><td class="red">❌ Missing</td><td>Full <code>npm install</code> on every GitLab CI run</td></tr>
+          <tr><td>Manual approval gates</td><td class="red">❌ Missing</td><td>UAT deploys automatically; no production pipeline at all</td></tr>
+          <tr><td>Docker image pinned</td><td class="orange">⚠ Partial</td><td><code>nginx:alpine</code> is floating (unpinned)</td></tr>
+          <tr><td>Hardcoded secrets in CI config</td><td class="red">❌ Fail</td><td>Teams webhook URLs hardcoded in Jenkinsfile</td></tr>
+          <tr><td>CHANGELOG.md, LICENSE, SECURITY.md</td><td class="red">❌ Missing</td><td>None present</td></tr>
+          <tr><td>Dependabot / Renovate</td><td class="red">❌ Missing</td><td>No automated dependency update tooling</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-title">🟠 <span class="badge badge-high">HIGH</span> &nbsp;[ci] No test stage in either pipeline — tests never run automatically</div>
+      <div class="finding-meta">Files: .gitlab-ci.yml, Jenkinsfile · Policy: GOV-DEV-002</div>
+      <p>Both CI pipelines build and deploy without running <code>ng test</code>. The 107 spec files are never executed in CI. Additionally, <code>karma.conf.js</code> has <code>singleRun: false</code> — if <code>ng test</code> were added to CI without this change, the test runner would hang indefinitely because it waits for interactive input.</p>
+      <div class="finding-fix">Add a <code>test</code> stage before <code>build</code> in <code>.gitlab-ci.yml</code>. First update <code>karma.conf.js</code>: set <code>singleRun: true</code>, <code>browsers: ['ChromeHeadless']</code>, and add coverage thresholds. Then add: <code>script: npm run test -- --watch=false --browsers=ChromeHeadless</code>. Install Chrome on the CI runner.</div>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-title">🟠 <span class="badge badge-high">HIGH</span> &nbsp;[ci] No lint stage — ESLint runs only via bypassable pre-commit hook</div>
+      <div class="finding-meta">Files: .gitlab-ci.yml, .lintstagedrc.json</div>
+      <p>Lint enforcement relies on Husky pre-commit hooks, which can be bypassed with <code>git commit --no-verify</code>. There is no <code>npm run lint</code> step in either CI pipeline. Unlinted code ships to UAT with no automated gate.</p>
+      <div class="finding-fix">Add a <code>lint</code> job to <code>.gitlab-ci.yml</code>: <code>script: npm run lint</code>. This runs the existing <code>.eslintrc.json</code> configuration and fails the pipeline on any ESLint error.</div>
+    </div>
+
+    <div class="finding high">
+      <div class="finding-title">🟠 <span class="badge badge-high">HIGH</span> &nbsp;[ci] No security scanning in pipeline</div>
+      <div class="finding-meta">File: .gitlab-ci.yml</div>
+      <p>No SAST, dependency vulnerability scanning (<code>npm audit</code>), or container image scanning runs at any pipeline stage. Vulnerabilities in npm packages and the nginx base image go undetected until they appear in a security report.</p>
+      <div class="finding-fix">Add three security gates to <code>.gitlab-ci.yml</code>: (1) <code>npm audit --audit-level=high</code> in the build stage; (2) GitLab SAST template (<code>include: template: Security/SAST.gitlab-ci.yml</code>); (3) Trivy container scan post-push (<code>trivy image $IMAGE_NAME --exit-code 1 --severity HIGH,CRITICAL</code>).</div>
+    </div>
+
+    <div class="finding medium">
+      <div class="finding-title">🟡 <span class="badge badge-medium">MEDIUM</span> &nbsp;[ci] No <code>node_modules</code> caching in GitLab CI</div>
+      <div class="finding-meta">File: .gitlab-ci.yml · build stage</div>
+      <p>Every pipeline run executes a full <code>npm install</code> (downloading all packages from scratch). For an Angular 17 project with 35+ direct dependencies this adds 2–3 minutes to every build.</p>
+      <div class="finding-fix">Add a <code>cache:</code> block to the <code>build</code> job: <code>key: ${CI_COMMIT_REF_SLUG}-npm</code>, <code>paths: [node_modules/, .npm/]</code>, <code>policy: pull-push</code>.</div>
+    </div>
+
+    <div class="finding medium">
+      <div class="finding-title">🟡 <span class="badge badge-medium">MEDIUM</span> &nbsp;[ci] No manual approval gate before UAT; no production pipeline</div>
+      <div class="finding-meta">File: .gitlab-ci.yml · deploy_uat stage</div>
+      <p><code>deploy_uat</code> triggers automatically on any <code>release/*</code> branch push. There is no production deployment stage anywhere. Production deployments appear to be entirely manual (outside the documented pipeline).</p>
+      <div class="finding-fix">Add <code>when: manual</code> to <code>deploy_uat</code>. Add a <code>deploy_prod</code> stage with <code>when: manual</code>, <code>environment: production</code>, and a protected environment requiring approval from a senior engineer.</div>
+    </div>
+
+    <div class="finding medium">
+      <div class="finding-title">🟡 <span class="badge badge-medium">MEDIUM</span> &nbsp;[docker] <code>nginx:alpine</code> is an unpinned floating image tag</div>
+      <div class="finding-meta">File: Dockerfile · Line 1</div>
+      <p>Builds resolved to different nginx versions silently over time. A breaking change or supply chain compromise in <code>nginx:alpine</code> would affect all builds with no visible change in source control.</p>
+      <div class="finding-fix">Pin to a specific version: <code>FROM nginx:1.27.3-alpine</code>. Keep current with Dependabot or Renovate.</div>
+    </div>
+
+    <div class="finding low">
+      <div class="finding-title">🔵 <span class="badge badge-low">LOW</span> &nbsp;[hygiene] README is minimal (27 lines); LICENSE, CHANGELOG, SECURITY.md all missing</div>
+      <div class="finding-meta">Repository root</div>
+      <div class="finding-fix">Add: (1) <code>LICENSE</code> matching organisation standard; (2) <code>SECURITY.md</code> with vulnerability disclosure contact; (3) <code>CHANGELOG.md</code>; (4) Expand <code>README.md</code> with local setup, VPN/npm registry requirements, environment variables, and deployment instructions.</div>
+    </div>
+
+    <div class="finding low">
+      <div class="finding-title">🔵 <span class="badge badge-low">LOW</span> &nbsp;[hygiene] lint-staged pre-commit hook does not run type-checking</div>
+      <div class="finding-meta">File: .lintstagedrc.json</div>
+      <p>Prettier and ESLint run on staged files but <code>tsc --noEmit</code> does not. A commit with TypeScript type errors passes the hook.</p>
+      <div class="finding-fix">Add <code>"*.ts": ["prettier --write", "eslint --fix", "tsc --noEmit"]</code> to <code>.lintstagedrc.json</code>.</div>
+    </div>
+  </section>
+
+  <!-- DEPENDENCY -->
+  <section id="dependency">
+    <h2>7. Dependency Risk</h2>
+    <div class="card">
+      <table>
+        <thead><tr><th>Package</th><th>Issue</th><th>Severity</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>moment@^2.29.4</code></td>
+            <td>Officially deprecated by maintainers. Not tree-shakeable — adds ~300 KB to bundle.</td>
+            <td class="orange">High</td>
+            <td>Replace with <code>date-fns</code> or Angular <code>DatePipe</code></td>
+          </tr>
+          <tr>
+            <td><code>pdfjs-dist@^2.10.377</code></td>
+            <td>3 major versions behind (current: 4.x). Security patches and bug fixes missed since 2021.</td>
+            <td class="orange">High</td>
+            <td>Upgrade to <code>pdfjs-dist@^4.x</code>. Review Worker API migration guide.</td>
+          </tr>
+          <tr>
+            <td><code>xlsx@^0.18.5</code></td>
+            <td>SheetJS changed to commercial license starting 0.18.x. Production use without a Pro license may be a violation.</td>
+            <td class="orange">High (license)</td>
+            <td>Audit with legal. Downgrade to <code>xlsx@0.17.5</code> (MIT) or migrate to <code>exceljs</code>.</td>
+          </tr>
+          <tr>
+            <td><code>@types/node@^12.11.1</code></td>
+            <td>Node.js 12 reached EOL April 2022. Types are 3 major versions stale.</td>
+            <td class="orange">High</td>
+            <td>Upgrade to <code>@types/node@^20.x</code></td>
+          </tr>
+          <tr>
+            <td><code>ngx-permissions@^14.0.0</code></td>
+            <td>Targets Angular 14; used in Angular 17 project. Potential DI/inject() incompatibility.</td>
+            <td class="yellow">Medium</td>
+            <td>Upgrade to <code>ngx-permissions@^17.x</code></td>
+          </tr>
+          <tr>
+            <td><code>prettier@^2.5.1</code></td>
+            <td>2 major versions behind (current: 3.x). Inconsistent formatting for TypeScript 5.x.</td>
+            <td class="yellow">Medium</td>
+            <td>Upgrade to <code>prettier@^3.x</code>. Reformat entire codebase in one commit.</td>
+          </tr>
+          <tr>
+            <td><code>eslint@^8.28.0</code></td>
+            <td>ESLint 9 released with new flat config. ESLint 8 approaching EOL.</td>
+            <td class="yellow">Medium</td>
+            <td>Upgrade to <code>eslint@^9.x</code>. Migrate to flat config format.</td>
+          </tr>
+          <tr>
+            <td><code>@angular-slider/ngx-slider@^17.0.2</code></td>
+            <td>Community package — no official Angular team backing. Maintenance risk.</td>
+            <td class="yellow">Medium</td>
+            <td>Monitor GitHub activity. Evaluate Angular CDK as alternative.</td>
+          </tr>
+          <tr>
+            <td>No Dependabot / Renovate</td>
+            <td>No automated dependency update alerts. CVEs in transitive deps go undetected.</td>
+            <td class="yellow">Medium</td>
+            <td>Add <code>.github/dependabot.yml</code> with <code>package-ecosystem: npm</code>, weekly schedule.</td>
+          </tr>
+          <tr>
+            <td><code>@pt:registry</code> in .npmrc</td>
+            <td>Private registry not documented. Breaks installs for new developers outside VPN.</td>
+            <td class="blue">Low</td>
+            <td>Document VPN requirement in README. Add registry health check to CI.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- GOVERNANCE -->
+  <section id="governance">
+    <h2>8. Governance Assessment</h2>
+
+    <div class="compliance-box noncompliant">
+      <h3>Status: ❌ NON-COMPLIANT</h3>
+      <p style="margin-top:8px;"><strong>1 blocking policy failure:</strong> Security score of 3.5/10 is below the mandatory ≥5.0 threshold. The combination of tokens in URL query parameters, tokens in localStorage, missing all nginx security headers, and source maps served in production represents a systemic failure of frontend security hygiene.</p>
+      <p style="margin-top:8px;"><strong>Overall Score:</strong> <span class="orange">4.2/10</span> 🟠 &nbsp;&nbsp; <strong>Risk Posture Index:</strong> <span class="red">0/100</span> 🔴 Critical Risk</p>
+    </div>
+
+    <h3>RPI Calculation</h3>
+    <div class="card">
+      <table>
+        <thead><tr><th>Severity</th><th>Count</th><th>Weight</th><th>Raw Score</th></tr></thead>
+        <tbody>
+          <tr><td>Critical</td><td>4</td><td>×25</td><td>100</td></tr>
+          <tr><td>High</td><td>20</td><td>×10</td><td>200</td></tr>
+          <tr><td>Medium</td><td>18</td><td>×3</td><td>54</td></tr>
+          <tr><td>Low</td><td>8</td><td>×1</td><td>8</td></tr>
+          <tr><td colspan="3"><strong>Total Raw Score</strong></td><td><strong>362</strong></td></tr>
+          <tr><td colspan="3"><strong>RPI = max(0, 100 − 362/2)</strong></td><td class="red"><strong>0/100 🔴</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Policy Compliance Summary</h3>
+    <div class="card">
+      <table>
+        <thead><tr><th>Policy</th><th>Status</th><th>Impact</th></tr></thead>
+        <tbody>
+          <tr><td>GOV-SEC-001: No committed secrets</td><td><span class="badge badge-medium">⚠ CONDITIONAL</span></td><td>Teams webhooks in Jenkinsfile (medium)</td></tr>
+          <tr><td>GOV-SEC-002: Security score ≥ 5</td><td><span class="badge badge-critical">❌ FAIL (BLOCKING)</span></td><td>Score: 3.5/10</td></tr>
+          <tr><td>GOV-SEC-003: No SQL/command injection patterns</td><td><span class="badge badge-pass">✅ PASS</span></td><td>— (frontend SPA)</td></tr>
+          <tr><td>GOV-SEC-004: CORS not wildcard in production</td><td><span class="badge badge-high">❌ FAIL (advisory)</span></td><td>High</td></tr>
+          <tr><td>GOV-DEP-001: No critical CVEs</td><td><span class="badge badge-high">❌ FAIL (advisory)</span></td><td>pdfjs-dist 2.x has security patches</td></tr>
+          <tr><td>GOV-DEP-002: No deprecated runtime deps</td><td><span class="badge badge-high">❌ FAIL (advisory)</span></td><td>moment.js deprecated</td></tr>
+          <tr><td>GOV-DEP-003: No GPL/AGPL licensed deps</td><td><span class="badge badge-pass">✅ PASS</span></td><td>—</td></tr>
+          <tr><td>GOV-CODE-001: Test file ratio ≥ 10%</td><td><span class="badge badge-pass">✅ PASS</span></td><td>15.3% file ratio (but all stubs)</td></tr>
+          <tr><td>GOV-CODE-002: No files &gt; 3000 lines</td><td><span class="badge badge-pass">✅ PASS</span></td><td>Largest is 2,939 lines</td></tr>
+          <tr><td>GOV-CODE-003: No empty catch blocks</td><td><span class="badge badge-medium">❌ FAIL (advisory)</span></td><td>Silent error handling in interceptor</td></tr>
+          <tr><td>GOV-CODE-004: No TODO/FIXME in critical paths</td><td><span class="badge badge-medium">❌ FAIL (advisory)</span></td><td>8 TODOs including in interceptor</td></tr>
+          <tr><td>GOV-DEV-001: CI/CD pipeline exists</td><td><span class="badge badge-pass">✅ PASS</span></td><td>—</td></tr>
+          <tr><td>GOV-DEV-002: Tests run in CI</td><td><span class="badge badge-high">❌ FAIL (advisory)</span></td><td>High</td></tr>
+          <tr><td>GOV-DEV-003: Docker images pinned</td><td><span class="badge badge-medium">❌ FAIL (advisory)</span></td><td>nginx:alpine floating</td></tr>
+          <tr><td>GOV-DEV-004: README substantive (&gt;20 lines)</td><td><span class="badge badge-pass">✅ PASS</span></td><td>27 lines</td></tr>
+          <tr><td>GOV-ARCH-001: Lock file exists</td><td><span class="badge badge-pass">✅ PASS</span></td><td>package-lock.json ✅</td></tr>
+          <tr><td>GOV-ARCH-002: No circular dependencies</td><td><span class="badge badge-pass">✅ PASS</span></td><td>—</td></tr>
+          <tr><td>GOV-ARCH-003: Consistent framework versions</td><td><span class="badge badge-pass">✅ PASS</span></td><td>Angular 17.3.5 consistent</td></tr>
+          <tr><td>GOV-ARCH-004: Clear layered structure</td><td><span class="badge badge-pass">✅ PASS</span></td><td>modules/ + services/ + models/ separation</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:10px;color:var(--muted);font-size:0.85rem;"><strong>11/19 policies passed (58%) — ❌ NON-COMPLIANT (1 blocking failure: GOV-SEC-002)</strong></p>
+    </div>
+  </section>
+
+  <!-- QUICK WINS -->
+  <section id="quickwins">
+    <h2>9. Quick Wins <span style="font-size:0.8rem;color:var(--muted);font-weight:400;">(each completable in under 1 hour)</span></h2>
+
+    <div class="quick-win">
+      <div class="qw-num">1</div>
+      <div><strong>Add all 5 HTTP security headers to nginx.conf.</strong> A 5-line addition to the <code>server {}</code> block adds X-Content-Type-Options, X-Frame-Options, HSTS, and Referrer-Policy. Immediate security improvement with zero application code changes.</div>
+    </div>
+    <div class="quick-win">
+      <div class="qw-num">2</div>
+      <div><strong>Fix <code>angular.json</code> production config: set <code>optimization: true</code>, <code>sourceMap: false</code>.</strong> Two-line change. Stops serving full TypeScript source to users, reduces bundle size by 3–10×, and eliminates source code exposure.</div>
+    </div>
+    <div class="quick-win">
+      <div class="qw-num">3</div>
+      <div><strong>Restrict nginx CORS on <code>/assets</code> to the app's own origin.</strong> One-line change in nginx.conf. Prevents app-config.json (containing the Unleash key and internal URLs) from being cross-origin readable by any website.</div>
+    </div>
+    <div class="quick-win">
+      <div class="qw-num">4</div>
+      <div><strong>Move Teams webhook URLs from Jenkinsfile to Jenkins credentials store.</strong> Two credentials, two <code>withCredentials</code> wrappers. Removes the live webhook endpoints from source control. Then rotate the existing webhooks.</div>
+    </div>
+    <div class="quick-win">
+      <div class="qw-num">5</div>
+      <div><strong>Set <code>singleRun: true</code> and <code>browsers: ['ChromeHeadless']</code> in karma.conf.js.</strong> This is the prerequisite to adding any test stage to CI. Requires installing Chrome on the CI runner (one <code>apt install</code> line). The tests already exist — just wire them up.</div>
+    </div>
+    <div class="quick-win">
+      <div class="qw-num">6</div>
+      <div><strong>Add a <code>test</code> stage to <code>.gitlab-ci.yml</code> before <code>build</code>.</strong> The 107 spec files are ready. Adding <code>script: npm run test -- --watch=false --browsers=ChromeHeadless</code> runs them all in CI with one job definition.</div>
+    </div>
+    <div class="quick-win">
+      <div class="qw-num">7</div>
+      <div><strong>Add a <code>lint</code> stage to <code>.gitlab-ci.yml</code>.</strong> <code>script: npm run lint</code>. ESLint is already configured in <code>.eslintrc.json</code>. This closes the gap where <code>--no-verify</code> bypasses the pre-commit hook.</div>
+    </div>
+    <div class="quick-win">
+      <div class="qw-num">8</div>
+      <div><strong>Delete <code>mock-data.ts</code> from the repository root.</strong> The file's own comment says to delete it. One <code>git rm</code> command. No other code should reference it.</div>
+    </div>
+    <div class="quick-win">
+      <div class="qw-num">9</div>
+      <div><strong>Add npm caching to GitLab CI.</strong> Five lines of <code>cache:</code> configuration in <code>.gitlab-ci.yml</code> saves 2–3 minutes per build and reduces load on the private npm registry.</div>
+    </div>
+    <div class="quick-win">
+      <div class="qw-num">10</div>
+      <div><strong>Pin <code>nginx:alpine</code> to a specific version tag.</strong> Change <code>FROM nginx:alpine</code> to <code>FROM nginx:1.27-alpine</code>. Deterministic builds, no silent base image changes.</div>
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section id="roadmap">
+    <h2>10. Remediation Roadmap</h2>
+
+    <div class="roadmap-phase">
+      <h4>🚨 Phase 1 — This Week · Security Hardening</h4>
+      <ul>
+        <li>Add all 5 nginx security headers to nginx.conf</li>
+        <li>Fix production Angular build: <code>optimization: true</code>, <code>sourceMap: false</code></li>
+        <li>Restrict nginx <code>/assets</code> CORS to application origin</li>
+        <li>Move Teams webhook URLs to Jenkins credentials store; rotate existing webhooks</li>
+        <li>Add URL validation before all three <code>bypassSecurityTrustResourceUrl()</code> calls</li>
+        <li>Begin scoping the httpOnly cookie migration for JWT token storage (design spike)</li>
+      </ul>
+    </div>
+
+    <div class="roadmap-phase">
+      <h4>🟠 Phase 2 — This Month · CI/CD, Code Quality, Dependencies</h4>
+      <ul>
+        <li>Fix karma.conf.js: <code>singleRun: true</code>, <code>ChromeHeadless</code>, coverage thresholds</li>
+        <li>Add test, lint, and <code>npm audit</code> stages to GitLab CI pipeline</li>
+        <li>Add npm caching to CI; pin nginx:alpine to specific version</li>
+        <li>Delete mock-data.ts; remove all 38 console.log calls; remove commented-out code</li>
+        <li>Upgrade: <code>pdfjs-dist@^4.x</code>, <code>@types/node@^20.x</code>, <code>ngx-permissions@^17.x</code></li>
+        <li>Audit xlsx license status; decide downgrade vs commercial license vs migration</li>
+        <li>Add <code>.github/dependabot.yml</code> for weekly npm update PRs</li>
+        <li>Enable <code>"strict": true</code> in tsconfig.json; begin replacing <code>any</code> in services layer</li>
+        <li>Rename <code>TimesheetReports/</code> → <code>timesheet-reports/</code>; fix PascalCase service subdirs</li>
+        <li>Set deadline for Timesheet V3 full migration; delete v1/v2 after flag enabled globally</li>
+      </ul>
+    </div>
+
+    <div class="roadmap-phase">
+      <h4>🟡 Phase 3 — This Quarter · Architecture &amp; Token Security</h4>
+      <ul>
+        <li>Implement httpOnly cookie-based token storage (requires backend API changes)</li>
+        <li>Migrate to Authorization Code + PKCE flow (eliminate tokens from callback URL)</li>
+        <li>Decompose God Components: create <code>TimesheetPageFacade</code> and <code>LeavePageFacade</code></li>
+        <li>Migrate class-based guards to functional guards (Angular 17 standard)</li>
+        <li>Begin standalone component migration starting with <code>SharedModule</code></li>
+        <li>Replace <code>moment.js</code> with <code>date-fns</code> throughout</li>
+        <li>Add production deploy stage with manual approval gate to CI pipeline</li>
+        <li>Add GitLab SAST template and container scanning (Trivy)</li>
+        <li>Add LICENSE, CHANGELOG.md, SECURITY.md to repository</li>
+        <li>Write meaningful unit tests: target 60% coverage for service layer</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- METRICS -->
+  <section id="metrics">
+    <h2>11. Claude Run Metrics</h2>
+    <div class="metric-grid">
+      <div class="metric-item">
+        <div class="m-label">Estimated Tokens Used</div>
+        <div class="m-value">~75,000</div>
+      </div>
+      <div class="metric-item">
+        <div class="m-label">Context Utilization</div>
+        <div class="m-value">~38%</div>
+      </div>
+      <div class="metric-item">
+        <div class="m-label">Estimated Run Time</div>
+        <div class="m-value">~25 min</div>
+      </div>
+      <div class="metric-item">
+        <div class="m-label">Subagents Launched</div>
+        <div class="m-value">2</div>
+      </div>
+      <div class="metric-item">
+        <div class="m-label">Files Read</div>
+        <div class="m-value">~35</div>
+      </div>
+      <div class="metric-item">
+        <div class="m-label">Total Findings</div>
+        <div class="m-value">50</div>
+      </div>
+      <div class="metric-item">
+        <div class="m-label">Source Files Scanned</div>
+        <div class="m-value">1,690</div>
+      </div>
+      <div class="metric-item">
+        <div class="m-label">Model</div>
+        <div class="m-value" style="font-size:0.85rem;">claude-sonnet-4-6</div>
+      </div>
+    </div>
+    <p style="margin-top:16px;font-size:0.82rem;color:var(--muted);">
+      Phase 1 (Security): main context. Phase 2: 2 subagents in parallel — Code Quality agent (subagent 1) and DevOps+Dependency agent (subagent 2). Phase 3 (Governance, Architecture): synthesized in main context. Both subagents successfully completed with full Bash access to <code>/tmp/repo-intel-target</code>.
+    </p>
+  </section>
+
+</main>
+
+<footer>
+  Generated by <strong>repo-intel</strong> · Powered by Claude Sonnet 4.6 · 2026-03-24 · <em>This report is confidential and intended for internal engineering review only.</em>
+</footer>
+
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+  function toggleTheme() {
+    const body = document.body;
+    const btn = document.querySelector('.theme-toggle');
+    if (body.getAttribute('data-theme') === 'light') {
+      body.removeAttribute('data-theme');
+      btn.textContent = '☀ Light';
+      mermaid.initialize({ startOnLoad: false, theme: 'dark' });
+    } else {
+      body.setAttribute('data-theme', 'light');
+      btn.textContent = '🌙 Dark';
+      mermaid.initialize({ startOnLoad: false, theme: 'default' });
+    }
+  }
+</script>
+</body>
+</html>

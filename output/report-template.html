@@ -175,7 +175,7 @@
     .zoom-scale { font-size: 0.7rem; color: var(--muted); min-width: 2.8rem; text-align: center; font-variant-numeric: tabular-nums; }
     .expand-btn { background: var(--bg); border: 1px solid var(--border); color: var(--muted); border-radius: 4px; height: 26px; padding: 0 0.5rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; cursor: pointer; white-space: nowrap; transition: color .15s, border-color .15s; }
     .expand-btn:hover { color: var(--accent); border-color: var(--accent); }
-    .diagram-viewport { overflow: auto; max-height: 480px; cursor: grab; background: var(--surface); }
+    .diagram-viewport { overflow: auto; max-height: 480px; cursor: grab; background: #ffffff; }
     .diagram-viewport:active { cursor: grabbing; }
     .diagram-viewport .mermaid { padding: 1.5rem; display: inline-block; min-width: 100%; }
     .diagram-viewport .mermaid svg { display: block; max-width: none !important; shape-rendering: geometricPrecision; text-rendering: geometricPrecision; }
@@ -184,14 +184,14 @@
     /* Fullscreen modal */
     .diag-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 9999; align-items: center; justify-content: center; }
     .diag-modal.open { display: flex; }
-    .diag-modal-inner { position: relative; width: 96vw; height: 92vh; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
-    .diag-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 0.5rem; }
-    .diag-modal-title { font-size: 0.9rem; font-weight: 600; color: var(--accent); flex: 1; }
-    .diag-modal-vp { flex: 1; overflow: auto; cursor: grab; padding: 1.5rem; }
+    .diag-modal-inner { position: relative; width: 96vw; height: 92vh; background: #ffffff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+    .diag-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; border-bottom: 1px solid #d1d5e0; flex-shrink: 0; gap: 0.5rem; background: #f5f6fa; }
+    .diag-modal-title { font-size: 0.9rem; font-weight: 600; color: #3b5bdb; flex: 1; }
+    .diag-modal-vp { flex: 1; overflow: auto; cursor: grab; padding: 1.5rem; background: #ffffff; }
     .diag-modal-vp:active { cursor: grabbing; }
     .diag-modal-vp svg { display: block; max-width: none !important; }
-    .close-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 4px; padding: 0.2rem 0.6rem; cursor: pointer; font-size: 0.8rem; transition: color .15s, border-color .15s; }
-    .close-btn:hover { color: var(--red); border-color: var(--red); }
+    .close-btn { background: none; border: 1px solid #d1d5e0; color: #6b7280; border-radius: 4px; padding: 0.2rem 0.6rem; cursor: pointer; font-size: 0.8rem; transition: color .15s, border-color .15s; }
+    .close-btn:hover { color: #dc2626; border-color: #dc2626; }
 
     /* Claude Run Metrics */
     .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
@@ -620,14 +620,14 @@ sequenceDiagram
   /* ── Mermaid init ─────────────────────────────────────────────── */
   mermaid.initialize({
     startOnLoad: true,
-    theme: 'dark',
+    theme: 'default',
     themeVariables: {
-      background: '#1a1d27', primaryColor: '#2d3148',
-      primaryTextColor: '#e2e8f0', primaryBorderColor: '#6c8eff',
-      lineColor: '#8892a4', secondaryColor: '#1a1d27',
-      tertiaryColor: '#0f1117', edgeLabelBackground: '#1a1d27',
-      clusterBkg: '#1a1d27', clusterBorder: '#2d3148',
-      titleColor: '#e2e8f0',
+      background: '#ffffff', primaryColor: '#dde4ff',
+      primaryTextColor: '#1a1d27', primaryBorderColor: '#3b5bdb',
+      lineColor: '#6b7280', secondaryColor: '#e8f0fe',
+      tertiaryColor: '#f0f4ff', edgeLabelBackground: '#ffffff',
+      clusterBkg: '#f5f6fa', clusterBorder: '#c7d0e0',
+      titleColor: '#1a1d27', noteBkgColor: '#fff3cd', noteTextColor: '#1a1d27',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     },
     flowchart: { curve: 'basis', padding: 20 },
@@ -729,8 +729,9 @@ sequenceDiagram
     modalVp.innerHTML = '';
     const clone = srcSvg.cloneNode(true);
     clone.id = 'modal-svg';
-    clone.style.maxWidth = 'none';
-    clone.style.display  = 'block';
+    clone.style.maxWidth    = 'none';
+    clone.style.display     = 'block';
+    clone.style.background  = '#ffffff';
     modalVp.appendChild(clone);
 
     const { nw, nh } = _readDims(srcSvg);
@@ -830,22 +831,7 @@ sequenceDiagram
     localStorage.setItem('repo-intel-theme', isLight ? 'light' : 'dark');
     _syncToggleUI();
 
-    // Re-init Mermaid diagrams so they re-render with the new theme colours
-    if (typeof mermaid !== 'undefined') {
-      mermaid.initialize({
-        startOnLoad: false,
-        theme: isLight ? 'default' : 'dark',
-        themeVariables: isLight
-          ? { primaryColor: '#dde4ff', primaryTextColor: '#1a1d27', primaryBorderColor: '#3b5bdb', lineColor: '#6b7280', background: '#ffffff', edgeLabelBackground: '#ffffff' }
-          : { background: '#1a1d27', primaryColor: '#2d3148', primaryTextColor: '#e2e8f0', primaryBorderColor: '#6c8eff', lineColor: '#8892a4', secondaryColor: '#1a1d27', tertiaryColor: '#0f1117', edgeLabelBackground: '#1a1d27', clusterBkg: '#1a1d27', clusterBorder: '#2d3148', titleColor: '#e2e8f0' },
-        flowchart: { curve: 'basis', padding: 20 },
-        sequence: { actorMargin: 60, messageMargin: 30 }
-      });
-      document.querySelectorAll('.diagram-viewport pre.mermaid, .diagram-viewport div.mermaid').forEach(el => {
-        el.removeAttribute('data-processed');
-      });
-      mermaid.run();
-    }
+    // Diagrams always render on white background with light theme — no re-render needed on toggle
   }
 
   function _syncToggleUI() {
