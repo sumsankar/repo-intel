@@ -130,6 +130,66 @@ git tag | tail -10
 
 ---
 
+## Numeric score (0–10)
+
+Assign a **DevOps score out of 10** using this deduction model:
+
+**Start at 10.0**, then deduct for missing or misconfigured items:
+
+| Factor | Deduction if missing/failing |
+|--------|------------------------------|
+| No CI/CD pipeline at all | −3.0 |
+| CI/CD exists but no test step | −1.5 |
+| No security scanning in CI (SAST, dependency audit) | −1.5 |
+| No Docker (when project type warrants it) | −0.5 |
+| Docker images not pinned (using :latest) | −0.5 |
+| Docker runs as root (no USER instruction) | −0.5 |
+| No lock file (package-lock.json, yarn.lock, etc.) | −1.0 |
+| No README or README is a stub | −0.5 |
+| No LICENSE file | −0.5 |
+| No CHANGELOG | −0.25 |
+| No SECURITY.md | −0.25 |
+| No Dependabot / Renovate config | −0.5 |
+| No .editorconfig or formatting config | −0.25 |
+| No IaC (when infrastructure is present) | −0.5 |
+
+**Minimum score: 0.**
+
+---
+
+## Score factor output (MANDATORY)
+
+You MUST output a **score derivation table** listing every factor you evaluated and its impact. This goes into the "Score Derivation Details > DevOps" section of the report.
+
+For each factor, output:
+- **Factor name** — the category from the table above
+- **Finding** — what you found (present/absent, details)
+- **Impact** — the point deduction or "+0.0 (baseline)"
+
+Example:
+```
+| Factor | Finding | Impact |
+|--------|---------|--------|
+| CI/CD pipeline | GitHub Actions configured with build + test + deploy | +0.0 (baseline) |
+| Tests in CI | Unit tests run on every PR | +0.0 (baseline) |
+| Security scanning in CI | No SAST or dependency audit step | −1.5 |
+| Docker | Dockerfile present with multi-stage build | +0.0 (baseline) |
+| Docker image pinning | Using node:latest in Dockerfile | −0.5 |
+| Docker non-root user | No USER instruction | −0.5 |
+| Lock file | package-lock.json present | +0.0 (baseline) |
+| README | Comprehensive with usage examples | +0.0 (baseline) |
+| LICENSE | MIT license present | +0.0 (baseline) |
+| CHANGELOG | Not present | −0.25 |
+| SECURITY.md | Not present | −0.25 |
+| Dependabot / Renovate | dependabot.yml configured | +0.0 (baseline) |
+| IaC | Not applicable (no infrastructure) | +0.0 (N/A) |
+| **DevOps Score** | | **7.0 / 10** |
+```
+
+Always include ALL factors even if no issues were found. Use "+0.0 (N/A)" for factors that don't apply to the project type.
+
+---
+
 ## Findings format
 
 - **Severity**: critical / high / medium / low

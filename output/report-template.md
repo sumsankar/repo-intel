@@ -64,6 +64,94 @@
 | Dependency Risk | <!-- x/10 --> | 10%    | <!-- score×0.10 --> |            |
 | **Overall**     | <!-- x/10 --> | 100%   | <!-- total -->      |            |
 
+### Score Derivation Details
+
+<!-- For each dimension, list the factors that contributed to its score.
+     This helps users understand exactly how scores were calculated. -->
+
+#### 🔒 Security — <!-- x/10 -->
+
+| Factor | Finding | Impact |
+| ------ | ------- | ------ |
+<!-- Example rows:
+| Committed secrets | 2 API keys found in config files | −3.0 |
+| SQL / command injection | No injection vulnerabilities found | +0.0 (baseline) |
+| CORS configuration | Wildcard CORS in production config | −1.5 |
+| Dependency CVEs | 3 critical, 5 high CVEs | −2.0 |
+| Auth & session handling | JWT tokens properly validated | +0.0 (baseline) |
+| Input validation | Missing validation on 4 API endpoints | −0.5 |
+
+Factor categories: Committed secrets, SQL/command injection, XSS vulnerabilities,
+CORS configuration, Auth & session handling, Dependency CVEs, Input validation,
+Security headers, Sensitive data exposure, Cryptography -->
+
+> **Scoring method:** Starts at 10.0. Each finding deducts points by severity (Critical: −2.0 to −3.0, High: −1.0 to −2.0, Medium: −0.5 to −1.0, Low: −0.25). Minimum 0.
+
+#### 📝 Code Quality — <!-- x/10 -->
+
+| Factor | Finding | Impact |
+| ------ | ------- | ------ |
+<!-- Example rows:
+| Test coverage | ~45% estimated (112 test files) | +0.0 (adequate) |
+| TODO/FIXME density | 23 TODOs, 4 in critical paths | −0.5 |
+| Empty catch blocks | 8 empty catch blocks swallowing errors | −1.0 |
+| File size | 2 files exceed 3000 lines | −0.5 |
+| Code duplication | Moderate duplication in service layer | −0.5 |
+
+Factor categories: Test coverage, TODO/FIXME density, Empty catch blocks,
+File size, Code duplication, Naming consistency, Dead code, Error handling,
+Type safety, Complexity -->
+
+> **Scoring method:** Starts at 10.0. Deductions for missing tests (−1.0 to −3.0), code smells (−0.25 to −1.0 each), large files (−0.5 each), poor error handling (−0.5 to −1.0).
+
+#### 🏗️ Architecture — <!-- x/10 -->
+
+| Factor | Finding | Impact |
+| ------ | ------- | ------ |
+<!-- Example rows:
+| Layered structure | Clear separation: controllers → services → repos | +0.0 (baseline) |
+| Circular dependencies | 2 circular dependency chains detected | −1.5 |
+| Dependency count | 142 direct dependencies (high for project size) | −0.5 |
+
+Factor categories: Layered structure, Circular dependencies, Dependency count,
+Framework version consistency, API design patterns, Separation of concerns,
+Configuration management, Module cohesion, Coupling -->
+
+> **Scoring method:** Starts at 10.0. Circular deps: −1.0 to −2.0. Missing layered structure: −1.5. Tight coupling: −0.5 to −1.5. Inconsistent framework versions: −0.5.
+
+#### ⚙️ DevOps — <!-- x/10 -->
+
+| Factor | Finding | Impact |
+| ------ | ------- | ------ |
+<!-- Example rows:
+| CI/CD pipeline | GitHub Actions with build + test | +0.0 (baseline) |
+| Tests in CI | Unit tests run on every PR | +0.0 (baseline) |
+| Security scanning | No SAST/DAST in pipeline | −1.5 |
+| Docker image pinning | Using :latest tags | −0.5 |
+
+Factor categories: CI/CD pipeline, Tests in CI, Security scanning in CI,
+Docker, Infrastructure as Code, Lock file, README quality, LICENSE,
+CHANGELOG, SECURITY.md, Dependabot/Renovate -->
+
+> **Scoring method:** Starts at 10.0. No CI/CD: −3.0. No tests in CI: −1.5. No security scanning: −1.5. Missing lock file: −1.0. Missing README: −0.5. Missing LICENSE: −0.5.
+
+#### 📦 Dependency Risk — <!-- x/10 -->
+
+| Factor | Finding | Impact |
+| ------ | ------- | ------ |
+<!-- Example rows:
+| Critical CVEs | 0 critical vulnerabilities | +0.0 (baseline) |
+| High CVEs | 3 high-severity vulnerabilities | −1.5 |
+| Deprecated packages | 5 deprecated runtime dependencies | −1.0 |
+| License compliance | 1 GPL-licensed transitive dependency | −0.5 |
+| Lock file | package-lock.json present and current | +0.0 (baseline) |
+
+Factor categories: Critical CVEs, High CVEs, Medium/Low CVEs,
+Deprecated packages, License compliance, Lock file, Outdated dependencies,
+Dependency count, Pinning strategy, Transitive dependency risk -->
+
+> **Scoring method:** Starts at 10.0. Each critical CVE: −2.0. Each high CVE: −0.5. Deprecated deps: −0.5 to −1.5. License issues: −0.5 each. Missing lock file: −1.0.
+
 ---
 
 ## 🔒 Security Findings

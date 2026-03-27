@@ -288,6 +288,60 @@ for dir in */; do echo "$dir: $(find $dir -type f | grep -v node_modules | wc -l
 
 ---
 
+## Numeric score (0–10)
+
+Assign an **Architecture score out of 10** using this deduction model:
+
+**Start at 10.0**, then deduct:
+
+| Factor | Deduction |
+|--------|-----------|
+| No layered structure (flat directory, no separation of concerns) | −1.5 to −2.0 |
+| Circular dependencies detected (per cycle, max −3.0) | −1.0 each |
+| Inconsistent framework versions (e.g., mixed Angular 14/16) | −0.5 |
+| Excessive direct dependencies (>100 for small project) | −0.5 |
+| Business logic in controllers / UI layer | −0.5 to −1.0 |
+| Tight coupling between unrelated modules | −0.5 to −1.5 |
+| No lock file present | −1.0 |
+| Missing API design conventions (inconsistent routes, no versioning) | −0.5 |
+| Poor module cohesion (unrelated code grouped together) | −0.5 |
+| Hardcoded configuration values (not using env/config) | −0.5 |
+| No clear entry point / startup organization | −0.5 |
+
+**Minimum score: 0.**
+
+---
+
+## Score factor output (MANDATORY)
+
+You MUST output a **score derivation table** listing every factor you evaluated and its impact. This goes into the "Score Derivation Details > Architecture" section of the report.
+
+For each factor, output:
+- **Factor name** — the category from the table above
+- **Finding** — what you observed (include specifics)
+- **Impact** — the point deduction or "+0.0 (baseline)"
+
+Example:
+```
+| Factor | Finding | Impact |
+|--------|---------|--------|
+| Layered structure | Clear separation: controllers → services → repositories | +0.0 (baseline) |
+| Circular dependencies | 2 cycles detected: UserService ↔ AuthService, OrderRepo ↔ PaymentRepo | −2.0 |
+| Framework version consistency | All Angular packages at v16.2.x | +0.0 (baseline) |
+| Dependency count | 42 direct dependencies (reasonable for project size) | +0.0 (baseline) |
+| Separation of concerns | Business logic found in 3 controller files | −0.5 |
+| Module coupling | Tight coupling between User and Notification modules | −0.5 |
+| Lock file | package-lock.json present and up to date | +0.0 (baseline) |
+| API design | Consistent RESTful routes with /api/v1 prefix | +0.0 (baseline) |
+| Configuration management | 5 hardcoded database URLs in source files | −0.5 |
+| Entry point organization | Clean startup in main.ts with proper bootstrapping | +0.0 (baseline) |
+| **Architecture Score** | | **6.5 / 10** |
+```
+
+Always include ALL factors even if no issues were found.
+
+---
+
 ## Findings format
 
 - **Severity**: critical / high / medium / low

@@ -268,6 +268,59 @@ updates:
 
 ---
 
+## Numeric score (0–10)
+
+Assign a **Dependency Risk score out of 10** using this deduction model:
+
+**Start at 10.0**, then deduct:
+
+| Factor | Deduction |
+|--------|-----------|
+| Critical CVEs (per CVE, max −4.0) | −2.0 each |
+| High CVEs (per CVE, max −3.0) | −0.5 each |
+| Medium CVEs (aggregate, max −1.0) | −0.25 per 3 CVEs |
+| Deprecated runtime dependencies (max −2.0) | −0.5 per package |
+| GPL/AGPL licensed deps in non-GPL project (per dep) | −0.5 each |
+| Unknown license dependencies (per dep, max −1.0) | −0.25 each |
+| No lock file present | −1.0 |
+| Significantly outdated deps (2+ major versions behind, max −1.0) | −0.25 per dep |
+| Excessive dependency count (>150 direct) | −0.5 |
+| Unpinned dependency versions (max −0.5) | −0.1 per unpinned |
+
+**Minimum score: 0.**
+
+---
+
+## Score factor output (MANDATORY)
+
+You MUST output a **score derivation table** listing every factor you evaluated and its impact. This goes into the "Score Derivation Details > Dependency Risk" section of the report.
+
+For each factor, output:
+- **Factor name** — the category from the table above
+- **Finding** — what you found (counts, specific packages)
+- **Impact** — the point deduction or "+0.0 (baseline)"
+
+Example:
+```
+| Factor | Finding | Impact |
+|--------|---------|--------|
+| Critical CVEs | 0 critical vulnerabilities | +0.0 (baseline) |
+| High CVEs | 3 high CVEs (lodash, express, jsonwebtoken) | −1.5 |
+| Medium CVEs | 7 medium CVEs | −0.5 |
+| Deprecated packages | moment@2.29.4, request@2.88.2 deprecated | −1.0 |
+| License compliance | 1 GPL-3.0 transitive dependency (some-pkg) | −0.5 |
+| Unknown licenses | 0 packages with unknown licenses | +0.0 (baseline) |
+| Lock file | package-lock.json present and consistent | +0.0 (baseline) |
+| Outdated dependencies | 4 deps are 2+ major versions behind | −1.0 |
+| Dependency count | 87 direct dependencies (reasonable) | +0.0 (baseline) |
+| Version pinning | All versions pinned in lock file | +0.0 (baseline) |
+| **Dependency Risk Score** | | **5.5 / 10** |
+```
+
+Always include ALL factors even if no issues were found.
+
+---
+
 ## Findings format
 
 - **Severity**: critical / high / medium / low

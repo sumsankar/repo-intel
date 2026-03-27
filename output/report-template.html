@@ -232,6 +232,47 @@
     .close-btn { background: none; border: 1px solid #d1d5e0; color: #6b7280; border-radius: 4px; padding: 0.2rem 0.6rem; cursor: pointer; font-size: 0.8rem; transition: color .15s, border-color .15s; }
     .close-btn:hover { color: #dc2626; border-color: #dc2626; }
 
+    /* Score derivation details */
+    .score-derivation { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+    .score-detail {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .score-detail-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background .15s;
+    }
+    .score-detail-header:hover { background: var(--surface2); }
+    .score-detail-header .sd-left { display: flex; align-items: center; gap: 0.75rem; }
+    .score-detail-header .sd-dim { font-weight: 600; font-size: 0.9rem; }
+    .score-detail-header .sd-score { font-size: 0.85rem; font-weight: 700; padding: 2px 10px; border-radius: 12px; }
+    .score-detail-header .sd-score.good { background: rgba(34,197,94,.12); color: var(--green); }
+    .score-detail-header .sd-score.ok { background: rgba(250,204,21,.12); color: var(--yellow); }
+    .score-detail-header .sd-score.poor { background: rgba(249,115,22,.12); color: var(--orange); }
+    .score-detail-header .sd-score.crit { background: rgba(239,68,68,.12); color: var(--red); }
+    .score-detail-header .sd-arrow { font-size: 0.7rem; color: var(--muted); transition: transform .2s; }
+    .score-detail.open .sd-arrow { transform: rotate(180deg); }
+    .score-detail-body { display: none; border-top: 1px solid var(--border); padding: 0; }
+    .score-detail.open .score-detail-body { display: block; }
+    .score-detail-body table { margin: 0; }
+    .score-detail-body th { font-size: 0.72rem; }
+    .score-detail-body td { font-size: 0.82rem; }
+    .score-detail-body td.factor-name { color: var(--text); font-weight: 500; }
+    .score-detail-body td.factor-result { color: var(--muted); }
+    .score-detail-body td.factor-impact { font-weight: 600; white-space: nowrap; }
+    .factor-positive { color: var(--green); }
+    .factor-negative { color: var(--red); }
+    .factor-neutral { color: var(--muted); }
+    .score-detail-summary { padding: 0.6rem 1rem; font-size: 0.82rem; color: var(--muted); background: var(--surface2); border-top: 1px solid var(--border); }
+    .score-detail-summary strong { color: var(--text); }
+
     /* Claude Run Metrics */
     .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
     .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
@@ -375,6 +416,339 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Score Derivation Details — click to expand each dimension -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:1.5rem 0 0.75rem;">
+      <h4 style="font-size:0.95rem;">Score Derivation Details</h4>
+      <div style="display:flex;gap:0.5rem;">
+        <button class="zoom-btn reset" onclick="expandAllScores()" title="Expand all" style="font-size:0.65rem;width:auto;padding:0 0.5rem;">Expand All</button>
+        <button class="zoom-btn reset" onclick="collapseAllScores()" title="Collapse all" style="font-size:0.65rem;width:auto;padding:0 0.5rem;">Collapse All</button>
+      </div>
+    </div>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:0.75rem;">Click any dimension below to see the factors that determined its score.</p>
+    <div class="score-derivation">
+
+      <!-- ── Security Score Derivation ── -->
+      <div class="score-detail" id="sd-security">
+        <div class="score-detail-header" onclick="toggleScoreDetail('sd-security')">
+          <div class="sd-left">
+            <span>🔒</span>
+            <span class="sd-dim">Security</span>
+            <span class="sd-score"><!-- x/10 --></span>
+          </div>
+          <span class="sd-arrow">▼</span>
+        </div>
+        <div class="score-detail-body">
+          <table>
+            <thead><tr><th>Factor</th><th>Finding</th><th>Impact</th></tr></thead>
+            <tbody>
+              <!--
+              Populate with actual factors found during analysis. Example rows:
+
+              <tr>
+                <td class="factor-name">Committed secrets</td>
+                <td class="factor-result">2 API keys found in config files</td>
+                <td class="factor-impact factor-negative">−3.0</td>
+              </tr>
+              <tr>
+                <td class="factor-name">SQL / command injection</td>
+                <td class="factor-result">No injection vulnerabilities found</td>
+                <td class="factor-impact factor-positive">+0.0 (baseline)</td>
+              </tr>
+              <tr>
+                <td class="factor-name">CORS configuration</td>
+                <td class="factor-result">Wildcard CORS in production config</td>
+                <td class="factor-impact factor-negative">−1.5</td>
+              </tr>
+              <tr>
+                <td class="factor-name">Dependency CVEs</td>
+                <td class="factor-result">3 critical, 5 high CVEs</td>
+                <td class="factor-impact factor-negative">−2.0</td>
+              </tr>
+              <tr>
+                <td class="factor-name">Auth & session handling</td>
+                <td class="factor-result">JWT tokens properly validated</td>
+                <td class="factor-impact factor-positive">+0.0 (baseline)</td>
+              </tr>
+              <tr>
+                <td class="factor-name">Input validation</td>
+                <td class="factor-result">Missing validation on 4 API endpoints</td>
+                <td class="factor-impact factor-negative">−0.5</td>
+              </tr>
+
+              Use these factor categories (include all that apply):
+              - Committed secrets (API keys, passwords, tokens in code)
+              - SQL / command injection (parameterized queries, exec usage)
+              - XSS vulnerabilities (unsanitized output, innerHTML usage)
+              - CORS configuration (wildcard origins, credentials exposure)
+              - Auth & session handling (JWT validation, session fixation)
+              - Dependency CVEs (critical/high vulnerabilities in deps)
+              - Input validation (unvalidated user input at boundaries)
+              - Security headers (CSP, HSTS, X-Frame-Options)
+              - Sensitive data exposure (logging secrets, error leaks)
+              - Cryptography (weak algorithms, hardcoded keys)
+              -->
+            </tbody>
+          </table>
+          <div class="score-detail-summary">
+            <strong>Scoring method:</strong> Starts at 10.0. Each security finding deducts points based on severity
+            (Critical: −2.0 to −3.0, High: −1.0 to −2.0, Medium: −0.5 to −1.0, Low: −0.25).
+            Minimum score is 0.
+            <!-- Add a one-sentence summary of why this dimension scored the way it did -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Code Quality Score Derivation ── -->
+      <div class="score-detail" id="sd-code">
+        <div class="score-detail-header" onclick="toggleScoreDetail('sd-code')">
+          <div class="sd-left">
+            <span>📝</span>
+            <span class="sd-dim">Code Quality</span>
+            <span class="sd-score"><!-- x/10 --></span>
+          </div>
+          <span class="sd-arrow">▼</span>
+        </div>
+        <div class="score-detail-body">
+          <table>
+            <thead><tr><th>Factor</th><th>Finding</th><th>Impact</th></tr></thead>
+            <tbody>
+              <!--
+              Populate with actual factors. Example rows:
+
+              <tr>
+                <td class="factor-name">Test coverage</td>
+                <td class="factor-result">~45% estimated coverage (112 test files)</td>
+                <td class="factor-impact factor-neutral">+0.0 (adequate)</td>
+              </tr>
+              <tr>
+                <td class="factor-name">TODO/FIXME density</td>
+                <td class="factor-result">23 TODO/FIXMEs, 4 in critical paths</td>
+                <td class="factor-impact factor-negative">−0.5</td>
+              </tr>
+              <tr>
+                <td class="factor-name">Empty catch blocks</td>
+                <td class="factor-result">8 empty catch blocks swallowing errors</td>
+                <td class="factor-impact factor-negative">−1.0</td>
+              </tr>
+              <tr>
+                <td class="factor-name">File size</td>
+                <td class="factor-result">2 files exceed 3000 lines</td>
+                <td class="factor-impact factor-negative">−0.5</td>
+              </tr>
+              <tr>
+                <td class="factor-name">Code duplication</td>
+                <td class="factor-result">Moderate duplication in service layer</td>
+                <td class="factor-impact factor-negative">−0.5</td>
+              </tr>
+
+              Use these factor categories (include all that apply):
+              - Test coverage (% estimate, test file count)
+              - TODO/FIXME density (count, in critical paths?)
+              - Empty catch blocks (swallowed errors)
+              - File size (files exceeding 3000 lines)
+              - Code duplication (repeated patterns)
+              - Naming consistency (conventions, mixed styles)
+              - Dead code (unused imports, unreachable code)
+              - Error handling patterns (consistent, missing?)
+              - Type safety (any usage, missing types)
+              - Complexity (deeply nested logic, long functions)
+              -->
+            </tbody>
+          </table>
+          <div class="score-detail-summary">
+            <strong>Scoring method:</strong> Starts at 10.0. Deductions for missing tests (−1.0 to −3.0 based on coverage gap),
+            code smells (−0.25 to −1.0 each), large files (−0.5 each), and poor error handling (−0.5 to −1.0).
+            <!-- Add a one-sentence summary -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Architecture Score Derivation ── -->
+      <div class="score-detail" id="sd-architecture">
+        <div class="score-detail-header" onclick="toggleScoreDetail('sd-architecture')">
+          <div class="sd-left">
+            <span>🏗️</span>
+            <span class="sd-dim">Architecture</span>
+            <span class="sd-score"><!-- x/10 --></span>
+          </div>
+          <span class="sd-arrow">▼</span>
+        </div>
+        <div class="score-detail-body">
+          <table>
+            <thead><tr><th>Factor</th><th>Finding</th><th>Impact</th></tr></thead>
+            <tbody>
+              <!--
+              Populate with actual factors. Example rows:
+
+              <tr>
+                <td class="factor-name">Layered structure</td>
+                <td class="factor-result">Clear separation: controllers → services → repositories</td>
+                <td class="factor-impact factor-positive">+0.0 (baseline)</td>
+              </tr>
+              <tr>
+                <td class="factor-name">Circular dependencies</td>
+                <td class="factor-result">2 circular dependency chains detected</td>
+                <td class="factor-impact factor-negative">−1.5</td>
+              </tr>
+              <tr>
+                <td class="factor-name">Dependency count</td>
+                <td class="factor-result">142 direct dependencies (high for project size)</td>
+                <td class="factor-impact factor-negative">−0.5</td>
+              </tr>
+
+              Use these factor categories (include all that apply):
+              - Layered structure (clear separation of concerns)
+              - Circular dependencies (module-level cycles)
+              - Dependency count (proportional to project size)
+              - Framework version consistency (mixed versions?)
+              - Monorepo organization (if applicable)
+              - API design patterns (REST conventions, consistency)
+              - Separation of concerns (business logic in controllers?)
+              - Configuration management (hardcoded values, env usage)
+              - Module cohesion (related code grouped together?)
+              - Coupling (tight coupling between unrelated modules)
+              -->
+            </tbody>
+          </table>
+          <div class="score-detail-summary">
+            <strong>Scoring method:</strong> Starts at 10.0. Deductions for circular dependencies (−1.0 to −2.0),
+            missing layered structure (−1.5), tight coupling (−0.5 to −1.5), inconsistent framework versions (−0.5),
+            and excessive dependency count (−0.5).
+            <!-- Add a one-sentence summary -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ── DevOps Score Derivation ── -->
+      <div class="score-detail" id="sd-devops">
+        <div class="score-detail-header" onclick="toggleScoreDetail('sd-devops')">
+          <div class="sd-left">
+            <span>⚙️</span>
+            <span class="sd-dim">DevOps</span>
+            <span class="sd-score"><!-- x/10 --></span>
+          </div>
+          <span class="sd-arrow">▼</span>
+        </div>
+        <div class="score-detail-body">
+          <table>
+            <thead><tr><th>Factor</th><th>Finding</th><th>Impact</th></tr></thead>
+            <tbody>
+              <!--
+              Populate with actual factors. Example rows:
+
+              <tr>
+                <td class="factor-name">CI/CD pipeline</td>
+                <td class="factor-result">GitHub Actions configured with build + test</td>
+                <td class="factor-impact factor-positive">+0.0 (baseline)</td>
+              </tr>
+              <tr>
+                <td class="factor-name">Tests in CI</td>
+                <td class="factor-result">Unit tests run on every PR</td>
+                <td class="factor-impact factor-positive">+0.0 (baseline)</td>
+              </tr>
+              <tr>
+                <td class="factor-name">Security scanning</td>
+                <td class="factor-result">No SAST/DAST/dependency scanning in pipeline</td>
+                <td class="factor-impact factor-negative">−1.5</td>
+              </tr>
+              <tr>
+                <td class="factor-name">Docker image pinning</td>
+                <td class="factor-result">Using :latest tags in Dockerfile</td>
+                <td class="factor-impact factor-negative">−0.5</td>
+              </tr>
+
+              Use these factor categories (include all that apply):
+              - CI/CD pipeline (exists? platform?)
+              - Tests in CI (automated test execution)
+              - Security scanning in CI (SAST, dependency audit)
+              - Docker (present? images pinned?)
+              - Infrastructure as Code (Terraform, CloudFormation, etc.)
+              - Lock file (package-lock.json, yarn.lock, etc.)
+              - README quality (substantive documentation)
+              - LICENSE file (present? appropriate?)
+              - CHANGELOG (maintained?)
+              - SECURITY.md (vulnerability reporting process)
+              - Dependabot / Renovate (automated dependency updates)
+              -->
+            </tbody>
+          </table>
+          <div class="score-detail-summary">
+            <strong>Scoring method:</strong> Starts at 10.0. Missing CI/CD: −3.0. Missing tests in CI: −1.5.
+            No security scanning: −1.5. Missing lock file: −1.0. Missing README: −0.5. Missing LICENSE: −0.5.
+            No Docker pinning: −0.5. Each missing governance file: −0.25.
+            <!-- Add a one-sentence summary -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Dependency Risk Score Derivation ── -->
+      <div class="score-detail" id="sd-dependency">
+        <div class="score-detail-header" onclick="toggleScoreDetail('sd-dependency')">
+          <div class="sd-left">
+            <span>📦</span>
+            <span class="sd-dim">Dependency Risk</span>
+            <span class="sd-score"><!-- x/10 --></span>
+          </div>
+          <span class="sd-arrow">▼</span>
+        </div>
+        <div class="score-detail-body">
+          <table>
+            <thead><tr><th>Factor</th><th>Finding</th><th>Impact</th></tr></thead>
+            <tbody>
+              <!--
+              Populate with actual factors. Example rows:
+
+              <tr>
+                <td class="factor-name">Critical CVEs</td>
+                <td class="factor-result">0 critical vulnerabilities</td>
+                <td class="factor-impact factor-positive">+0.0 (baseline)</td>
+              </tr>
+              <tr>
+                <td class="factor-name">High CVEs</td>
+                <td class="factor-result">3 high-severity vulnerabilities</td>
+                <td class="factor-impact factor-negative">−1.5</td>
+              </tr>
+              <tr>
+                <td class="factor-name">Deprecated packages</td>
+                <td class="factor-result">5 deprecated runtime dependencies</td>
+                <td class="factor-impact factor-negative">−1.0</td>
+              </tr>
+              <tr>
+                <td class="factor-name">License compliance</td>
+                <td class="factor-result">1 GPL-licensed transitive dependency</td>
+                <td class="factor-impact factor-negative">−0.5</td>
+              </tr>
+              <tr>
+                <td class="factor-name">Lock file</td>
+                <td class="factor-result">package-lock.json present and up to date</td>
+                <td class="factor-impact factor-positive">+0.0 (baseline)</td>
+              </tr>
+
+              Use these factor categories (include all that apply):
+              - Critical CVEs (count and packages affected)
+              - High CVEs (count and packages affected)
+              - Medium/Low CVEs (aggregate count)
+              - Deprecated packages (runtime deps using deprecated libs)
+              - License compliance (GPL/AGPL in non-GPL projects)
+              - Lock file (present and consistent?)
+              - Outdated dependencies (major versions behind)
+              - Dependency count (proportional to project)
+              - Pinning strategy (exact versions vs ranges)
+              - Transitive dependency risk (deep chains)
+              -->
+            </tbody>
+          </table>
+          <div class="score-detail-summary">
+            <strong>Scoring method:</strong> Starts at 10.0. Each critical CVE: −2.0. Each high CVE: −0.5.
+            Deprecated runtime deps: −0.5 to −1.5 based on count. License issues: −0.5 each.
+            Missing lock file: −1.0. Significantly outdated deps: −0.5.
+            <!-- Add a one-sentence summary -->
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /score-derivation -->
   </section>
 
   <!-- Security -->
@@ -922,6 +1296,18 @@ sequenceDiagram
   }
 
   function _escClose(e) { if (e.key === 'Escape') closeDiagramModal(); }
+
+  /* ── Score derivation toggle ───────────────────────────────── */
+  function toggleScoreDetail(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('open');
+  }
+  function expandAllScores() {
+    document.querySelectorAll('.score-detail').forEach(el => el.classList.add('open'));
+  }
+  function collapseAllScores() {
+    document.querySelectorAll('.score-detail').forEach(el => el.classList.remove('open'));
+  }
 
   /* ── Init: MutationObserver + Mermaid callback ──────────────── */
   document.addEventListener('DOMContentLoaded', () => {

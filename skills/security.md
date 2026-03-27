@@ -173,6 +173,61 @@ After scanning, assign an overall risk level:
 
 ---
 
+## Numeric score (0–10)
+
+Assign a **Security score out of 10** using this deduction model:
+
+**Start at 10.0**, then deduct for each finding:
+
+| Factor | Deduction per occurrence |
+|--------|--------------------------|
+| Committed secrets (API keys, passwords, tokens) | −2.0 to −3.0 per secret |
+| SQL / command injection | −2.0 per pattern |
+| XSS vulnerabilities (unsanitized output, innerHTML) | −1.0 to −1.5 per pattern |
+| CORS wildcard in production | −1.5 |
+| Missing auth / broken session handling | −1.5 to −2.0 |
+| Critical dependency CVEs | −1.0 per CVE |
+| Missing input validation at boundaries | −0.5 per endpoint |
+| Missing security headers (CSP, HSTS) | −0.5 |
+| Sensitive data in logs / error messages | −0.5 |
+| Weak cryptography / hardcoded keys | −1.0 |
+| No SECURITY.md | −0.25 |
+| No .gitignore | −0.5 |
+
+**Minimum score: 0.** Cap total deductions at 10.
+
+---
+
+## Score factor output (MANDATORY)
+
+You MUST output a **score derivation table** listing every factor you evaluated and its impact. This goes into the "Score Derivation Details > Security" section of the report.
+
+For each factor, output:
+- **Factor name** — the category from the table above
+- **Finding** — what you actually found (or "None found" if clean)
+- **Impact** — the point deduction applied (e.g., "−2.0") or "+0.0 (baseline)" if no issue
+
+Example output:
+```
+| Factor | Finding | Impact |
+|--------|---------|--------|
+| Committed secrets | 2 API keys in config/aws.js | −3.0 |
+| SQL / command injection | No injection patterns found | +0.0 (baseline) |
+| XSS vulnerabilities | innerHTML used in 3 files without sanitization | −1.5 |
+| CORS configuration | Wildcard CORS in server.js line 42 | −1.5 |
+| Auth & session handling | JWT properly validated with expiry | +0.0 (baseline) |
+| Input validation | 4 API endpoints missing validation | −0.5 |
+| Security headers | No CSP or HSTS headers configured | −0.5 |
+| Sensitive data exposure | None found | +0.0 (baseline) |
+| Cryptography | Using bcrypt with proper rounds | +0.0 (baseline) |
+| SECURITY.md | Not present | −0.25 |
+| **Security Score** | | **3.75 / 10** |
+```
+
+Always include ALL factors — even those with no issues (show them as "+0.0 (baseline)"). This gives users full transparency into how the score was derived.
+
+---
+
 ## Findings format
 
 - **Severity**: critical / high / medium / low

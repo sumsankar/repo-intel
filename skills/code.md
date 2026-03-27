@@ -131,6 +131,66 @@ find . -type f \( -name "*.js" -o -name "*.ts" -o -name "*.py" -o -name "*.cs" -
 
 ---
 
+## Numeric score (0–10)
+
+Assign a **Code Quality score out of 10** using this deduction model:
+
+**Start at 10.0**, then deduct:
+
+| Factor | Deduction |
+|--------|-----------|
+| Test coverage < 10% (or zero test files) | −3.0 |
+| Test coverage 10–30% | −1.5 |
+| Test coverage 30–60% | −0.5 |
+| Test coverage > 60% | +0.0 (baseline) |
+| Empty catch blocks (per occurrence, max −2.0) | −0.25 each |
+| Files > 3000 lines (per file) | −0.5 each |
+| Files > 1000 lines (per file, max −1.5) | −0.25 each |
+| TODO/FIXME in critical paths (per item, max −1.0) | −0.25 each |
+| TODO/FIXME density > 50 total | −0.5 |
+| Significant code duplication (> 50 lines repeated) | −0.5 to −1.0 |
+| Dead code / unused imports (widespread) | −0.5 |
+| Inconsistent naming conventions | −0.5 |
+| Missing error handling in critical paths | −0.5 to −1.0 |
+| Deep nesting (4+ levels, widespread) | −0.5 |
+| Functions > 80 lines (widespread) | −0.5 |
+
+**Minimum score: 0.**
+
+---
+
+## Score factor output (MANDATORY)
+
+You MUST output a **score derivation table** listing every factor you evaluated and its impact. This goes into the "Score Derivation Details > Code Quality" section of the report.
+
+For each factor, output:
+- **Factor name** — the category from the table above
+- **Finding** — what you measured or found (include numbers)
+- **Impact** — the point deduction applied or "+0.0 (baseline)"
+
+Example:
+```
+| Factor | Finding | Impact |
+|--------|---------|--------|
+| Test coverage | ~45% estimated (112 test files / 248 source) | −0.5 |
+| Empty catch blocks | 8 empty catch blocks in service layer | −1.0 |
+| File size (>3000 lines) | 0 files exceed 3000 lines | +0.0 (baseline) |
+| File size (>1000 lines) | 3 files over 1000 lines | −0.75 |
+| TODO/FIXME in critical paths | 4 TODOs in payment and auth modules | −0.5 |
+| TODO/FIXME density | 23 total across codebase | +0.0 (under threshold) |
+| Code duplication | Moderate duplication in service layer (~60 lines) | −0.5 |
+| Dead code | 12 unused imports across 8 files | −0.5 |
+| Naming consistency | Consistent camelCase throughout | +0.0 (baseline) |
+| Error handling | Missing error handling in 2 API controllers | −0.5 |
+| Deep nesting | 3 functions with 5+ nesting levels | −0.5 |
+| Long functions | 2 functions over 120 lines | −0.5 |
+| **Code Quality Score** | | **5.25 / 10** |
+```
+
+Always include ALL factors even if no issues were found.
+
+---
+
 ## Findings format
 
 For each issue found, record:

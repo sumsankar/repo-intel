@@ -12,15 +12,16 @@ This skill runs LAST, after all other skills have completed. It synthesizes thei
 
 After running code, architecture, security, devops, and dependency skills, record:
 
-| Dimension | Score (0–10) | Weight |
-|-----------|-------------|--------|
-| Security | ? | 30% |
-| Code Quality | ? | 25% |
-| Architecture | ? | 20% |
-| DevOps | ? | 15% |
-| Dependency Risk | ? | 10% |
+| Dimension       | Score (0–10) | Weight |
+| --------------- | ------------ | ------ |
+| Security        | ?            | 30%    |
+| Code Quality    | ?            | 25%    |
+| Architecture    | ?            | 20%    |
+| DevOps          | ?            | 15%    |
+| Dependency Risk | ?            | 10%    |
 
 **Weighted Overall Score:**
+
 ```
 Overall = (security × 0.30) + (code × 0.25) + (architecture × 0.20) + (devops × 0.15) + (dependency × 0.10)
 ```
@@ -29,27 +30,27 @@ Overall = (security × 0.30) + (code × 0.25) + (architecture × 0.20) + (devops
 
 Evaluate each policy rule against the findings:
 
-| Policy ID | Rule | Blocking | Category |
-|-----------|------|---------|----------|
-| GOV-SEC-001 | No critical secrets findings | YES | Security |
-| GOV-SEC-002 | Security score ≥ 5 | YES | Security |
-| GOV-SEC-003 | No SQL injection or command injection patterns | YES | Security |
-| GOV-SEC-004 | CORS not set to allow all origins in production | NO | Security |
-| GOV-DEP-001 | No critical CVEs | YES | Dependency |
-| GOV-DEP-002 | No deprecated runtime dependencies | NO | Dependency |
-| GOV-DEP-003 | No GPL/AGPL licensed dependencies (commercial projects) | NO | Dependency |
-| GOV-CODE-001 | Test file ratio ≥ 10% | NO | Code Quality |
-| GOV-CODE-002 | No files > 3000 lines | NO | Code Quality |
-| GOV-CODE-003 | No empty catch blocks / swallowed exceptions | NO | Code Quality |
-| GOV-CODE-004 | No TODO/FIXME in critical paths | NO | Code Quality |
-| GOV-DEV-001 | CI/CD pipeline exists | NO | DevOps |
-| GOV-DEV-002 | Tests run in CI | NO | DevOps |
-| GOV-DEV-003 | Docker images use pinned versions (not :latest) | NO | DevOps |
-| GOV-DEV-004 | README exists and is substantive (>20 lines) | NO | DevOps |
-| GOV-ARCH-001 | Lock file exists | NO | Architecture |
-| GOV-ARCH-002 | No circular project/package dependencies | NO | Architecture |
-| GOV-ARCH-003 | Consistent framework versions across all projects | NO | Architecture |
-| GOV-ARCH-004 | Clear layered structure (not flat src/) | NO | Architecture |
+| Policy ID    | Rule                                                    | Blocking | Category     |
+| ------------ | ------------------------------------------------------- | -------- | ------------ |
+| GOV-SEC-001  | No critical secrets findings                            | YES      | Security     |
+| GOV-SEC-002  | Security score ≥ 5                                      | YES      | Security     |
+| GOV-SEC-003  | No SQL injection or command injection patterns          | YES      | Security     |
+| GOV-SEC-004  | CORS not set to allow all origins in production         | NO       | Security     |
+| GOV-DEP-001  | No critical CVEs                                        | YES      | Dependency   |
+| GOV-DEP-002  | No deprecated runtime dependencies                      | NO       | Dependency   |
+| GOV-DEP-003  | No GPL/AGPL licensed dependencies (commercial projects) | NO       | Dependency   |
+| GOV-CODE-001 | Test file ratio ≥ 10%                                   | NO       | Code Quality |
+| GOV-CODE-002 | No files > 3000 lines                                   | NO       | Code Quality |
+| GOV-CODE-003 | No empty catch blocks / swallowed exceptions            | NO       | Code Quality |
+| GOV-CODE-004 | No TODO/FIXME in critical paths                         | NO       | Code Quality |
+| GOV-DEV-001  | CI/CD pipeline exists                                   | NO       | DevOps       |
+| GOV-DEV-002  | Tests run in CI                                         | NO       | DevOps       |
+| GOV-DEV-003  | Docker images use pinned versions (not :latest)         | NO       | DevOps       |
+| GOV-DEV-004  | README exists and is substantive (>20 lines)            | NO       | DevOps       |
+| GOV-ARCH-001 | Lock file exists                                        | NO       | Architecture |
+| GOV-ARCH-002 | No circular project/package dependencies                | NO       | Architecture |
+| GOV-ARCH-003 | Consistent framework versions across all projects       | NO       | Architecture |
+| GOV-ARCH-004 | Clear layered structure (not flat src/)                 | NO       | Architecture |
 
 **Blocking policies:** a single failure = NON-COMPLIANT status
 
@@ -72,16 +73,17 @@ raw_score = (critical_count × 25) + (high_count × 10) + (medium_count × 3) + 
 RPI = max(0, 100 - raw_score / 2)
 ```
 
-| RPI | Risk Level | Meaning |
-|-----|-----------|---------|
-| 80–100 | 🟢 Low Risk | Strong engineering practices |
-| 60–79 | 🟡 Medium Risk | Some gaps, improvement roadmap clear |
-| 40–59 | 🟠 High Risk | Multiple significant weaknesses |
-| 0–39 | 🔴 Critical Risk | Immediate action required |
+| RPI    | Risk Level       | Meaning                              |
+| ------ | ---------------- | ------------------------------------ |
+| 80–100 | 🟢 Low Risk      | Strong engineering practices         |
+| 60–79  | 🟡 Medium Risk   | Some gaps, improvement roadmap clear |
+| 40–59  | 🟠 High Risk     | Multiple significant weaknesses      |
+| 0–39   | 🔴 Critical Risk | Immediate action required            |
 
 ### 5. Architecture compliance check
 
 Verify structural standards are met:
+
 - Layered structure exists (controllers → services → repositories)
 - No binary files committed (DLLs, JARs outside build tools)
 - Naming conventions are consistent (check for typos like "Respository" vs "Repository")
@@ -90,6 +92,7 @@ Verify structural standards are met:
 ### 6. Score trend (if prior analysis available)
 
 If you have access to a previous analysis report, calculate:
+
 ```
 Score delta = current_overall_score - previous_overall_score
 New violations since last run: [list any policies that newly failed]
@@ -110,14 +113,21 @@ Add a "Governance Assessment" section to the report with this structure:
 **Risk Posture Index:** [RPI/100] [🟢 / 🟡 / 🟠 / 🔴]
 
 ### Score Breakdown
-| Dimension | Score | Weight | Contribution |
-|-----------|-------|--------|-------------|
-| Security | X/10 | 30% | X.XX |
-| Code Quality | X/10 | 25% | X.XX |
-| Architecture | X/10 | 20% | X.XX |
-| DevOps | X/10 | 15% | X.XX |
-| Dependency Risk | X/10 | 10% | X.XX |
-| **Overall** | **X.X/10** | 100% | X.XX |
+
+| Dimension       | Score      | Weight | Contribution | Key Driver                      |
+| --------------- | ---------- | ------ | ------------ | ------------------------------- |
+| Security        | X/10       | 30%    | X.XX         | (top factor driving this score) |
+| Code Quality    | X/10       | 25%    | X.XX         | (top factor driving this score) |
+| Architecture    | X/10       | 20%    | X.XX         | (top factor driving this score) |
+| DevOps          | X/10       | 15%    | X.XX         | (top factor driving this score) |
+| Dependency Risk | X/10       | 10%    | X.XX         | (top factor driving this score) |
+| **Overall**     | **X.X/10** | 100%   | X.XX         |                                 |
+
+### Score Derivation Details
+
+**MANDATORY:** For each dimension, populate the Score Derivation Details section in the HTML report template. Each skill provides its own score factor table (see "Score factor output" in each skill's .md file). Aggregate all five factor tables into the collapsible score-detail panels in the Scorecard section. This gives users full transparency into how every score was derived.
+
+Each dimension's factor table must list ALL evaluated factors — including those with no issues (+0.0 baseline) — so users see what was checked, not just what failed.
 
 ### Policy Compliance
 
@@ -158,23 +168,23 @@ Add a "Governance Assessment" section to the report with this structure:
 Always end the governance section with this table:
 
 ```markdown
-| Policy | Status | Impact |
-|--------|--------|--------|
-| GOV-SEC-001: No committed secrets | ❌ FAIL (BLOCKING) | Critical |
-| GOV-SEC-002: Security score ≥ 5 | ❌ FAIL (BLOCKING) | High |
-| GOV-SEC-003: No injection patterns | ✅ PASS | — |
-| GOV-DEP-001: No critical CVEs | ✅ PASS | — |
-| GOV-DEP-002: No deprecated deps | ❌ FAIL (advisory) | Medium |
-| GOV-CODE-001: Test coverage ≥ 10% | ❌ FAIL (advisory) | High |
-| GOV-CODE-002: No files > 3000 lines | ✅ PASS | — |
-| GOV-CODE-003: No empty catch blocks | ❌ FAIL (advisory) | Medium |
-| GOV-DEV-001: CI/CD pipeline | ❌ FAIL (advisory) | High |
-| GOV-DEV-002: Tests run in CI | ❌ FAIL (advisory) | High |
-| GOV-DEV-003: Pinned Docker images | ✅ PASS | — |
-| GOV-ARCH-001: Lock file exists | ✅ PASS | — |
-| GOV-ARCH-002: No circular deps | ✅ PASS | — |
-| GOV-ARCH-003: Consistent frameworks | ✅ PASS | — |
-| GOV-ARCH-004: Layered structure | ❌ FAIL (advisory) | Medium |
+| Policy                              | Status             | Impact   |
+| ----------------------------------- | ------------------ | -------- |
+| GOV-SEC-001: No committed secrets   | ❌ FAIL (BLOCKING) | Critical |
+| GOV-SEC-002: Security score ≥ 5     | ❌ FAIL (BLOCKING) | High     |
+| GOV-SEC-003: No injection patterns  | ✅ PASS            | —        |
+| GOV-DEP-001: No critical CVEs       | ✅ PASS            | —        |
+| GOV-DEP-002: No deprecated deps     | ❌ FAIL (advisory) | Medium   |
+| GOV-CODE-001: Test coverage ≥ 10%   | ❌ FAIL (advisory) | High     |
+| GOV-CODE-002: No files > 3000 lines | ✅ PASS            | —        |
+| GOV-CODE-003: No empty catch blocks | ❌ FAIL (advisory) | Medium   |
+| GOV-DEV-001: CI/CD pipeline         | ❌ FAIL (advisory) | High     |
+| GOV-DEV-002: Tests run in CI        | ❌ FAIL (advisory) | High     |
+| GOV-DEV-003: Pinned Docker images   | ✅ PASS            | —        |
+| GOV-ARCH-001: Lock file exists      | ✅ PASS            | —        |
+| GOV-ARCH-002: No circular deps      | ✅ PASS            | —        |
+| GOV-ARCH-003: Consistent frameworks | ✅ PASS            | —        |
+| GOV-ARCH-004: Layered structure     | ❌ FAIL (advisory) | Medium   |
 
 **Overall: 8/15 policies passed (53%) — ❌ NON-COMPLIANT (2 blocking failures)**
 ```
