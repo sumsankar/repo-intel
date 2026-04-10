@@ -5,348 +5,711 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Repository Intelligence Report</title>
   <style>
-    /* ── Dark mode (default) ── */
+    /* ── Tokens ─────────────────────────────────────────────────── */
     :root {
-      --bg: #0f1117;
-      --surface: #1a1d27;
-      --surface2: #22263a;
-      --border: #2d3148;
+      --bg: #0d0f18;
+      --surface: #151823;
+      --surface2: #1c2032;
+      --surface3: #222840;
+      --border: #2a3050;
+      --border2: #353d60;
       --text: #e2e8f0;
-      --muted: #8892a4;
+      --text2: #c4cdd9;
+      --muted: #7a85a0;
       --accent: #6c8eff;
+      --accent2: #4f6ef7;
       --green: #22c55e;
       --yellow: #facc15;
       --orange: #f97316;
       --red: #ef4444;
       --blue: #74c0fc;
+      --purple: #a78bfa;
+      --sidebar-w: 260px;
+      --topbar-h: 56px;
+      --radius: 10px;
+      --radius-sm: 6px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.35);
     }
-
-    /* ── Light mode ── */
     :root.light {
-      --bg: #f5f6fa;
+      --bg: #f0f2f8;
       --surface: #ffffff;
-      --surface2: #f0f2f8;
-      --border: #d1d5e0;
-      --text: #1a1d27;
-      --muted: #6b7280;
+      --surface2: #f5f7fc;
+      --surface3: #edf0f7;
+      --border: #dde2ee;
+      --border2: #c8d0e4;
+      --text: #1a1d2e;
+      --text2: #3a4060;
+      --muted: #6b7490;
       --accent: #3b5bdb;
+      --accent2: #2d4ac8;
       --green: #16a34a;
       --yellow: #ca8a04;
       --orange: #ea580c;
       --red: #dc2626;
-      --blue: #2980b9;
+      --blue: #2563eb;
+      --purple: #7c3aed;
+      --shadow: 0 4px 24px rgba(0,0,0,0.10);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
+    /* ── Reset ───────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      font-size: 15px;
-      line-height: 1.6;
-      padding: 2rem 1rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+      font-size: 14px;
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code {
+      background: var(--surface3);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 0.82em;
+      color: var(--blue);
     }
 
-    .container { max-width: 900px; margin: 0 auto; }
-
-    /* Header */
-    .report-header {
-      border-left: 4px solid var(--accent);
-      padding: 1.5rem 1.5rem 1.5rem 1.75rem;
+    /* ── Sidebar ─────────────────────────────────────────────────── */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-w);
       background: var(--surface);
-      border-radius: 0 8px 8px 0;
-      margin-bottom: 2rem;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      z-index: 200;
+      transition: transform .28s cubic-bezier(.4,0,.2,1);
+      overflow: hidden;
     }
-    .report-header h1 { font-size: 1.75rem; margin-bottom: 0.75rem; }
-    .report-header .meta { color: var(--muted); font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 1.25rem; }
-    .report-header .meta span strong { color: var(--text); }
+    .sidebar.collapsed { transform: translateX(calc(-1 * var(--sidebar-w))); }
 
-    /* Section */
-    section { margin-bottom: 2rem; }
-    .section-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--accent);
+    .sidebar-brand {
+      padding: 18px 20px 14px;
       border-bottom: 1px solid var(--border);
-      padding-bottom: 0.4rem;
-      margin-bottom: 1rem;
+      flex-shrink: 0;
+    }
+    .sidebar-brand .brand-icon { font-size: 1.3rem; }
+    .sidebar-brand .brand-name {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 4px;
+    }
+    .sidebar-brand .brand-sub { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
+
+    .sidebar-status {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .sidebar-status .status-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .compliance-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 8px;
+    }
+    .compliance-badge.pass { background: rgba(34,197,94,.15); color: var(--green); border: 1px solid rgba(34,197,94,.3); }
+    .compliance-badge.warn { background: rgba(250,204,21,.15); color: var(--yellow); border: 1px solid rgba(250,204,21,.3); }
+    .compliance-badge.fail { background: rgba(239,68,68,.15); color: var(--red); border: 1px solid rgba(239,68,68,.3); }
+    .overall-score-mini {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .overall-score-mini .score-num { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+    .overall-score-mini .score-denom { font-size: 0.8rem; color: var(--muted); }
+    .overall-score-mini .score-label { font-size: 0.7rem; color: var(--muted); margin-left: 4px; }
+
+    .sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border2) transparent;
+    }
+    .sidebar-nav::-webkit-scrollbar { width: 4px; }
+    .sidebar-nav::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+    .nav-group-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 12px 20px 4px;
+    }
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 20px;
+      font-size: 0.83rem;
+      color: var(--muted);
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .nav-link:hover { color: var(--text); background: var(--surface2); }
+    .nav-link.active { color: var(--accent); border-left-color: var(--accent); background: rgba(108,142,255,.08); font-weight: 600; }
+    .nav-link .nav-icon { font-size: 0.95rem; width: 18px; text-align: center; flex-shrink: 0; }
+    .nav-link .nav-badge {
+      margin-left: auto;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+    .nav-badge.red { background: rgba(239,68,68,.2); color: var(--red); }
+    .nav-badge.orange { background: rgba(249,115,22,.2); color: var(--orange); }
+    .nav-badge.yellow { background: rgba(250,204,21,.2); color: var(--yellow); }
+    .nav-badge.green { background: rgba(34,197,94,.2); color: var(--green); }
+    .nav-badge.muted { background: var(--surface3); color: var(--muted); }
+
+    .sidebar-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .rpi-bar-wrap { margin-top: 6px; }
+    .rpi-bar-label { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-bottom: 4px; }
+    .rpi-bar-track { height: 6px; background: var(--surface3); border-radius: 6px; overflow: hidden; }
+    .rpi-bar-fill { height: 100%; border-radius: 6px; transition: width .6s ease; }
+
+    /* ── Top bar ─────────────────────────────────────────────────── */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: var(--sidebar-w);
+      right: 0;
+      height: var(--topbar-h);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 24px;
+      z-index: 100;
+      transition: left .28s cubic-bezier(.4,0,.2,1);
+    }
+    .topbar.expanded { left: 0; }
+
+    .hamburger {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--muted);
+      width: 34px;
+      height: 34px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: border-color .15s, color .15s;
+    }
+    .hamburger:hover { border-color: var(--accent); color: var(--accent); }
+    .hamburger span {
+      display: block;
+      width: 16px;
+      height: 2px;
+      background: currentColor;
+      border-radius: 2px;
+      transition: transform .25s, opacity .25s;
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+    .topbar-repo {
+      flex: 1;
+      min-width: 0;
+    }
+    .topbar-repo .repo-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .topbar-repo .repo-url { font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+
+    .topbar-pills { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+    .topbar-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .topbar-pill strong { color: var(--text); }
+
+    .theme-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--muted);
+      width: 34px;
+      height: 34px;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: border-color .15s, color .15s;
+    }
+    .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Main layout ─────────────────────────────────────────────── */
+    .main {
+      margin-left: var(--sidebar-w);
+      padding-top: var(--topbar-h);
+      min-height: 100vh;
+      transition: margin-left .28s cubic-bezier(.4,0,.2,1);
+    }
+    .main.expanded { margin-left: 0; }
+
+    .content { padding: 32px 36px; max-width: 860px; }
+
+    /* Overlay for mobile sidebar close */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 150;
+    }
+    .sidebar-overlay.visible { display: block; }
+
+    /* ── Section ─────────────────────────────────────────────────── */
+    .section { margin-bottom: 40px; scroll-margin-top: calc(var(--topbar-h) + 16px); }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-icon { font-size: 1.1rem; }
+    .section-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .section-badge {
+      margin-left: auto;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 12px;
     }
 
-    /* Executive summary */
-    .summary-box {
+    /* ── Cards ───────────────────────────────────────────────────── */
+    .card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1.25rem 1.5rem;
-      color: var(--muted);
-      font-style: italic;
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 12px;
+    }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap: 12px; margin-bottom: 16px; }
+
+    /* ── Executive summary ───────────────────────────────────────── */
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 18px 22px;
+      font-size: 0.92rem;
+      color: var(--text2);
+      line-height: 1.75;
+      margin-bottom: 12px;
     }
 
-    /* Color utilities */
-    .red { color: var(--red); } .orange { color: var(--orange); } .yellow { color: var(--yellow); } .green { color: var(--green); } .blue { color: var(--blue); }
-
-    /* Inline code */
-    code { background: var(--surface2); padding: 2px 6px; border-radius: 4px; font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.85em; }
-
-    /* Status bar */
-    .status-bar { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
-    .status-pill { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 6px 16px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
-
-    /* Table of contents */
-    .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px; margin-bottom: 32px; }
-    .toc ul { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; }
-    .toc li a { font-size: 0.88rem; color: var(--muted); }
-    .toc li a:hover { color: var(--accent); }
-
-    /* Scorecard */
-    .scorecard {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 1rem;
-    }
+    /* ── Score cards ─────────────────────────────────────────────── */
+    .score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 12px; margin-bottom: 20px; }
     .score-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1rem;
+      border-radius: var(--radius);
+      padding: 16px 14px 14px;
       text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .score-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
     }
     .score-card.overall { border-color: var(--accent); }
-    .score-card .label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
-    .score-card .score { font-size: 2rem; font-weight: 700; line-height: 1; }
-    .score-card .status { font-size: 1.25rem; margin-top: 0.25rem; }
-    .score-legend { margin-top: 0.75rem; font-size: 0.8rem; color: var(--muted); text-align: center; }
+    .score-card.overall::before { background: var(--accent); }
+    .score-card.s-green::before { background: var(--green); }
+    .score-card.s-yellow::before { background: var(--yellow); }
+    .score-card.s-orange::before { background: var(--orange); }
+    .score-card.s-red::before { background: var(--red); }
+    .score-card .sc-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+    .score-card .sc-num { font-size: 2rem; font-weight: 800; line-height: 1; }
+    .score-card .sc-denom { font-size: 0.8rem; color: var(--muted); }
+    .score-card .sc-bar { height: 4px; background: var(--surface3); border-radius: 4px; margin-top: 10px; overflow: hidden; }
+    .score-card .sc-bar-fill { height: 100%; border-radius: 4px; }
+    .sc-green { color: var(--green); } .sc-green .sc-bar-fill { background: var(--green); }
+    .sc-yellow { color: var(--yellow); } .sc-yellow .sc-bar-fill { background: var(--yellow); }
+    .sc-orange { color: var(--orange); } .sc-orange .sc-bar-fill { background: var(--orange); }
+    .sc-red { color: var(--red); } .sc-red .sc-bar-fill { background: var(--red); }
+    .sc-blue { color: var(--accent); } .sc-blue .sc-bar-fill { background: var(--accent); }
+    .score-legend { font-size: 0.72rem; color: var(--muted); text-align: center; padding: 8px 0 4px; }
 
-    /* Tables */
+    /* ── Weighted breakdown table ────────────────────────────────── */
+    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
     table { width: 100%; border-collapse: collapse; }
-    th, td {
-      padding: 0.6rem 0.85rem;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.9rem;
-    }
-    th { color: var(--muted); font-weight: 500; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    th { padding: 10px 14px; text-align: left; font-size: 0.7rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; background: var(--surface2); border-bottom: 1px solid var(--border); }
+    td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
     tr:last-child td { border-bottom: none; }
-    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    tr:hover td { background: var(--surface2); }
 
-    /* Findings */
-    .findings-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    /* ── Score derivation panels ─────────────────────────────────── */
+    .score-derivation { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+    .sd-controls { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .sd-controls h4 { font-size: 0.85rem; font-weight: 600; }
+    .sd-btn-row { display: flex; gap: 6px; }
+    .sd-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); border-radius: var(--radius-sm); padding: 3px 10px; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all .15s; }
+    .sd-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .score-detail { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .score-detail-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; user-select: none; transition: background .15s; }
+    .score-detail-header:hover { background: var(--surface2); }
+    .sd-left { display: flex; align-items: center; gap: 10px; }
+    .sd-icon { font-size: 1rem; }
+    .sd-dim { font-weight: 600; font-size: 0.88rem; }
+    .sd-score-pill { font-size: 0.78rem; font-weight: 700; padding: 2px 10px; border-radius: 12px; }
+    .sd-score-pill.good { background: rgba(34,197,94,.15); color: var(--green); }
+    .sd-score-pill.ok { background: rgba(250,204,21,.15); color: var(--yellow); }
+    .sd-score-pill.poor { background: rgba(249,115,22,.15); color: var(--orange); }
+    .sd-score-pill.crit { background: rgba(239,68,68,.15); color: var(--red); }
+    .sd-arrow { font-size: 0.65rem; color: var(--muted); transition: transform .2s; }
+    .score-detail.open .sd-arrow { transform: rotate(180deg); }
+    .score-detail-body { display: none; border-top: 1px solid var(--border); }
+    .score-detail.open .score-detail-body { display: block; }
+    .score-detail-body td.factor-name { font-weight: 500; color: var(--text); }
+    .score-detail-body td.factor-result { color: var(--muted); }
+    .score-detail-body td.factor-impact { font-weight: 700; white-space: nowrap; }
+    .factor-positive { color: var(--green); }
+    .factor-negative { color: var(--red); }
+    .factor-neutral { color: var(--muted); }
+    .sd-summary { padding: 10px 16px; font-size: 0.78rem; color: var(--muted); background: var(--surface2); border-top: 1px solid var(--border); }
+    .sd-summary strong { color: var(--text); }
+
+    /* ── Findings ────────────────────────────────────────────────── */
+    .findings-list { display: flex; flex-direction: column; gap: 8px; list-style: none; }
     .finding {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-left: 3px solid var(--border);
-      border-radius: 0 6px 6px 0;
-      padding: 0.75rem 1rem;
-      font-size: 0.875rem;
+      border-left: 4px solid var(--border);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 12px 16px;
     }
     .finding.critical { border-left-color: var(--red); }
     .finding.high { border-left-color: var(--orange); }
     .finding.medium { border-left-color: var(--yellow); }
     .finding.low { border-left-color: var(--green); }
-    .finding .badge {
+    .finding-header { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+    .badge {
       display: inline-block;
-      font-size: 0.7rem;
-      font-weight: 600;
-      padding: 0.1rem 0.45rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 7px;
       border-radius: 4px;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-right: 0.5rem;
+      letter-spacing: 0.06em;
+      flex-shrink: 0;
+      margin-top: 1px;
     }
-    .finding.critical .badge { background: rgba(239,68,68,.15); color: var(--red); }
-    .finding.high    .badge { background: rgba(249,115,22,.15); color: var(--orange); }
-    .finding.medium  .badge { background: rgba(250,204,21,.15); color: var(--yellow); }
-    .finding.low     .badge { background: rgba(34,197,94,.15);  color: var(--green); }
-    .finding .location { color: var(--muted); font-family: monospace; font-size: 0.8rem; margin-top: 0.25rem; }
+    .finding.critical .badge { background: rgba(239,68,68,.18); color: var(--red); }
+    .finding.high    .badge { background: rgba(249,115,22,.18); color: var(--orange); }
+    .finding.medium  .badge { background: rgba(250,204,21,.18); color: var(--yellow); }
+    .finding.low     .badge { background: rgba(34,197,94,.18);  color: var(--green); }
+    .finding-title { font-weight: 600; font-size: 0.88rem; line-height: 1.4; }
+    .finding-meta { font-size: 0.75rem; color: var(--muted); margin-bottom: 6px; font-family: 'Cascadia Code', 'Fira Code', monospace; }
+    .finding p { font-size: 0.85rem; color: var(--text2); margin-bottom: 6px; }
+    .finding-fix { font-size: 0.82rem; background: var(--surface2); border: 1px solid var(--border); padding: 8px 12px; border-radius: var(--radius-sm); }
+    .finding-fix::before { content: "Fix: "; font-weight: 700; color: var(--accent); }
 
-    /* Enhanced finding cards */
-    .finding-title { font-weight: 600; margin-bottom: 4px; }
-    .finding-meta { font-size: 0.78rem; color: var(--muted); margin-bottom: 6px; }
-    .finding-fix { font-size: 0.85rem; background: var(--surface2); padding: 8px 12px; border-radius: 6px; margin-top: 8px; }
-    .finding-fix::before { content: "Fix: "; font-weight: 600; }
+    /* ── Checklist ───────────────────────────────────────────────── */
+    .checklist { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .checklist li { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; padding: 6px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+    .check-icon { width: 18px; height: 18px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; flex-shrink: 0; }
+    .check-icon.done { background: var(--green); color: #000; font-weight: 900; }
+    .check-icon.miss { background: var(--surface3); border: 1px solid var(--border2); color: var(--muted); }
 
-    /* Severity badges (standalone) */
-    .badge-critical { background: rgba(239,68,68,.13); color: var(--red); border: 1px solid rgba(239,68,68,.33); }
-    .badge-high { background: rgba(249,115,22,.13); color: var(--orange); border: 1px solid rgba(249,115,22,.33); }
-    .badge-medium { background: rgba(250,204,21,.13); color: var(--yellow); border: 1px solid rgba(250,204,21,.33); }
-    .badge-low { background: rgba(116,192,252,.13); color: var(--blue); border: 1px solid rgba(116,192,252,.33); }
-    .badge-pass { background: rgba(34,197,94,.13); color: var(--green); border: 1px solid rgba(34,197,94,.33); }
+    /* ── Metrics list ────────────────────────────────────────────── */
+    .kv-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+    .kv-list li { display: flex; gap: 8px; font-size: 0.875rem; padding: 6px 0; border-bottom: 1px solid var(--border); }
+    .kv-list li:last-child { border-bottom: none; }
+    .kv-list li strong { color: var(--text); min-width: 160px; flex-shrink: 0; }
+    .kv-list li span { color: var(--text2); }
 
-    /* Compliance box */
-    .compliance-box { border-radius: 8px; padding: 20px 24px; margin-bottom: 20px; }
+    /* ── Quick wins ──────────────────────────────────────────────── */
+    .quick-win {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: var(--surface);
+      border: 1px solid rgba(34,197,94,.25);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      margin-bottom: 8px;
+    }
+    .qw-num {
+      background: var(--green);
+      color: #000;
+      border-radius: 50%;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 0.78rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .qw-body { font-size: 0.875rem; color: var(--text2); }
+    .qw-body strong { color: var(--text); }
+
+    /* ── Roadmap ─────────────────────────────────────────────────── */
+    .roadmap { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 12px; }
+    .roadmap-phase { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+    .roadmap-phase h4 { font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+    .roadmap-phase ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .roadmap-phase ul li { font-size: 0.85rem; color: var(--text2); display: flex; gap: 6px; }
+    .roadmap-phase ul li::before { content: "→"; color: var(--accent); flex-shrink: 0; }
+    .roadmap-phase.week { border-top: 3px solid var(--red); }
+    .roadmap-phase.month { border-top: 3px solid var(--yellow); }
+    .roadmap-phase.quarter { border-top: 3px solid var(--accent); }
+
+    /* ── Compliance box ──────────────────────────────────────────── */
+    .compliance-box { border-radius: var(--radius); padding: 16px 20px; margin-bottom: 16px; }
     .compliance-box.noncompliant { background: rgba(239,68,68,.07); border: 1px solid rgba(239,68,68,.27); }
     .compliance-box.compliant { background: rgba(34,197,94,.07); border: 1px solid rgba(34,197,94,.27); }
     .compliance-box.conditional { background: rgba(250,204,21,.07); border: 1px solid rgba(250,204,21,.27); }
+    .compliance-box h3 { font-size: 0.95rem; margin-bottom: 6px; }
+    .compliance-box p { font-size: 0.875rem; color: var(--text2); }
 
-    /* Metrics list */
-    .metrics { color: var(--muted); font-size: 0.9rem; }
-    .metrics li { padding: 0.2rem 0; list-style: none; }
-    .metrics li strong { color: var(--text); }
-
-    /* Checklist */
-    .checklist { list-style: none; display: flex; flex-direction: column; gap: 0.3rem; }
-    .checklist li { font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
-    .checklist .check { width: 16px; height: 16px; border: 1px solid var(--border); border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; }
-    .checklist .check.done { background: var(--green); border-color: var(--green); color: #000; }
-
-    /* Quick wins */
-    .quick-win { background: var(--surface); border: 1px solid rgba(34,197,94,.27); border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: flex; gap: 12px; align-items: flex-start; }
-    .qw-num { background: var(--green); color: #000; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; flex-shrink: 0; margin-top: 2px; }
-
-    /* Roadmap */
-    .roadmap { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
-    .roadmap-phase { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; }
-    .roadmap-phase h4 { font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
-    .roadmap-phase ul { list-style: none; font-size: 0.875rem; color: var(--muted); display: flex; flex-direction: column; gap: 0.3rem; }
-    .roadmap-phase ul li::before { content: "→ "; color: var(--accent); }
-
-    /* Diagram blocks */
-    .diagram-section { display: flex; flex-direction: column; gap: 1.25rem; }
-    .diagram-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-    .diagram-block .diagram-header { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.75rem 0.5rem 1rem; border-bottom: 1px solid var(--border); }
-    .diagram-block .diagram-title { font-size: 0.8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
-    .diagram-controls { display: flex; align-items: center; gap: 0.35rem; }
-    .zoom-btn { background: var(--bg); border: 1px solid var(--border); color: var(--muted); border-radius: 4px; width: 26px; height: 26px; font-size: 0.95rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: color .15s, border-color .15s; }
-    .zoom-btn:hover { color: var(--accent); border-color: var(--accent); }
-    .zoom-btn.reset { font-size: 0.65rem; font-weight: 700; width: auto; padding: 0 0.45rem; letter-spacing: 0.04em; text-transform: uppercase; }
-    .zoom-scale { font-size: 0.7rem; color: var(--muted); min-width: 2.8rem; text-align: center; font-variant-numeric: tabular-nums; }
-    .expand-btn { background: var(--bg); border: 1px solid var(--border); color: var(--muted); border-radius: 4px; height: 26px; padding: 0 0.5rem; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.04em; cursor: pointer; white-space: nowrap; transition: color .15s, border-color .15s; }
-    .expand-btn:hover { color: var(--accent); border-color: var(--accent); }
-    .diagram-viewport { overflow: auto; max-height: 480px; cursor: grab; background: #ffffff; }
+    /* ── Diagram blocks ──────────────────────────────────────────── */
+    .diagram-section { display: flex; flex-direction: column; gap: 14px; }
+    .diagram-block { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .diagram-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+    .diagram-title { font-size: 0.75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .diagram-controls { display: flex; align-items: center; gap: 5px; }
+    .zoom-btn { background: var(--surface); border: 1px solid var(--border); color: var(--muted); border-radius: 4px; width: 26px; height: 26px; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+    .zoom-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .zoom-btn.reset { width: auto; padding: 0 8px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .zoom-scale { font-size: 0.7rem; color: var(--muted); min-width: 32px; text-align: center; }
+    .expand-btn { background: var(--surface); border: 1px solid var(--border); color: var(--muted); border-radius: 4px; height: 26px; padding: 0 8px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em; cursor: pointer; transition: all .15s; white-space: nowrap; }
+    .expand-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .diagram-viewport { overflow: auto; max-height: 460px; cursor: grab; background: #ffffff; }
     .diagram-viewport:active { cursor: grabbing; }
-    .diagram-viewport .mermaid { padding: 1.5rem; display: inline-block; min-width: 100%; }
-    .diagram-viewport .mermaid svg, .diagram-viewport > svg { display: block; max-width: none !important; shape-rendering: geometricPrecision; text-rendering: geometricPrecision; }
+    .diagram-viewport .mermaid { padding: 1.25rem; display: inline-block; min-width: 100%; }
+    .diagram-viewport .mermaid svg, .diagram-viewport > svg { display: block; max-width: none !important; }
     .diag-modal-vp svg { max-width: none !important; }
-    .diagram-hint { font-size: 0.7rem; color: var(--muted); padding: 0.25rem 1rem 0.4rem; opacity: 0.6; }
+    .diagram-hint { font-size: 0.68rem; color: var(--muted); padding: 5px 14px 7px; opacity: 0.55; }
 
-    /* Fullscreen modal */
-    .diag-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 9999; align-items: center; justify-content: center; }
+    /* ── Fullscreen modal ────────────────────────────────────────── */
+    .diag-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; }
     .diag-modal.open { display: flex; }
-    .diag-modal-inner { position: relative; width: 96vw; height: 92vh; background: #ffffff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
-    .diag-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 1rem; border-bottom: 1px solid #d1d5e0; flex-shrink: 0; gap: 0.5rem; background: #f5f6fa; }
-    .diag-modal-title { font-size: 0.9rem; font-weight: 600; color: #3b5bdb; flex: 1; }
-    .diag-modal-vp { flex: 1; overflow: auto; cursor: grab; padding: 1.5rem; background: #ffffff; }
+    .diag-modal-inner { position: relative; width: 96vw; height: 92vh; background: #fff; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+    .diag-modal-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; flex-shrink: 0; gap: 8px; }
+    .diag-modal-title { font-size: 0.88rem; font-weight: 700; color: #3b5bdb; flex: 1; }
+    .diag-modal-vp { flex: 1; overflow: auto; cursor: grab; padding: 1.5rem; background: #fff; }
     .diag-modal-vp:active { cursor: grabbing; }
-    .diag-modal-vp svg { display: block; max-width: none !important; }
-    .close-btn { background: none; border: 1px solid #d1d5e0; color: #6b7280; border-radius: 4px; padding: 0.2rem 0.6rem; cursor: pointer; font-size: 0.8rem; transition: color .15s, border-color .15s; }
+    .close-btn { background: none; border: 1px solid #e2e8f0; color: #6b7280; border-radius: 4px; padding: 3px 10px; cursor: pointer; font-size: 0.78rem; transition: all .15s; }
     .close-btn:hover { color: #dc2626; border-color: #dc2626; }
 
-    /* Score derivation details */
-    .score-derivation { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
-    .score-detail {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .score-detail-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.75rem 1rem;
-      cursor: pointer;
-      user-select: none;
-      transition: background .15s;
-    }
-    .score-detail-header:hover { background: var(--surface2); }
-    .score-detail-header .sd-left { display: flex; align-items: center; gap: 0.75rem; }
-    .score-detail-header .sd-dim { font-weight: 600; font-size: 0.9rem; }
-    .score-detail-header .sd-score { font-size: 0.85rem; font-weight: 700; padding: 2px 10px; border-radius: 12px; }
-    .score-detail-header .sd-score.good { background: rgba(34,197,94,.12); color: var(--green); }
-    .score-detail-header .sd-score.ok { background: rgba(250,204,21,.12); color: var(--yellow); }
-    .score-detail-header .sd-score.poor { background: rgba(249,115,22,.12); color: var(--orange); }
-    .score-detail-header .sd-score.crit { background: rgba(239,68,68,.12); color: var(--red); }
-    .score-detail-header .sd-arrow { font-size: 0.7rem; color: var(--muted); transition: transform .2s; }
-    .score-detail.open .sd-arrow { transform: rotate(180deg); }
-    .score-detail-body { display: none; border-top: 1px solid var(--border); padding: 0; }
-    .score-detail.open .score-detail-body { display: block; }
-    .score-detail-body table { margin: 0; }
-    .score-detail-body th { font-size: 0.72rem; }
-    .score-detail-body td { font-size: 0.82rem; }
-    .score-detail-body td.factor-name { color: var(--text); font-weight: 500; }
-    .score-detail-body td.factor-result { color: var(--muted); }
-    .score-detail-body td.factor-impact { font-weight: 600; white-space: nowrap; }
-    .factor-positive { color: var(--green); }
-    .factor-negative { color: var(--red); }
-    .factor-neutral { color: var(--muted); }
-    .score-detail-summary { padding: 0.6rem 1rem; font-size: 0.82rem; color: var(--muted); background: var(--surface2); border-top: 1px solid var(--border); }
-    .score-detail-summary strong { color: var(--text); }
-
-    /* Claude Run Metrics */
-    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
-    .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
-    .metric-card .m-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.35rem; }
-    .metric-card .m-value { font-size: 1.35rem; font-weight: 700; color: var(--text); }
-    .metric-card .m-sub { font-size: 0.75rem; color: var(--muted); margin-top: 0.15rem; }
+    /* ── Claude metrics ──────────────────────────────────────────── */
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 10px; margin-bottom: 14px; }
+    .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
     .metric-card.accent { border-color: var(--accent); }
-    .metrics-disclaimer { font-size: 0.75rem; color: var(--muted); font-style: italic; margin-bottom: 1rem; }
+    .m-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+    .m-value { font-size: 1.3rem; font-weight: 800; color: var(--text); }
+    .m-sub { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+    .metrics-disclaimer { font-size: 0.72rem; color: var(--muted); font-style: italic; margin-bottom: 12px; }
 
-    /* Footer */
-    .report-footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding-top: 1.5rem; border-top: 1px solid var(--border); margin-top: 2rem; }
+    /* ── Footer ──────────────────────────────────────────────────── */
+    .report-footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; font-size: 0.75rem; color: var(--muted); }
 
-    /* Theme toggle */
-    .theme-toggle { position: fixed; top: 1rem; right: 1rem; z-index: 1000; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 0.3rem 0.75rem; display: flex; align-items: center; gap: 0.4rem; cursor: pointer; font-size: 0.8rem; color: var(--muted); transition: border-color .15s, color .15s; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-    .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
-    .theme-toggle .toggle-icon { font-size: 1rem; line-height: 1; }
+    /* ── Color utilities ─────────────────────────────────────────── */
+    .c-red { color: var(--red); } .c-orange { color: var(--orange); }
+    .c-yellow { color: var(--yellow); } .c-green { color: var(--green); }
+    .c-blue { color: var(--blue); } .c-accent { color: var(--accent); }
+    .fw-700 { font-weight: 700; }
+
+    /* ── Responsive ──────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(calc(-1 * var(--sidebar-w))); }
+      .sidebar.open { transform: translateX(0); }
+      .topbar { left: 0; }
+      .main { margin-left: 0; }
+      .content { padding: 20px 16px; }
+      .topbar-pills { display: none; }
+      .checklist { grid-template-columns: 1fr; }
+      .roadmap { grid-template-columns: 1fr; }
+      .score-grid { grid-template-columns: repeat(3, 1fr); }
+    }
   </style>
 </head>
 <body>
 
-<button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Switch theme">
-  <span class="toggle-icon" id="theme-icon">☀️</span>
-  <span id="theme-label">Light</span>
-</button>
+<!-- ── Sidebar ───────────────────────────────────────────────────── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">&#128269;</div>
+    <div class="brand-name">Repo Intelligence</div>
+    <div class="brand-sub"><!-- repo short name --></div>
+  </div>
 
-<div class="container">
-
-  <!-- Header -->
-  <div class="report-header">
-    <h1>🔍 Repository Intelligence Report</h1>
-    <div class="meta">
-      <span><strong>Repository:</strong> <!-- URL --></span>
-      <span><strong>Analyzed:</strong> <!-- date and time --></span>
-      <span><strong>Skills run:</strong> <!-- code, architecture, security, devops --></span>
+  <div class="sidebar-status">
+    <div class="status-label">Compliance</div>
+    <!-- Use class "pass" / "warn" / "fail" on compliance-badge -->
+    <div class="compliance-badge warn">
+      <!-- ✅ COMPLIANT / ⚠️ CONDITIONAL / ❌ NON-COMPLIANT -->
+    </div>
+    <div class="overall-score-mini">
+      <span class="score-num" style="color:var(--yellow)"><!-- x.x --></span>
+      <span class="score-denom">/10</span>
+      <span class="score-label">overall</span>
     </div>
   </div>
 
-  <!-- Status Bar -->
-  <div class="status-bar">
-    <div class="status-pill"><!-- ✅ COMPLIANT / ⚠️ CONDITIONAL / ❌ NON-COMPLIANT --></div>
-    <div class="status-pill">Overall Score: <strong><!-- x.x / 10 --></strong></div>
-    <div class="status-pill">RPI: <strong><!-- x / 100 --></strong></div>
-    <div class="status-pill">Findings: <!-- e.g. 4 Critical · 20 High · 18 Medium · 8 Low --></div>
+  <nav class="sidebar-nav" id="sidebar-nav">
+    <div class="nav-group-label">Report</div>
+    <div class="nav-link active" onclick="scrollTo('exec')">
+      <span class="nav-icon">&#128196;</span> Executive Summary
+    </div>
+    <div class="nav-link" onclick="scrollTo('overview')">
+      <span class="nav-icon">&#128202;</span> Repository Overview
+    </div>
+    <div class="nav-link" onclick="scrollTo('scorecard')">
+      <span class="nav-icon">&#127942;</span> Health Scorecard
+    </div>
+
+    <div class="nav-group-label">Analysis</div>
+    <div class="nav-link" onclick="scrollTo('security')">
+      <span class="nav-icon">&#128274;</span> Security
+      <span class="nav-badge orange" id="nav-badge-security"><!-- n --></span>
+    </div>
+    <div class="nav-link" onclick="scrollTo('critical')">
+      <span class="nav-icon">&#128680;</span> Critical &amp; High
+      <span class="nav-badge red" id="nav-badge-critical"><!-- n --></span>
+    </div>
+    <div class="nav-link" onclick="scrollTo('code')">
+      <span class="nav-icon">&#128221;</span> Code Quality
+      <span class="nav-badge yellow" id="nav-badge-code"><!-- n --></span>
+    </div>
+    <div class="nav-link" onclick="scrollTo('architecture')">
+      <span class="nav-icon">&#127959;&#65039;</span> Architecture
+    </div>
+    <div class="nav-link" onclick="scrollTo('diagrams')">
+      <span class="nav-icon">&#128506;&#65039;</span> Diagrams
+    </div>
+    <div class="nav-link" onclick="scrollTo('devops')">
+      <span class="nav-icon">&#9881;&#65039;</span> DevOps / CI-CD
+    </div>
+    <div class="nav-link" onclick="scrollTo('dependency')">
+      <span class="nav-icon">&#128230;</span> Dependency Risk
+    </div>
+
+    <div class="nav-group-label">Governance</div>
+    <div class="nav-link" onclick="scrollTo('governance')">
+      <span class="nav-icon">&#127963;&#65039;</span> Governance
+    </div>
+    <div class="nav-link" onclick="scrollTo('quickwins')">
+      <span class="nav-icon">&#127919;</span> Quick Wins
+    </div>
+    <div class="nav-link" onclick="scrollTo('roadmap')">
+      <span class="nav-icon">&#128506;&#65039;</span> Roadmap
+    </div>
+    <div class="nav-link" onclick="scrollTo('summary')">
+      <span class="nav-icon">&#128202;</span> Findings Summary
+    </div>
+    <div class="nav-link" onclick="scrollTo('metrics')">
+      <span class="nav-icon">&#129302;</span> Claude Metrics
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Risk Posture Index</div>
+    <div class="rpi-bar-wrap">
+      <div class="rpi-bar-label">
+        <span id="rpi-label"><!-- RPI/100 --></span>
+        <span id="rpi-level"><!-- 🟢 Low Risk --></span>
+      </div>
+      <div class="rpi-bar-track">
+        <div class="rpi-bar-fill" id="rpi-bar" style="width:0%;background:var(--yellow)"></div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Sidebar overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- ── Top bar ────────────────────────────────────────────────────── -->
+<header class="topbar" id="topbar">
+  <button class="hamburger open" id="hamburger" onclick="toggleSidebar()" title="Toggle navigation">
+    <span></span><span></span><span></span>
+  </button>
+
+  <div class="topbar-repo">
+    <div class="repo-label">Repository</div>
+    <div class="repo-url" id="topbar-url"><!-- URL --></div>
   </div>
 
-  <!-- Table of Contents -->
-  <div class="toc">
-    <h3 style="margin-bottom:12px;font-size:0.95rem;font-weight:600;">Contents</h3>
-    <ul>
-      <li><a href="#overview">1. Repository Overview</a></li>
-      <li><a href="#scorecard">2. Health Scorecard</a></li>
-      <li><a href="#security">3. Security Findings</a></li>
-      <li><a href="#code">4. Code Quality</a></li>
-      <li><a href="#architecture">5. Architecture</a></li>
-      <li><a href="#devops">6. DevOps / CI-CD</a></li>
-      <li><a href="#dependency">7. Dependency Risk</a></li>
-      <li><a href="#governance">8. Governance Assessment</a></li>
-      <li><a href="#quickwins">9. Quick Wins</a></li>
-      <li><a href="#roadmap">10. Remediation Roadmap</a></li>
-      <li><a href="#metrics">11. Claude Run Metrics</a></li>
-    </ul>
+  <div class="topbar-pills">
+    <div class="topbar-pill">&#128197; <strong><!-- date --></strong></div>
+    <div class="topbar-pill">Findings: <strong><!-- x Critical · x High --></strong></div>
+    <div class="topbar-pill">RPI: <strong><!-- x/100 --></strong></div>
   </div>
+
+  <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">&#9728;&#65039;</button>
+</header>
+
+<!-- ── Main content ───────────────────────────────────────────────── -->
+<main class="main" id="main">
+<div class="content">
 
   <!-- Executive Summary -->
-  <section>
-    <div class="section-title">Executive Summary</div>
-    <div class="summary-box">
-      <!-- 3–4 sentences. Answer: What is this project? How healthy is it? What is the single most important thing to fix? -->
+  <div class="section" id="exec">
+    <div class="section-header">
+      <span class="section-icon">&#128196;</span>
+      <span class="section-title">Executive Summary</span>
     </div>
-  </section>
+    <div class="summary-card">
+      <!-- 3–4 sentences. What is the project? How healthy is it? What is the single most important thing to fix? -->
+    </div>
+  </div>
 
   <!-- Repository Overview -->
-  <section id="overview">
-    <div class="section-title">Repository Overview</div>
+  <div class="section" id="overview">
+    <div class="section-header">
+      <span class="section-icon">&#128202;</span>
+      <span class="section-title">Repository Overview</span>
+    </div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Metric</th><th>Value</th></tr></thead>
@@ -360,474 +723,282 @@
           <tr><td>CI/CD Platform</td><td></td></tr>
           <tr><td>Docker</td><td></td></tr>
           <tr><td>IaC Tool</td><td></td></tr>
+          <tr><td>Dependency Lock File</td><td></td></tr>
           <tr><td>Security Risk Level</td><td></td></tr>
         </tbody>
       </table>
     </div>
-  </section>
+  </div>
 
   <!-- Health Scorecard -->
-  <section id="scorecard">
-    <div class="section-title">Health Scorecard</div>
-    <div class="scorecard">
-      <div class="score-card">
-        <div class="label">Code Quality</div>
-        <div class="score"><!-- x -->/10</div>
-        <div class="status"><!-- 🔴🟠🟡🟢 --></div>
+  <div class="section" id="scorecard">
+    <div class="section-header">
+      <span class="section-icon">&#127942;</span>
+      <span class="section-title">Health Scorecard</span>
+    </div>
+
+    <!-- Score cards — add class s-green/s-yellow/s-orange/s-red and sc-green/sc-yellow etc. per score -->
+    <div class="score-grid">
+      <div class="score-card s-yellow sc-yellow">
+        <div class="sc-label">Security</div>
+        <div class="sc-num"><!-- x --><span class="sc-denom">/10</span></div>
+        <div class="sc-bar"><div class="sc-bar-fill" style="width:<!-- x*10 -->%"></div></div>
       </div>
-      <div class="score-card">
-        <div class="label">Architecture</div>
-        <div class="score"><!-- x -->/10</div>
-        <div class="status"><!-- 🔴🟠🟡🟢 --></div>
+      <div class="score-card s-orange sc-orange">
+        <div class="sc-label">Code Quality</div>
+        <div class="sc-num"><!-- x --><span class="sc-denom">/10</span></div>
+        <div class="sc-bar"><div class="sc-bar-fill" style="width:<!-- x*10 -->%"></div></div>
       </div>
-      <div class="score-card">
-        <div class="label">Security</div>
-        <div class="score"><!-- x -->/10</div>
-        <div class="status"><!-- 🔴🟠🟡🟢 --></div>
+      <div class="score-card s-yellow sc-yellow">
+        <div class="sc-label">Architecture</div>
+        <div class="sc-num"><!-- x --><span class="sc-denom">/10</span></div>
+        <div class="sc-bar"><div class="sc-bar-fill" style="width:<!-- x*10 -->%"></div></div>
       </div>
-      <div class="score-card">
-        <div class="label">DevOps</div>
-        <div class="score"><!-- x -->/10</div>
-        <div class="status"><!-- 🔴🟠🟡🟢 --></div>
+      <div class="score-card s-red sc-red">
+        <div class="sc-label">DevOps</div>
+        <div class="sc-num"><!-- x --><span class="sc-denom">/10</span></div>
+        <div class="sc-bar"><div class="sc-bar-fill" style="width:<!-- x*10 -->%"></div></div>
       </div>
-      <div class="score-card">
-        <div class="label">Dependency Risk</div>
-        <div class="score"><!-- x -->/10</div>
-        <div class="status"><!-- 🔴🟠🟡🟢 --></div>
+      <div class="score-card s-green sc-green">
+        <div class="sc-label">Dependency Risk</div>
+        <div class="sc-num"><!-- x --><span class="sc-denom">/10</span></div>
+        <div class="sc-bar"><div class="sc-bar-fill" style="width:<!-- x*10 -->%"></div></div>
       </div>
-      <div class="score-card overall">
-        <div class="label">Overall</div>
-        <div class="score"><!-- x -->/10</div>
-        <div class="status"><!-- 🔴🟠🟡🟢 --></div>
+      <div class="score-card overall sc-blue">
+        <div class="sc-label">Overall</div>
+        <div class="sc-num"><!-- x.x --><span class="sc-denom">/10</span></div>
+        <div class="sc-bar"><div class="sc-bar-fill" style="width:<!-- x*10 -->%"></div></div>
       </div>
     </div>
-    <div class="score-legend">Scoring guide: 8–10 🟢 Good · 5–7 🟡 Needs work · 3–4 🟠 Poor · 0–2 🔴 Critical</div>
-    <div class="table-wrap" style="margin-top:1rem">
+    <div class="score-legend">8–10 &#128994; Good &nbsp;·&nbsp; 5–7 &#128993; Needs work &nbsp;·&nbsp; 3–4 &#128992; Poor &nbsp;·&nbsp; 0–2 &#128308; Critical</div>
+
+    <div class="table-wrap" style="margin-top:16px">
       <table>
         <thead><tr><th>Dimension</th><th>Score</th><th>Weight</th><th>Contribution</th><th>Key Driver</th></tr></thead>
         <tbody>
-          <!-- e.g. <tr><td>Security</td><td class="red">3.5/10</td><td>30%</td><td>1.05</td><td>description</td></tr> -->
-          <tr><td>Security</td><td><!-- x/10 --></td><td>30%</td><td><!-- score × weight --></td><td></td></tr>
-          <tr><td>Code Quality</td><td><!-- x/10 --></td><td>25%</td><td><!-- score × weight --></td><td></td></tr>
-          <tr><td>Architecture</td><td><!-- x/10 --></td><td>20%</td><td><!-- score × weight --></td><td></td></tr>
-          <tr><td>DevOps</td><td><!-- x/10 --></td><td>15%</td><td><!-- score × weight --></td><td></td></tr>
-          <tr><td>Dependency Risk</td><td><!-- x/10 --></td><td>10%</td><td><!-- score × weight --></td><td></td></tr>
-          <tr><td><strong>Overall</strong></td><td><strong><!-- x/10 --></strong></td><td>100%</td><td><strong><!-- total --></strong></td><td></td></tr>
+          <tr><td>Security</td><td></td><td>30%</td><td></td><td></td></tr>
+          <tr><td>Code Quality</td><td></td><td>25%</td><td></td><td></td></tr>
+          <tr><td>Architecture</td><td></td><td>20%</td><td></td><td></td></tr>
+          <tr><td>DevOps</td><td></td><td>15%</td><td></td><td></td></tr>
+          <tr><td>Dependency Risk</td><td></td><td>10%</td><td></td><td></td></tr>
+          <tr><td><strong>Overall</strong></td><td><strong></strong></td><td>100%</td><td><strong></strong></td><td></td></tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Score Derivation Details — click to expand each dimension -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin:1.5rem 0 0.75rem;">
-      <h4 style="font-size:0.95rem;">Score Derivation Details</h4>
-      <div style="display:flex;gap:0.5rem;">
-        <button class="zoom-btn reset" onclick="expandAllScores()" title="Expand all" style="font-size:0.65rem;width:auto;padding:0 0.5rem;">Expand All</button>
-        <button class="zoom-btn reset" onclick="collapseAllScores()" title="Collapse all" style="font-size:0.65rem;width:auto;padding:0 0.5rem;">Collapse All</button>
+    <!-- Score Derivation Details -->
+    <div class="sd-controls" style="margin-top:20px">
+      <h4>Score Derivation Details</h4>
+      <div class="sd-btn-row">
+        <button class="sd-btn" onclick="expandAllScores()">Expand All</button>
+        <button class="sd-btn" onclick="collapseAllScores()">Collapse All</button>
       </div>
     </div>
-    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:0.75rem;">Click any dimension below to see the factors that determined its score.</p>
+    <p style="font-size:0.78rem;color:var(--muted);margin-bottom:10px">Click a dimension to see which factors drove its score.</p>
     <div class="score-derivation">
 
-      <!-- ── Security Score Derivation ── -->
       <div class="score-detail" id="sd-security">
         <div class="score-detail-header" onclick="toggleScoreDetail('sd-security')">
           <div class="sd-left">
-            <span>🔒</span>
+            <span class="sd-icon">&#128274;</span>
             <span class="sd-dim">Security</span>
-            <span class="sd-score"><!-- x/10 --></span>
+            <span class="sd-score-pill ok"><!-- x/10 --></span>
           </div>
-          <span class="sd-arrow">▼</span>
+          <span class="sd-arrow">&#9660;</span>
         </div>
         <div class="score-detail-body">
           <table>
             <thead><tr><th>Factor</th><th>Finding</th><th>Impact</th></tr></thead>
             <tbody>
-              <!--
-              Populate with actual factors found during analysis. Example rows:
-
-              <tr>
-                <td class="factor-name">Committed secrets</td>
-                <td class="factor-result">2 API keys found in config files</td>
-                <td class="factor-impact factor-negative">−3.0</td>
-              </tr>
-              <tr>
-                <td class="factor-name">SQL / command injection</td>
-                <td class="factor-result">No injection vulnerabilities found</td>
-                <td class="factor-impact factor-positive">+0.0 (baseline)</td>
-              </tr>
-              <tr>
-                <td class="factor-name">CORS configuration</td>
-                <td class="factor-result">Wildcard CORS in production config</td>
-                <td class="factor-impact factor-negative">−1.5</td>
-              </tr>
-              <tr>
-                <td class="factor-name">Dependency CVEs</td>
-                <td class="factor-result">3 critical, 5 high CVEs</td>
-                <td class="factor-impact factor-negative">−2.0</td>
-              </tr>
-              <tr>
-                <td class="factor-name">Auth & session handling</td>
-                <td class="factor-result">JWT tokens properly validated</td>
-                <td class="factor-impact factor-positive">+0.0 (baseline)</td>
-              </tr>
-              <tr>
-                <td class="factor-name">Input validation</td>
-                <td class="factor-result">Missing validation on 4 API endpoints</td>
-                <td class="factor-impact factor-negative">−0.5</td>
-              </tr>
-
-              Use these factor categories (include all that apply):
-              - Committed secrets (API keys, passwords, tokens in code)
-              - SQL / command injection (parameterized queries, exec usage)
-              - XSS vulnerabilities (unsanitized output, innerHTML usage)
-              - CORS configuration (wildcard origins, credentials exposure)
-              - Auth & session handling (JWT validation, session fixation)
-              - Dependency CVEs (critical/high vulnerabilities in deps)
-              - Input validation (unvalidated user input at boundaries)
-              - Security headers (CSP, HSTS, X-Frame-Options)
-              - Sensitive data exposure (logging secrets, error leaks)
-              - Cryptography (weak algorithms, hardcoded keys)
-              -->
+              <!-- <tr><td class="factor-name">Committed secrets</td><td class="factor-result">None found</td><td class="factor-impact factor-positive">+0.0 (baseline)</td></tr> -->
             </tbody>
           </table>
-          <div class="score-detail-summary">
-            <strong>Scoring method:</strong> Starts at 10.0. Each security finding deducts points based on severity
-            (Critical: −2.0 to −3.0, High: −1.0 to −2.0, Medium: −0.5 to −1.0, Low: −0.25).
-            Minimum score is 0.
-            <!-- Add a one-sentence summary of why this dimension scored the way it did -->
+          <div class="sd-summary">
+            <strong>Scoring method:</strong> Starts at 10.0. Deducts per finding severity (Critical −2–3, High −1–2, Medium −0.5–1, Low −0.25).
+            <!-- One-sentence summary -->
           </div>
         </div>
       </div>
 
-      <!-- ── Code Quality Score Derivation ── -->
       <div class="score-detail" id="sd-code">
         <div class="score-detail-header" onclick="toggleScoreDetail('sd-code')">
           <div class="sd-left">
-            <span>📝</span>
+            <span class="sd-icon">&#128221;</span>
             <span class="sd-dim">Code Quality</span>
-            <span class="sd-score"><!-- x/10 --></span>
+            <span class="sd-score-pill poor"><!-- x/10 --></span>
           </div>
-          <span class="sd-arrow">▼</span>
+          <span class="sd-arrow">&#9660;</span>
         </div>
         <div class="score-detail-body">
           <table>
             <thead><tr><th>Factor</th><th>Finding</th><th>Impact</th></tr></thead>
             <tbody>
-              <!--
-              Populate with actual factors. Example rows:
-
-              <tr>
-                <td class="factor-name">Test coverage</td>
-                <td class="factor-result">~45% estimated coverage (112 test files)</td>
-                <td class="factor-impact factor-neutral">+0.0 (adequate)</td>
-              </tr>
-              <tr>
-                <td class="factor-name">TODO/FIXME density</td>
-                <td class="factor-result">23 TODO/FIXMEs, 4 in critical paths</td>
-                <td class="factor-impact factor-negative">−0.5</td>
-              </tr>
-              <tr>
-                <td class="factor-name">Empty catch blocks</td>
-                <td class="factor-result">8 empty catch blocks swallowing errors</td>
-                <td class="factor-impact factor-negative">−1.0</td>
-              </tr>
-              <tr>
-                <td class="factor-name">File size</td>
-                <td class="factor-result">2 files exceed 3000 lines</td>
-                <td class="factor-impact factor-negative">−0.5</td>
-              </tr>
-              <tr>
-                <td class="factor-name">Code duplication</td>
-                <td class="factor-result">Moderate duplication in service layer</td>
-                <td class="factor-impact factor-negative">−0.5</td>
-              </tr>
-
-              Use these factor categories (include all that apply):
-              - Test coverage (% estimate, test file count)
-              - TODO/FIXME density (count, in critical paths?)
-              - Empty catch blocks (swallowed errors)
-              - File size (files exceeding 3000 lines)
-              - Code duplication (repeated patterns)
-              - Naming consistency (conventions, mixed styles)
-              - Dead code (unused imports, unreachable code)
-              - Error handling patterns (consistent, missing?)
-              - Type safety (any usage, missing types)
-              - Complexity (deeply nested logic, long functions)
-              -->
+              <!-- populate -->
             </tbody>
           </table>
-          <div class="score-detail-summary">
-            <strong>Scoring method:</strong> Starts at 10.0. Deductions for missing tests (−1.0 to −3.0 based on coverage gap),
-            code smells (−0.25 to −1.0 each), large files (−0.5 each), and poor error handling (−0.5 to −1.0).
-            <!-- Add a one-sentence summary -->
+          <div class="sd-summary">
+            <strong>Scoring method:</strong> Starts at 10.0. Deductions for missing tests (−1–3), large files (−0.5 each), code smells (−0.25–1 each).
           </div>
         </div>
       </div>
 
-      <!-- ── Architecture Score Derivation ── -->
       <div class="score-detail" id="sd-architecture">
         <div class="score-detail-header" onclick="toggleScoreDetail('sd-architecture')">
           <div class="sd-left">
-            <span>🏗️</span>
+            <span class="sd-icon">&#127959;&#65039;</span>
             <span class="sd-dim">Architecture</span>
-            <span class="sd-score"><!-- x/10 --></span>
+            <span class="sd-score-pill ok"><!-- x/10 --></span>
           </div>
-          <span class="sd-arrow">▼</span>
+          <span class="sd-arrow">&#9660;</span>
         </div>
         <div class="score-detail-body">
           <table>
             <thead><tr><th>Factor</th><th>Finding</th><th>Impact</th></tr></thead>
             <tbody>
-              <!--
-              Populate with actual factors. Example rows:
-
-              <tr>
-                <td class="factor-name">Layered structure</td>
-                <td class="factor-result">Clear separation: controllers → services → repositories</td>
-                <td class="factor-impact factor-positive">+0.0 (baseline)</td>
-              </tr>
-              <tr>
-                <td class="factor-name">Circular dependencies</td>
-                <td class="factor-result">2 circular dependency chains detected</td>
-                <td class="factor-impact factor-negative">−1.5</td>
-              </tr>
-              <tr>
-                <td class="factor-name">Dependency count</td>
-                <td class="factor-result">142 direct dependencies (high for project size)</td>
-                <td class="factor-impact factor-negative">−0.5</td>
-              </tr>
-
-              Use these factor categories (include all that apply):
-              - Layered structure (clear separation of concerns)
-              - Circular dependencies (module-level cycles)
-              - Dependency count (proportional to project size)
-              - Framework version consistency (mixed versions?)
-              - Monorepo organization (if applicable)
-              - API design patterns (REST conventions, consistency)
-              - Separation of concerns (business logic in controllers?)
-              - Configuration management (hardcoded values, env usage)
-              - Module cohesion (related code grouped together?)
-              - Coupling (tight coupling between unrelated modules)
-              -->
+              <!-- populate -->
             </tbody>
           </table>
-          <div class="score-detail-summary">
-            <strong>Scoring method:</strong> Starts at 10.0. Deductions for circular dependencies (−1.0 to −2.0),
-            missing layered structure (−1.5), tight coupling (−0.5 to −1.5), inconsistent framework versions (−0.5),
-            and excessive dependency count (−0.5).
-            <!-- Add a one-sentence summary -->
+          <div class="sd-summary">
+            <strong>Scoring method:</strong> Starts at 10.0. Deductions for circular deps (−1–2), flat structure (−1.5), coupling (−0.5–1.5).
           </div>
         </div>
       </div>
 
-      <!-- ── DevOps Score Derivation ── -->
       <div class="score-detail" id="sd-devops">
         <div class="score-detail-header" onclick="toggleScoreDetail('sd-devops')">
           <div class="sd-left">
-            <span>⚙️</span>
+            <span class="sd-icon">&#9881;&#65039;</span>
             <span class="sd-dim">DevOps</span>
-            <span class="sd-score"><!-- x/10 --></span>
+            <span class="sd-score-pill crit"><!-- x/10 --></span>
           </div>
-          <span class="sd-arrow">▼</span>
+          <span class="sd-arrow">&#9660;</span>
         </div>
         <div class="score-detail-body">
           <table>
             <thead><tr><th>Factor</th><th>Finding</th><th>Impact</th></tr></thead>
             <tbody>
-              <!--
-              Populate with actual factors. Example rows:
-
-              <tr>
-                <td class="factor-name">CI/CD pipeline</td>
-                <td class="factor-result">GitHub Actions configured with build + test</td>
-                <td class="factor-impact factor-positive">+0.0 (baseline)</td>
-              </tr>
-              <tr>
-                <td class="factor-name">Tests in CI</td>
-                <td class="factor-result">Unit tests run on every PR</td>
-                <td class="factor-impact factor-positive">+0.0 (baseline)</td>
-              </tr>
-              <tr>
-                <td class="factor-name">Security scanning</td>
-                <td class="factor-result">No SAST/DAST/dependency scanning in pipeline</td>
-                <td class="factor-impact factor-negative">−1.5</td>
-              </tr>
-              <tr>
-                <td class="factor-name">Docker image pinning</td>
-                <td class="factor-result">Using :latest tags in Dockerfile</td>
-                <td class="factor-impact factor-negative">−0.5</td>
-              </tr>
-
-              Use these factor categories (include all that apply):
-              - CI/CD pipeline (exists? platform?)
-              - Tests in CI (automated test execution)
-              - Security scanning in CI (SAST, dependency audit)
-              - Docker (present? images pinned?)
-              - Infrastructure as Code (Terraform, CloudFormation, etc.)
-              - Lock file (package-lock.json, yarn.lock, etc.)
-              - README quality (substantive documentation)
-              - LICENSE file (present? appropriate?)
-              - CHANGELOG (maintained?)
-              - SECURITY.md (vulnerability reporting process)
-              - Dependabot / Renovate (automated dependency updates)
-              -->
+              <!-- populate -->
             </tbody>
           </table>
-          <div class="score-detail-summary">
-            <strong>Scoring method:</strong> Starts at 10.0. Missing CI/CD: −3.0. Missing tests in CI: −1.5.
-            No security scanning: −1.5. Missing lock file: −1.0. Missing README: −0.5. Missing LICENSE: −0.5.
-            No Docker pinning: −0.5. Each missing governance file: −0.25.
-            <!-- Add a one-sentence summary -->
+          <div class="sd-summary">
+            <strong>Scoring method:</strong> Starts at 10.0. No CI/CD: −3.0. No tests in CI: −1.5. No security scan: −1.5. No lock file: −1.0. Missing docs: −0.25–0.5 each.
           </div>
         </div>
       </div>
 
-      <!-- ── Dependency Risk Score Derivation ── -->
       <div class="score-detail" id="sd-dependency">
         <div class="score-detail-header" onclick="toggleScoreDetail('sd-dependency')">
           <div class="sd-left">
-            <span>📦</span>
+            <span class="sd-icon">&#128230;</span>
             <span class="sd-dim">Dependency Risk</span>
-            <span class="sd-score"><!-- x/10 --></span>
+            <span class="sd-score-pill good"><!-- x/10 --></span>
           </div>
-          <span class="sd-arrow">▼</span>
+          <span class="sd-arrow">&#9660;</span>
         </div>
         <div class="score-detail-body">
           <table>
             <thead><tr><th>Factor</th><th>Finding</th><th>Impact</th></tr></thead>
             <tbody>
-              <!--
-              Populate with actual factors. Example rows:
-
-              <tr>
-                <td class="factor-name">Critical CVEs</td>
-                <td class="factor-result">0 critical vulnerabilities</td>
-                <td class="factor-impact factor-positive">+0.0 (baseline)</td>
-              </tr>
-              <tr>
-                <td class="factor-name">High CVEs</td>
-                <td class="factor-result">3 high-severity vulnerabilities</td>
-                <td class="factor-impact factor-negative">−1.5</td>
-              </tr>
-              <tr>
-                <td class="factor-name">Deprecated packages</td>
-                <td class="factor-result">5 deprecated runtime dependencies</td>
-                <td class="factor-impact factor-negative">−1.0</td>
-              </tr>
-              <tr>
-                <td class="factor-name">License compliance</td>
-                <td class="factor-result">1 GPL-licensed transitive dependency</td>
-                <td class="factor-impact factor-negative">−0.5</td>
-              </tr>
-              <tr>
-                <td class="factor-name">Lock file</td>
-                <td class="factor-result">package-lock.json present and up to date</td>
-                <td class="factor-impact factor-positive">+0.0 (baseline)</td>
-              </tr>
-
-              Use these factor categories (include all that apply):
-              - Critical CVEs (count and packages affected)
-              - High CVEs (count and packages affected)
-              - Medium/Low CVEs (aggregate count)
-              - Deprecated packages (runtime deps using deprecated libs)
-              - License compliance (GPL/AGPL in non-GPL projects)
-              - Lock file (present and consistent?)
-              - Outdated dependencies (major versions behind)
-              - Dependency count (proportional to project)
-              - Pinning strategy (exact versions vs ranges)
-              - Transitive dependency risk (deep chains)
-              -->
+              <!-- populate -->
             </tbody>
           </table>
-          <div class="score-detail-summary">
-            <strong>Scoring method:</strong> Starts at 10.0. Each critical CVE: −2.0. Each high CVE: −0.5.
-            Deprecated runtime deps: −0.5 to −1.5 based on count. License issues: −0.5 each.
-            Missing lock file: −1.0. Significantly outdated deps: −0.5.
-            <!-- Add a one-sentence summary -->
+          <div class="sd-summary">
+            <strong>Scoring method:</strong> Starts at 10.0. Each critical CVE: −2.0. Each high CVE: −0.5. No lock file: −1.0. Deprecated: −0.5 each.
           </div>
         </div>
       </div>
 
     </div><!-- /score-derivation -->
-  </section>
+  </div>
 
   <!-- Security -->
-  <section id="security">
-    <div class="section-title">🔒 Security</div>
-    <p style="margin-bottom:.75rem;font-size:.9rem">
-      <strong>Risk Level:</strong>
-      <span style="color:var(--red);font-weight:700"><!-- CRITICAL / HIGH / MEDIUM / LOW --></span>
-    </p>
-    <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> <!-- one sentence --></p>
+  <div class="section" id="security">
+    <div class="section-header">
+      <span class="section-icon">&#128274;</span>
+      <span class="section-title">Security</span>
+      <span class="section-badge" style="background:rgba(249,115,22,.15);color:var(--orange)"><!-- Risk Level --></span>
+    </div>
+    <p style="font-size:0.875rem;color:var(--text2);margin-bottom:14px"><!-- Summary sentence --></p>
     <ul class="findings-list">
       <!-- all security findings -->
     </ul>
-  </section>
+  </div>
 
-  <!-- Critical & High Priority Findings -->
-  <section>
-    <div class="section-title">🚨 Critical &amp; High Priority Findings</div>
+  <!-- Critical & High Priority -->
+  <div class="section" id="critical">
+    <div class="section-header">
+      <span class="section-icon">&#128680;</span>
+      <span class="section-title">Critical &amp; High Priority Findings</span>
+    </div>
     <ul class="findings-list">
-      <!-- Example format for findings:
-      <li class="finding critical">
-        <div class="finding-title"><span class="badge">Critical</span> [category] Finding title</div>
-        <div class="finding-meta">File: path/to/file.ext · Lines X–Y</div>
-        <p>Description of the finding.</p>
-        <div class="finding-fix">Specific remediation steps.</div>
+      <!--
+      <li class="finding high">
+        <div class="finding-header">
+          <span class="badge">High</span>
+          <span class="finding-title">[category] Short descriptive title</span>
+        </div>
+        <div class="finding-meta">File: path/to/file.ts · Lines X–Y</div>
+        <p>One-sentence description of the issue.</p>
+        <div class="finding-fix">Specific remediation action.</div>
       </li>
       -->
     </ul>
-  </section>
+  </div>
 
   <!-- Code Quality -->
-  <section id="code">
-    <div class="section-title">📝 Code Quality</div>
-    <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> <!-- one sentence --></p>
-    <ul class="metrics" style="margin-bottom:1rem">
-      <li><strong>Languages:</strong> </li>
-      <li><strong>Total files / lines:</strong> </li>
-      <li><strong>Test coverage estimate:</strong> </li>
-      <li><strong>TODO/FIXME count:</strong> </li>
+  <div class="section" id="code">
+    <div class="section-header">
+      <span class="section-icon">&#128221;</span>
+      <span class="section-title">Code Quality</span>
+    </div>
+    <p style="font-size:0.875rem;color:var(--text2);margin-bottom:14px"><!-- Summary --></p>
+    <ul class="kv-list" style="margin-bottom:16px">
+      <li><strong>Languages</strong><span></span></li>
+      <li><strong>Total files / lines</strong><span></span></li>
+      <li><strong>Test coverage estimate</strong><span></span></li>
+      <li><strong>TODO / FIXME count</strong><span></span></li>
     </ul>
     <ul class="findings-list">
       <!-- medium and low findings -->
     </ul>
-  </section>
+  </div>
 
   <!-- Architecture -->
-  <section id="architecture">
-    <div class="section-title">🏗️ Architecture</div>
-    <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> <!-- one sentence --></p>
-    <ul class="metrics" style="margin-bottom:1rem">
-      <li><strong>Project type:</strong> </li>
-      <li><strong>Direct dependencies:</strong> </li>
-      <li><strong>Monorepo:</strong> </li>
-      <li><strong>Layered structure:</strong> </li>
+  <div class="section" id="architecture">
+    <div class="section-header">
+      <span class="section-icon">&#127959;&#65039;</span>
+      <span class="section-title">Architecture</span>
+    </div>
+    <p style="font-size:0.875rem;color:var(--text2);margin-bottom:14px"><!-- Summary --></p>
+    <ul class="kv-list" style="margin-bottom:16px">
+      <li><strong>Project type</strong><span></span></li>
+      <li><strong>Direct dependencies</strong><span></span></li>
+      <li><strong>Monorepo</strong><span></span></li>
+      <li><strong>Layered structure</strong><span></span></li>
+      <li><strong>Design patterns</strong><span></span></li>
     </ul>
     <ul class="findings-list">
       <!-- medium and low findings -->
     </ul>
-  </section>
+  </div>
 
-  <!-- ══════════════════════════════════════════════════════════
-       ARCHITECTURE DIAGRAMS — MANDATORY — DO NOT REMOVE THIS SECTION
-       Always include both diagrams below. Even for non-code repos,
-       produce diagrams from whatever logical structure exists.
-       Replace the <pre class="mermaid"> content with real Mermaid syntax.
-       ══════════════════════════════════════════════════════════ -->
-  <section>
-    <div class="section-title">🗺️ Architecture Diagrams</div>
+  <!-- Architecture Diagrams — MANDATORY, never omit -->
+  <div class="section" id="diagrams">
+    <div class="section-header">
+      <span class="section-icon">&#128506;&#65039;</span>
+      <span class="section-title">Architecture Diagrams</span>
+    </div>
     <div class="diagram-section">
 
       <div class="diagram-block" id="diag-logical">
         <div class="diagram-header">
           <span class="diagram-title">Logical Architecture</span>
           <div class="diagram-controls">
-            <button class="zoom-btn" onclick="zoomDiagram('diag-logical',-0.15)" title="Zoom out">−</button>
+            <button class="zoom-btn" onclick="zoomDiagram('diag-logical',-0.15)" title="Zoom out">&minus;</button>
             <span class="zoom-scale" id="diag-logical-scale">fit</span>
-            <button class="zoom-btn" onclick="zoomDiagram('diag-logical', 0.15)" title="Zoom in">+</button>
-            <button class="zoom-btn reset" onclick="resetDiagram('diag-logical')" title="Reset to fit">Fit</button>
-            <button class="expand-btn" onclick="expandDiagram('diag-logical','Logical Architecture')" title="Open fullscreen">⛶ Fullscreen</button>
+            <button class="zoom-btn" onclick="zoomDiagram('diag-logical',0.15)" title="Zoom in">+</button>
+            <button class="zoom-btn reset" onclick="resetDiagram('diag-logical')">Fit</button>
+            <button class="expand-btn" onclick="expandDiagram('diag-logical','Logical Architecture')">&#9974; Fullscreen</button>
           </div>
         </div>
         <div class="diagram-viewport" id="diag-logical-vp">
@@ -850,18 +1021,18 @@ graph TD
   C --> D
           </pre>
         </div>
-        <div class="diagram-hint">Scroll to pan · Use + / − buttons or scroll wheel to zoom · ⛶ Fullscreen for best readability</div>
+        <div class="diagram-hint">Scroll to pan &nbsp;&middot;&nbsp; +/&minus; or mousewheel to zoom &nbsp;&middot;&nbsp; &#9974; Fullscreen for best readability</div>
       </div>
 
       <div class="diagram-block" id="diag-flow">
         <div class="diagram-header">
           <span class="diagram-title">Functional Flow</span>
           <div class="diagram-controls">
-            <button class="zoom-btn" onclick="zoomDiagram('diag-flow',-0.15)" title="Zoom out">−</button>
+            <button class="zoom-btn" onclick="zoomDiagram('diag-flow',-0.15)" title="Zoom out">&minus;</button>
             <span class="zoom-scale" id="diag-flow-scale">fit</span>
-            <button class="zoom-btn" onclick="zoomDiagram('diag-flow', 0.15)" title="Zoom in">+</button>
-            <button class="zoom-btn reset" onclick="resetDiagram('diag-flow')" title="Reset to fit">Fit</button>
-            <button class="expand-btn" onclick="expandDiagram('diag-flow','Functional Flow')" title="Open fullscreen">⛶ Fullscreen</button>
+            <button class="zoom-btn" onclick="zoomDiagram('diag-flow',0.15)" title="Zoom in">+</button>
+            <button class="zoom-btn reset" onclick="resetDiagram('diag-flow')">Fit</button>
+            <button class="expand-btn" onclick="expandDiagram('diag-flow','Functional Flow')">&#9974; Fullscreen</button>
           </div>
         </div>
         <div class="diagram-viewport" id="diag-flow-vp">
@@ -871,7 +1042,6 @@ sequenceDiagram
   participant API as routes/
   participant Svc as services/
   participant DB as models/ + DB
-
   Client->>API: HTTP Request
   API->>Svc: Business logic
   Svc->>DB: Query
@@ -880,11 +1050,11 @@ sequenceDiagram
   API-->>Client: HTTP Response
           </pre>
         </div>
-        <div class="diagram-hint">Scroll to pan · Use + / − buttons or scroll wheel to zoom · ⛶ Fullscreen for best readability</div>
+        <div class="diagram-hint">Scroll to pan &nbsp;&middot;&nbsp; +/&minus; or mousewheel to zoom &nbsp;&middot;&nbsp; &#9974; Fullscreen for best readability</div>
       </div>
 
     </div>
-  </section>
+  </div>
 
   <!-- Fullscreen diagram modal -->
   <div class="diag-modal" id="diag-modal" onclick="if(event.target===this)closeDiagramModal()">
@@ -892,11 +1062,11 @@ sequenceDiagram
       <div class="diag-modal-header">
         <span class="diag-modal-title" id="diag-modal-title"></span>
         <div class="diagram-controls">
-          <button class="zoom-btn" onclick="zoomModal(-0.15)" title="Zoom out">−</button>
+          <button class="zoom-btn" onclick="zoomModal(-0.15)">&minus;</button>
           <span class="zoom-scale" id="modal-scale">fit</span>
-          <button class="zoom-btn" onclick="zoomModal(0.15)" title="Zoom in">+</button>
+          <button class="zoom-btn" onclick="zoomModal(0.15)">+</button>
           <button class="zoom-btn reset" onclick="resetModal()">Fit</button>
-          <button class="close-btn" onclick="closeDiagramModal()">✕ Close</button>
+          <button class="close-btn" onclick="closeDiagramModal()">&#10005; Close</button>
         </div>
       </div>
       <div class="diag-modal-vp" id="diag-modal-vp"></div>
@@ -904,456 +1074,395 @@ sequenceDiagram
   </div>
 
   <!-- DevOps -->
-  <section id="devops">
-    <div class="section-title">⚙️ DevOps</div>
-    <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> <!-- one sentence --></p>
-    <ul class="checklist" style="margin-bottom:1rem">
-      <li><span class="check"><!-- ✓ if done --></span> CI/CD pipeline</li>
-      <li><span class="check"><!-- ✓ if done --></span> Tests in CI</li>
-      <li><span class="check"><!-- ✓ if done --></span> Security scan in CI</li>
-      <li><span class="check"><!-- ✓ if done --></span> Docker</li>
-      <li><span class="check"><!-- ✓ if done --></span> IaC</li>
-      <li><span class="check"><!-- ✓ if done --></span> README</li>
-      <li><span class="check"><!-- ✓ if done --></span> LICENSE</li>
-      <li><span class="check"><!-- ✓ if done --></span> CHANGELOG</li>
-      <li><span class="check"><!-- ✓ if done --></span> Lock file</li>
-      <li><span class="check"><!-- ✓ if done --></span> SECURITY.md</li>
-      <li><span class="check"><!-- ✓ if done --></span> Dependabot / Renovate</li>
+  <div class="section" id="devops">
+    <div class="section-header">
+      <span class="section-icon">&#9881;&#65039;</span>
+      <span class="section-title">DevOps / CI-CD</span>
+    </div>
+    <p style="font-size:0.875rem;color:var(--text2);margin-bottom:14px"><!-- Summary --></p>
+    <ul class="checklist" style="margin-bottom:16px">
+      <li><span class="check-icon miss">&#10005;</span> CI/CD pipeline</li>
+      <li><span class="check-icon miss">&#10005;</span> Tests in CI</li>
+      <li><span class="check-icon miss">&#10005;</span> Security scan in CI</li>
+      <li><span class="check-icon miss">&#10005;</span> Docker</li>
+      <li><span class="check-icon miss">&#10005;</span> IaC</li>
+      <li><span class="check-icon miss">&#10005;</span> README</li>
+      <li><span class="check-icon miss">&#10005;</span> LICENSE</li>
+      <li><span class="check-icon miss">&#10005;</span> CHANGELOG</li>
+      <li><span class="check-icon miss">&#10005;</span> Lock file</li>
+      <li><span class="check-icon miss">&#10005;</span> SECURITY.md</li>
+      <li><span class="check-icon miss">&#10005;</span> Dependabot / Renovate</li>
     </ul>
     <ul class="findings-list">
       <!-- medium and low findings -->
     </ul>
-  </section>
+  </div>
 
   <!-- Dependency Risk -->
-  <section id="dependency">
-    <div class="section-title">📦 Dependency Risk</div>
-    <p style="color:var(--muted);font-size:.9rem;margin-bottom:.75rem"><strong style="color:var(--text)">Summary:</strong> <!-- one sentence --></p>
-    <ul class="metrics" style="margin-bottom:1rem">
-      <li><strong>Package manager:</strong> </li>
-      <li><strong>Lock file present:</strong> </li>
-      <li><strong>Critical CVEs:</strong> </li>
-      <li><strong>High CVEs:</strong> </li>
-      <li><strong>Deprecated packages:</strong> </li>
-      <li><strong>License issues:</strong> </li>
+  <div class="section" id="dependency">
+    <div class="section-header">
+      <span class="section-icon">&#128230;</span>
+      <span class="section-title">Dependency Risk</span>
+    </div>
+    <p style="font-size:0.875rem;color:var(--text2);margin-bottom:14px"><!-- Summary --></p>
+    <ul class="kv-list" style="margin-bottom:16px">
+      <li><strong>Package manager</strong><span></span></li>
+      <li><strong>Lock file present</strong><span></span></li>
+      <li><strong>Critical CVEs</strong><span></span></li>
+      <li><strong>High CVEs</strong><span></span></li>
+      <li><strong>Deprecated packages</strong><span></span></li>
+      <li><strong>License issues</strong><span></span></li>
     </ul>
     <ul class="findings-list">
       <!-- dependency findings -->
     </ul>
-  </section>
+  </div>
 
   <!-- Governance Assessment -->
-  <section id="governance">
-    <div class="section-title">🏛️ Governance Assessment</div>
-    <p style="margin-bottom:.5rem;font-size:.9rem">
-      <strong>Compliance Status:</strong>
-      <span style="font-weight:700"><!-- ✅ COMPLIANT / ⚠️ CONDITIONALLY COMPLIANT / ❌ NON-COMPLIANT --></span>
-    </p>
-    <p style="margin-bottom:.5rem;font-size:.9rem"><strong>Overall Score:</strong> <!-- x.x/10 --></p>
-    <p style="margin-bottom:1rem;font-size:.9rem"><strong>Risk Posture Index:</strong> <!-- RPI/100 🔴🟠🟡🟢 --></p>
-    <!-- Compliance status box — use class "noncompliant", "compliant", or "conditional" -->
-    <div class="compliance-box">
-      <!-- <h3>Status: ✅ COMPLIANT / ⚠️ CONDITIONALLY COMPLIANT / ❌ NON-COMPLIANT</h3> -->
-      <!-- <p>Description of blocking failures if any</p> -->
+  <div class="section" id="governance">
+    <div class="section-header">
+      <span class="section-icon">&#127963;&#65039;</span>
+      <span class="section-title">Governance Assessment</span>
     </div>
 
-    <h4 style="font-size:0.95rem;margin:1rem 0 0.5rem;">RPI Calculation</h4>
-    <div class="table-wrap" style="margin-bottom:1rem">
+    <!-- Status, score, RPI summary row -->
+    <div class="card-grid" style="margin-bottom:16px">
+      <div class="card" style="text-align:center">
+        <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Compliance</div>
+        <div style="font-size:0.95rem;font-weight:700"><!-- ✅ / ⚠️ / ❌ STATUS --></div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Overall Score</div>
+        <div style="font-size:1.4rem;font-weight:800"><!-- x.x/10 --></div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Risk Posture Index</div>
+        <div style="font-size:1.4rem;font-weight:800"><!-- RPI/100 --></div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:2px"><!-- 🟢 Low / 🟡 Medium / 🟠 High / 🔴 Critical --></div>
+      </div>
+    </div>
+
+    <!-- Compliance box -->
+    <div class="compliance-box conditional">
+      <!-- <h3>⚠️ CONDITIONALLY COMPLIANT</h3> -->
+      <!-- <p>Description...</p> -->
+    </div>
+
+    <!-- RPI Calculation -->
+    <h4 style="font-size:0.85rem;margin:16px 0 8px">RPI Calculation</h4>
+    <div class="table-wrap" style="margin-bottom:16px">
       <table>
         <thead><tr><th>Severity</th><th>Count</th><th>Weight</th><th>Raw Score</th></tr></thead>
         <tbody>
-          <tr><td>Critical</td><td><!-- n --></td><td>×25</td><td><!-- n×25 --></td></tr>
-          <tr><td>High</td><td><!-- n --></td><td>×10</td><td><!-- n×10 --></td></tr>
-          <tr><td>Medium</td><td><!-- n --></td><td>×3</td><td><!-- n×3 --></td></tr>
-          <tr><td>Low</td><td><!-- n --></td><td>×1</td><td><!-- n×1 --></td></tr>
-          <tr><td colspan="3"><strong>Total Raw Score</strong></td><td><strong><!-- total --></strong></td></tr>
-          <tr><td colspan="3"><strong>RPI = max(0, 100 − total/2)</strong></td><td><strong><!-- RPI/100 --></strong></td></tr>
+          <tr><td>Critical</td><td></td><td>&times;25</td><td></td></tr>
+          <tr><td>High</td><td></td><td>&times;10</td><td></td></tr>
+          <tr><td>Medium</td><td></td><td>&times;3</td><td></td></tr>
+          <tr><td>Low</td><td></td><td>&times;1</td><td></td></tr>
+          <tr><td colspan="3"><strong>Total Raw Score</strong></td><td><strong></strong></td></tr>
+          <tr><td colspan="3"><strong>RPI = max(0, 100 &minus; total/2)</strong></td><td><strong></strong></td></tr>
         </tbody>
       </table>
     </div>
-    <div class="table-wrap" style="margin-bottom:1rem">
+
+    <!-- Policy table -->
+    <div class="table-wrap" style="margin-bottom:16px">
       <table>
         <thead><tr><th>Policy</th><th>Status</th><th>Impact</th></tr></thead>
         <tbody>
-          <!-- Policy rows: e.g. <tr><td>GOV-SEC-001: No committed secrets</td><td>✅ PASS</td><td>—</td></tr> -->
+          <!-- <tr><td>GOV-SEC-001: No committed secrets</td><td class="c-green fw-700">✓ PASS</td><td>—</td></tr> -->
+          <!-- <tr><td>GOV-DEV-002: Tests run in CI</td><td class="c-orange fw-700">✗ FAIL (advisory)</td><td>High</td></tr> -->
         </tbody>
       </table>
     </div>
+
     <ul class="findings-list">
       <!-- governance findings -->
     </ul>
-  </section>
+  </div>
 
   <!-- Quick Wins -->
-  <section id="quickwins">
-    <div class="section-title">🎯 Quick Wins</div>
-    <p style="color:var(--muted);font-size:.875rem;margin-bottom:.75rem">Things that can be fixed in under an hour with high impact:</p>
-    <!-- Example:
-    <div class="quick-win">
-      <div class="qw-num">1</div>
-      <div><strong>Short title.</strong> Description with specific file reference.</div>
+  <div class="section" id="quickwins">
+    <div class="section-header">
+      <span class="section-icon">&#127919;</span>
+      <span class="section-title">Quick Wins</span>
     </div>
-    -->
-  </section>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:12px">Actionable fixes — each under an hour, high impact:</p>
+    <!-- <div class="quick-win"><div class="qw-num">1</div><div class="qw-body"><strong>Title.</strong> Description with file reference.</div></div> -->
+  </div>
 
   <!-- Roadmap -->
-  <section id="roadmap">
-    <div class="section-title">🗺️ Recommended Roadmap</div>
+  <div class="section" id="roadmap">
+    <div class="section-header">
+      <span class="section-icon">&#128506;&#65039;</span>
+      <span class="section-title">Recommended Roadmap</span>
+    </div>
     <div class="roadmap">
-      <div class="roadmap-phase">
-        <h4>This week — critical fixes</h4>
+      <div class="roadmap-phase week">
+        <h4>&#128308; This week — critical fixes</h4>
         <ul>
-          <!-- items from critical/high findings -->
+          <!-- <li>Item</li> -->
         </ul>
       </div>
-      <div class="roadmap-phase">
-        <h4>This month — quality improvements</h4>
+      <div class="roadmap-phase month">
+        <h4>&#128993; This month — quality improvements</h4>
         <ul>
-          <!-- items from medium findings -->
+          <!-- <li>Item</li> -->
         </ul>
       </div>
-      <div class="roadmap-phase">
-        <h4>This quarter — strategic improvements</h4>
+      <div class="roadmap-phase quarter">
+        <h4>&#128309; This quarter — strategic</h4>
         <ul>
-          <!-- architectural or process improvements -->
+          <!-- <li>Item</li> -->
         </ul>
       </div>
     </div>
-  </section>
+  </div>
 
   <!-- Findings Summary -->
-  <section id="summary">
-    <div class="section-title">Findings Summary</div>
+  <div class="section" id="summary">
+    <div class="section-header">
+      <span class="section-icon">&#128202;</span>
+      <span class="section-title">Findings Summary</span>
+    </div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Severity</th><th>Count</th></tr></thead>
         <tbody>
-          <tr><td>🔴 Critical</td><td></td></tr>
-          <tr><td>🟠 High</td><td></td></tr>
-          <tr><td>🟡 Medium</td><td></td></tr>
-          <tr><td>🔵 Low</td><td></td></tr>
+          <tr><td>&#128308; Critical</td><td></td></tr>
+          <tr><td>&#128992; High</td><td></td></tr>
+          <tr><td>&#128993; Medium</td><td></td></tr>
+          <tr><td>&#128309; Low</td><td></td></tr>
           <tr><td><strong>Total</strong></td><td><strong></strong></td></tr>
         </tbody>
       </table>
     </div>
-  </section>
+  </div>
 
   <!-- Claude Run Metrics -->
-  <section id="metrics">
-    <div class="section-title">&#x1F916; Claude Run Metrics</div>
-    <p class="metrics-disclaimer">Token counts are <strong>estimates</strong> derived from file sizes and conversation content &mdash; not values read from an API response.</p>
+  <div class="section" id="metrics">
+    <div class="section-header">
+      <span class="section-icon">&#129302;</span>
+      <span class="section-title">Claude Run Metrics</span>
+    </div>
+    <p class="metrics-disclaimer">Token counts are <strong>estimates</strong> derived from file sizes and conversation content — not values from an API response.</p>
     <div class="metrics-grid">
       <div class="metric-card accent">
         <div class="m-label">Model</div>
-        <div class="m-value" style="font-size:1rem"><!-- e.g. claude-sonnet-4-6 --></div>
+        <div class="m-value" style="font-size:0.95rem"><!-- claude-sonnet-4-6 --></div>
       </div>
       <div class="metric-card">
         <div class="m-label">Input Tokens (est.)</div>
-        <div class="m-value"><!-- integer --></div>
+        <div class="m-value"><!-- n --></div>
         <div class="m-sub">tokens consumed</div>
       </div>
       <div class="metric-card">
         <div class="m-label">Output Tokens (est.)</div>
-        <div class="m-value"><!-- integer --></div>
+        <div class="m-value"><!-- n --></div>
         <div class="m-sub">tokens generated</div>
       </div>
       <div class="metric-card">
         <div class="m-label">Total Tokens (est.)</div>
-        <div class="m-value"><!-- integer --></div>
+        <div class="m-value"><!-- n --></div>
         <div class="m-sub">of 200,000 window</div>
       </div>
       <div class="metric-card">
         <div class="m-label">Context Utilization</div>
-        <div class="m-value"><!-- e.g. 14.2% --></div>
+        <div class="m-value"><!-- x% --></div>
         <div class="m-sub"><!-- 🟢 Low / 🟡 Moderate / 🟠 High / 🔴 Near limit --></div>
       </div>
       <div class="metric-card">
         <div class="m-label">Run Duration</div>
-        <div class="m-value"><!-- e.g. 4m 32s --></div>
-        <div class="m-sub"><!-- run date --></div>
+        <div class="m-value"><!-- Xm Xs --></div>
+        <div class="m-sub"><!-- date --></div>
       </div>
     </div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Detail</th><th>Value</th></tr></thead>
         <tbody>
-          <tr><td>Memory files loaded</td><td><!-- list paths + sizes, or "none" --></td></tr>
-          <tr><td>Tool calls &mdash; total</td><td><!-- integer --></td></tr>
-          <tr><td>&nbsp;&nbsp;Bash</td><td><!-- integer --></td></tr>
-          <tr><td>&nbsp;&nbsp;Read</td><td><!-- integer --></td></tr>
-          <tr><td>&nbsp;&nbsp;Write / Edit</td><td><!-- integer --></td></tr>
-          <tr><td>&nbsp;&nbsp;Grep / Glob</td><td><!-- integer --></td></tr>
-          <tr><td>&nbsp;&nbsp;Agent (subagents)</td><td><!-- integer --></td></tr>
-          <tr><td>Repo files inspected</td><td><!-- integer --></td></tr>
+          <tr><td>Memory files loaded</td><td><!-- paths or "none" --></td></tr>
+          <tr><td>Tool calls — total</td><td></td></tr>
+          <tr><td>&nbsp;&nbsp;Bash</td><td></td></tr>
+          <tr><td>&nbsp;&nbsp;Read</td><td></td></tr>
+          <tr><td>&nbsp;&nbsp;Write / Edit</td><td></td></tr>
+          <tr><td>&nbsp;&nbsp;Grep / Glob</td><td></td></tr>
+          <tr><td>&nbsp;&nbsp;Agent (subagents)</td><td></td></tr>
+          <tr><td>Repo files inspected</td><td></td></tr>
         </tbody>
       </table>
     </div>
-  </section>
-
-  <div class="report-footer">
-    Generated by repo-intel · <a href="https://github.com/your-org/repo-intel" style="color:var(--accent)">github.com/your-org/repo-intel</a>
   </div>
 
-</div>
+  <div class="report-footer">
+    Generated by <strong>repo-intel</strong> &nbsp;&middot;&nbsp; Powered by Claude Code
+  </div>
+
+</div><!-- /content -->
+</main>
 
 <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 <script>
-  /* ── Mermaid init ─────────────────────────────────────────────── */
-  mermaid.initialize({
-    startOnLoad: true,
-    theme: 'default',
-    themeVariables: {
-      background: '#ffffff', primaryColor: '#dde4ff',
-      primaryTextColor: '#1a1d27', primaryBorderColor: '#3b5bdb',
-      lineColor: '#6b7280', secondaryColor: '#e8f0fe',
-      tertiaryColor: '#f0f4ff', edgeLabelBackground: '#ffffff',
-      clusterBkg: '#f5f6fa', clusterBorder: '#c7d0e0',
-      titleColor: '#1a1d27', noteBkgColor: '#fff3cd', noteTextColor: '#1a1d27',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-    },
-    flowchart: { curve: 'basis', padding: 20 },
-    sequence: { actorMargin: 60, messageMargin: 30 }
-  });
+/* ── Mermaid ────────────────────────────────────────────────── */
+mermaid.initialize({
+  startOnLoad: true, theme: 'default',
+  themeVariables: {
+    background:'#fff', primaryColor:'#dde4ff', primaryTextColor:'#1a1d27',
+    primaryBorderColor:'#3b5bdb', lineColor:'#6b7280', secondaryColor:'#e8f0fe',
+    tertiaryColor:'#f0f4ff', edgeLabelBackground:'#fff', clusterBkg:'#f5f6fa',
+    clusterBorder:'#c7d0e0', fontFamily:'-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif'
+  },
+  flowchart:{ curve:'basis', padding:20 },
+  sequence:{ actorMargin:60, messageMargin:30 }
+});
 
-  /* ── Diagram zoom / pan / fullscreen ──────────────────────────── *
-   *                                                                  *
-   *  KEY FIX: Mermaid v10+ sets style="max-width: Xpx" on every     *
-   *  SVG it renders. This overrides the width attribute, making      *
-   *  zoom appear broken. We clear that inline style immediately      *
-   *  after init and use viewBox-based scaling for crisp results.     *
-   * ────────────────────────────────────────────────────────────── */
-  const _diag  = {};   // per-diagram: { scale, nw, nh }
-  const _modal = { scale:1, nw:0, nh:0 };
-
-  function _getSvg(id) {
-    const vp = document.getElementById(id + '-vp');
-    return vp?.querySelector('svg') || null;
+/* ── Sidebar toggle ─────────────────────────────────────────── */
+var _sidebarOpen = true;
+function toggleSidebar() {
+  _sidebarOpen = !_sidebarOpen;
+  var s = document.getElementById('sidebar');
+  var m = document.getElementById('main');
+  var t = document.getElementById('topbar');
+  var h = document.getElementById('hamburger');
+  var o = document.getElementById('sidebar-overlay');
+  if (_sidebarOpen) {
+    s.classList.remove('collapsed');
+    m.classList.remove('expanded');
+    t.classList.remove('expanded');
+    h.classList.add('open');
+    o.classList.remove('visible');
+  } else {
+    s.classList.add('collapsed');
+    m.classList.add('expanded');
+    t.classList.add('expanded');
+    h.classList.remove('open');
   }
+}
+function closeSidebar() {
+  if (_sidebarOpen) toggleSidebar();
+}
+// Mobile: sidebar starts closed
+if (window.innerWidth <= 768) {
+  _sidebarOpen = true; toggleSidebar();
+}
 
-  function _readDims(svg) {
-    // viewBox is the most reliable source — Mermaid always sets it
-    const vb = (svg.getAttribute('viewBox') || '').trim().split(/[\s,]+/);
-    const nw = parseFloat(vb[2]) || parseFloat(svg.getAttribute('width'))  || svg.getBoundingClientRect().width  || 700;
-    const nh = parseFloat(vb[3]) || parseFloat(svg.getAttribute('height')) || svg.getBoundingClientRect().height || 450;
-    return { nw, nh };
-  }
+/* ── Smooth scroll + active nav ─────────────────────────────── */
+function scrollTo(id) {
+  var el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
+  // On mobile, close sidebar after nav
+  if (window.innerWidth <= 768 && _sidebarOpen) toggleSidebar();
+}
 
-  function _initDiag(id) {
-    const vp  = document.getElementById(id + '-vp');
-    // Mermaid v11 may render the SVG as a sibling of the <pre> or replace it entirely
-    const svg = vp?.querySelector('svg');
-    if (!svg) return false;
-
-    // Strip all Mermaid inline styles that interfere with zoom scaling
-    svg.style.maxWidth = 'none';
-    svg.style.width    = '';
-    svg.style.height   = '';
-    // Also strip max-width from any Mermaid wrapper <div> if present
-    const wrapper = svg.parentElement;
-    if (wrapper && wrapper !== vp) {
-      wrapper.style.maxWidth = 'none';
-      wrapper.style.width    = '100%';
-    }
-
-    const { nw, nh } = _readDims(svg);
-    if (!svg.getAttribute('viewBox')) svg.setAttribute('viewBox', `0 0 ${nw} ${nh}`);
-
-    // Auto-fit: scale down to fill viewport, never enlarge beyond 100%
-    const avail = (vp.clientWidth || 820) - 48;
-    const fit   = Math.min(1, avail / nw);
-    _diag[id]   = { scale: fit, nw, nh };
-    _applyDiagScale(id);
-
-    // Scroll-wheel zoom (no Ctrl required)
-    vp.addEventListener('wheel', e => {
-      e.preventDefault();
-      _diag[id].scale = Math.min(5, Math.max(0.1, _diag[id].scale + (e.deltaY < 0 ? 0.15 : -0.15)));
-      _applyDiagScale(id);
-    }, { passive: false });
-
-    // Click-drag pan
-    let drag=false, ox, oy, sl, st;
-    vp.addEventListener('mousedown', e => { drag=true; ox=e.pageX; oy=e.pageY; sl=vp.scrollLeft; st=vp.scrollTop; });
-    vp.addEventListener('mouseleave', () => drag=false);
-    vp.addEventListener('mouseup',   () => drag=false);
-    vp.addEventListener('mousemove', e => { if(!drag) return; vp.scrollLeft=sl-(e.pageX-ox); vp.scrollTop=st-(e.pageY-oy); });
-    return true;
-  }
-
-  function _applyDiagScale(id) {
-    const svg = _getSvg(id);
-    const st  = _diag[id];
-    if (!svg || !st) return;
-    // Re-enforce: Mermaid may re-apply max-width on resize/mutation
-    svg.style.maxWidth = 'none';
-    svg.setAttribute('width',  st.nw * st.scale);
-    svg.setAttribute('height', st.nh * st.scale);
-    const lbl = document.getElementById(id + '-scale');
-    if (lbl) lbl.textContent = Math.round(st.scale * 100) + '%';
-  }
-
-  function zoomDiagram(id, delta) {
-    if (!_diag[id]) return;
-    _diag[id].scale = Math.min(5, Math.max(0.1, _diag[id].scale + delta));
-    _applyDiagScale(id);
-  }
-
-  function resetDiagram(id) {
-    if (!_diag[id]) return;
-    const vp    = document.getElementById(id + '-vp');
-    const avail = (vp?.clientWidth || 820) - 48;
-    _diag[id].scale = Math.min(1, avail / _diag[id].nw);
-    _applyDiagScale(id);
-    if (vp) { vp.scrollLeft=0; vp.scrollTop=0; }
-  }
-
-  /* ── Fullscreen modal ─────────────────────────────────────────── */
-  function expandDiagram(id, title) {
-    const srcSvg = _getSvg(id);
-    if (!srcSvg) return;
-
-    const modal   = document.getElementById('diag-modal');
-    const modalVp = document.getElementById('diag-modal-vp');
-    document.getElementById('diag-modal-title').textContent = title || id;
-
-    // Serialize SVG and remap internal ID references to avoid style breakage.
-    // Mermaid embeds <style> blocks with selectors like "#mermaid-1234 .node rect".
-    // A simple cloneNode + id change breaks those selectors → invisible diagram.
-    const origId = srcSvg.id || '';
-    const newId  = 'modal-svg-' + Date.now();
-    let svgHtml  = srcSvg.outerHTML;
-    if (origId) {
-      svgHtml = svgHtml.split(origId).join(newId);
-    }
-    modalVp.innerHTML = svgHtml;
-    const clone = modalVp.querySelector('svg');
-    if (!clone) return;
-    clone.style.maxWidth    = 'none';
-    clone.style.display     = 'block';
-    clone.style.background  = '#ffffff';
-
-    const { nw, nh } = _readDims(srcSvg);
-    _modal.nw = nw; _modal.nh = nh;
-
-    // Fit to modal pane
-    requestAnimationFrame(() => {
-      const mw = (modalVp.clientWidth  || window.innerWidth  * 0.92) - 48;
-      const mh = (modalVp.clientHeight || window.innerHeight * 0.84) - 48;
-      _modal.scale = Math.min(mw / nw, mh / nh, 1);
-      _applyModalScale();
+// Highlight active nav link on scroll
+(function() {
+  var sections = ['exec','overview','scorecard','security','critical','code','architecture','diagrams','devops','dependency','governance','quickwins','roadmap','summary','metrics'];
+  var navMap = {
+    'exec': 0, 'overview': 1, 'scorecard': 2,
+    'security': 3, 'critical': 4, 'code': 5,
+    'architecture': 6, 'diagrams': 7, 'devops': 8,
+    'dependency': 9, 'governance': 10, 'quickwins': 11,
+    'roadmap': 12, 'summary': 13, 'metrics': 14
+  };
+  var links = document.querySelectorAll('.nav-link');
+  window.addEventListener('scroll', function() {
+    var scrollY = window.scrollY + 80;
+    var active = 'exec';
+    sections.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el && el.offsetTop <= scrollY) active = id;
     });
-
-    modal.classList.add('open');
-    document.addEventListener('keydown', _escClose);
-
-    // Scroll-wheel zoom in modal
-    modalVp._wh && modalVp.removeEventListener('wheel', modalVp._wh);
-    modalVp._wh = e => {
-      e.preventDefault();
-      _modal.scale = Math.min(5, Math.max(0.1, _modal.scale + (e.deltaY < 0 ? 0.15 : -0.15)));
-      _applyModalScale();
-    };
-    modalVp.addEventListener('wheel', modalVp._wh, { passive: false });
-
-    // Drag-to-pan in modal
-    let drag=false, ox, oy, sl, st;
-    ['mousedown','mouseleave','mouseup','mousemove'].forEach(t => {
-      modalVp['_'+t] && modalVp.removeEventListener(t, modalVp['_'+t]);
+    links.forEach(function(l, i) {
+      l.classList.toggle('active', i === navMap[active]);
     });
-    modalVp._mousedown  = e => { drag=true; ox=e.pageX; oy=e.pageY; sl=modalVp.scrollLeft; st=modalVp.scrollTop; };
-    modalVp._mouseleave = () => drag=false;
-    modalVp._mouseup    = () => drag=false;
-    modalVp._mousemove  = e => { if(!drag) return; modalVp.scrollLeft=sl-(e.pageX-ox); modalVp.scrollTop=st-(e.pageY-oy); };
-    ['mousedown','mouseleave','mouseup','mousemove'].forEach(t => modalVp.addEventListener(t, modalVp['_'+t]));
-  }
+  }, { passive: true });
+})();
 
-  function _applyModalScale() {
-    const svg = document.getElementById('diag-modal-vp').querySelector('svg');
-    if (!svg) return;
-    svg.setAttribute('width',  _modal.nw * _modal.scale);
-    svg.setAttribute('height', _modal.nh * _modal.scale);
-    const lbl = document.getElementById('modal-scale');
-    if (lbl) lbl.textContent = Math.round(_modal.scale * 100) + '%';
-  }
+/* ── Diagram zoom / pan / fullscreen ────────────────────────── */
+var _diag = {}, _modal = { scale:1, nw:0, nh:0 };
+function _getSvg(id) { var vp=document.getElementById(id+'-vp'); return vp&&vp.querySelector('svg')||null; }
+function _readDims(svg) {
+  var vb=(svg.getAttribute('viewBox')||'').trim().split(/[\s,]+/);
+  return { nw: parseFloat(vb[2])||parseFloat(svg.getAttribute('width'))||700, nh: parseFloat(vb[3])||parseFloat(svg.getAttribute('height'))||450 };
+}
+function _initDiag(id) {
+  var vp=document.getElementById(id+'-vp'), svg=vp&&vp.querySelector('svg');
+  if (!svg) return false;
+  svg.style.maxWidth='none'; svg.style.width=''; svg.style.height='';
+  var w=svg.parentElement; if(w&&w!==vp){w.style.maxWidth='none';w.style.width='100%';}
+  var d=_readDims(svg); if(!svg.getAttribute('viewBox'))svg.setAttribute('viewBox','0 0 '+d.nw+' '+d.nh);
+  var fit=Math.min(1,(vp.clientWidth||820-48)/d.nw);
+  _diag[id]={scale:fit,nw:d.nw,nh:d.nh}; _applyDiagScale(id);
+  vp.addEventListener('wheel',function(e){e.preventDefault();_diag[id].scale=Math.min(5,Math.max(.1,_diag[id].scale+(e.deltaY<0?.15:-.15)));_applyDiagScale(id);},{passive:false});
+  var drag=false,ox,oy,sl,st;
+  vp.addEventListener('mousedown',function(e){drag=true;ox=e.pageX;oy=e.pageY;sl=vp.scrollLeft;st=vp.scrollTop;});
+  vp.addEventListener('mouseleave',function(){drag=false;});
+  vp.addEventListener('mouseup',function(){drag=false;});
+  vp.addEventListener('mousemove',function(e){if(!drag)return;vp.scrollLeft=sl-(e.pageX-ox);vp.scrollTop=st-(e.pageY-oy);});
+  return true;
+}
+function _applyDiagScale(id) {
+  var svg=_getSvg(id),st=_diag[id]; if(!svg||!st)return;
+  svg.style.maxWidth='none'; svg.setAttribute('width',st.nw*st.scale); svg.setAttribute('height',st.nh*st.scale);
+  var l=document.getElementById(id+'-scale'); if(l)l.textContent=Math.round(st.scale*100)+'%';
+}
+function zoomDiagram(id,d){if(!_diag[id])return;_diag[id].scale=Math.min(5,Math.max(.1,_diag[id].scale+d));_applyDiagScale(id);}
+function resetDiagram(id){if(!_diag[id])return;var vp=document.getElementById(id+'-vp');_diag[id].scale=Math.min(1,(vp&&vp.clientWidth||820-48)/_diag[id].nw);_applyDiagScale(id);if(vp){vp.scrollLeft=0;vp.scrollTop=0;}}
+function expandDiagram(id,title) {
+  var src=_getSvg(id); if(!src)return;
+  var modal=document.getElementById('diag-modal'), mvp=document.getElementById('diag-modal-vp');
+  document.getElementById('diag-modal-title').textContent=title||id;
+  var origId=src.id||'', newId='modal-svg-'+Date.now(), html=src.outerHTML;
+  if(origId)html=html.split(origId).join(newId);
+  mvp.innerHTML=html;
+  var clone=mvp.querySelector('svg'); if(!clone)return;
+  clone.style.maxWidth='none'; clone.style.display='block'; clone.style.background='#fff';
+  var d=_readDims(src); _modal.nw=d.nw; _modal.nh=d.nh;
+  requestAnimationFrame(function(){_modal.scale=Math.min((mvp.clientWidth||window.innerWidth*.92-48)/d.nw,(mvp.clientHeight||window.innerHeight*.84-48)/d.nh,1);_applyModalScale();});
+  modal.classList.add('open'); document.addEventListener('keydown',_escClose);
+  mvp._wh&&mvp.removeEventListener('wheel',mvp._wh);
+  mvp._wh=function(e){e.preventDefault();_modal.scale=Math.min(5,Math.max(.1,_modal.scale+(e.deltaY<0?.15:-.15)));_applyModalScale();};
+  mvp.addEventListener('wheel',mvp._wh,{passive:false});
+  var d2=false,ox2,oy2,sl2,st2;
+  ['mousedown','mouseleave','mouseup','mousemove'].forEach(function(t){mvp['_'+t]&&mvp.removeEventListener(t,mvp['_'+t]);});
+  mvp._mousedown=function(e){d2=true;ox2=e.pageX;oy2=e.pageY;sl2=mvp.scrollLeft;st2=mvp.scrollTop;};
+  mvp._mouseleave=function(){d2=false;}; mvp._mouseup=function(){d2=false;};
+  mvp._mousemove=function(e){if(!d2)return;mvp.scrollLeft=sl2-(e.pageX-ox2);mvp.scrollTop=st2-(e.pageY-oy2);};
+  ['mousedown','mouseleave','mouseup','mousemove'].forEach(function(t){mvp.addEventListener(t,mvp['_'+t]);});
+}
+function _applyModalScale(){var svg=document.getElementById('diag-modal-vp').querySelector('svg');if(!svg)return;svg.setAttribute('width',_modal.nw*_modal.scale);svg.setAttribute('height',_modal.nh*_modal.scale);var l=document.getElementById('modal-scale');if(l)l.textContent=Math.round(_modal.scale*100)+'%';}
+function zoomModal(d){_modal.scale=Math.min(5,Math.max(.1,_modal.scale+d));_applyModalScale();}
+function resetModal(){var vp=document.getElementById('diag-modal-vp');_modal.scale=Math.min((vp&&vp.clientWidth||window.innerWidth*.92-48)/_modal.nw,(vp&&vp.clientHeight||window.innerHeight*.84-48)/_modal.nh,1);_applyModalScale();if(vp){vp.scrollLeft=0;vp.scrollTop=0;}}
+function closeDiagramModal(){document.getElementById('diag-modal').classList.remove('open');document.removeEventListener('keydown',_escClose);}
+function _escClose(e){if(e.key==='Escape')closeDiagramModal();}
 
-  function zoomModal(delta) {
-    _modal.scale = Math.min(5, Math.max(0.1, _modal.scale + delta));
-    _applyModalScale();
-  }
+/* ── Score derivation ───────────────────────────────────────── */
+function toggleScoreDetail(id){var el=document.getElementById(id);if(el)el.classList.toggle('open');}
+function expandAllScores(){document.querySelectorAll('.score-detail').forEach(function(el){el.classList.add('open');});}
+function collapseAllScores(){document.querySelectorAll('.score-detail').forEach(function(el){el.classList.remove('open');});}
 
-  function resetModal() {
-    const vp = document.getElementById('diag-modal-vp');
-    const mw = (vp?.clientWidth  || window.innerWidth  * 0.92) - 48;
-    const mh = (vp?.clientHeight || window.innerHeight * 0.84) - 48;
-    _modal.scale = Math.min(mw / _modal.nw, mh / _modal.nh, 1);
-    _applyModalScale();
-    if (vp) { vp.scrollLeft=0; vp.scrollTop=0; }
-  }
+/* ── Mermaid init observer ──────────────────────────────────── */
+document.addEventListener('DOMContentLoaded',function(){
+  var ids=['diag-logical','diag-flow'], pending=new Set(ids);
+  function tryAll(){pending.forEach(function(id){if(_initDiag(id))pending.delete(id);});if(!pending.size)obs.disconnect();}
+  var obs=new MutationObserver(tryAll);
+  obs.observe(document.body,{childList:true,subtree:true});
+  setTimeout(tryAll,400); setTimeout(tryAll,1000); setTimeout(tryAll,2000);
+  setTimeout(function(){obs.disconnect();},20000);
+});
 
-  function closeDiagramModal() {
-    document.getElementById('diag-modal').classList.remove('open');
-    document.removeEventListener('keydown', _escClose);
-  }
+/* ── Theme toggle ───────────────────────────────────────────── */
+(function(){var s=localStorage.getItem('repo-intel-theme');if(s==='light')document.documentElement.classList.add('light');_syncTheme();})();
+function toggleTheme(){var l=document.documentElement.classList.toggle('light');localStorage.setItem('repo-intel-theme',l?'light':'dark');_syncTheme();}
+function _syncTheme(){var l=document.documentElement.classList.contains('light');var b=document.getElementById('theme-btn');if(b)b.textContent=l?'\uD83C\uDF19':'\u2600\uFE0F';}
 
-  function _escClose(e) { if (e.key === 'Escape') closeDiagramModal(); }
-
-  /* ── Score derivation toggle ───────────────────────────────── */
-  function toggleScoreDetail(id) {
-    const el = document.getElementById(id);
-    if (el) el.classList.toggle('open');
-  }
-  function expandAllScores() {
-    document.querySelectorAll('.score-detail').forEach(el => el.classList.add('open'));
-  }
-  function collapseAllScores() {
-    document.querySelectorAll('.score-detail').forEach(el => el.classList.remove('open'));
-  }
-
-  /* ── Init: MutationObserver + Mermaid callback ──────────────── */
-  document.addEventListener('DOMContentLoaded', () => {
-    const ids     = ['diag-logical', 'diag-flow'];
-    const pending = new Set(ids);
-
-    function tryAll() {
-      pending.forEach(id => { if (_initDiag(id)) pending.delete(id); });
-      if (pending.size === 0) obs.disconnect();
-    }
-
-    const obs = new MutationObserver(tryAll);
-    obs.observe(document.body, { childList: true, subtree: true });
-
-    // First attempt after a short delay (Mermaid may already be done)
-    setTimeout(tryAll, 400);
-    // Retry at 1s and 2s in case Mermaid renders slowly
-    setTimeout(tryAll, 1000);
-    setTimeout(tryAll, 2000);
-    // Hard stop after 20 s to avoid memory leak if something goes wrong
-    setTimeout(() => obs.disconnect(), 20000);
-  });
-
-  /* ── Theme toggle ─────────────────────────────────────────────── */
-  (function () {
-    // Apply saved preference immediately (before paint) to avoid flash
-    const saved = localStorage.getItem('repo-intel-theme');
-    if (saved === 'light') document.documentElement.classList.add('light');
-    _syncToggleUI();
-  })();
-
-  function toggleTheme() {
-    const isLight = document.documentElement.classList.toggle('light');
-    localStorage.setItem('repo-intel-theme', isLight ? 'light' : 'dark');
-    _syncToggleUI();
-
-    // Diagrams always render on white background with light theme — no re-render needed on toggle
-  }
-
-  function _syncToggleUI() {
-    const isLight = document.documentElement.classList.contains('light');
-    const icon  = document.getElementById('theme-icon');
-    const label = document.getElementById('theme-label');
-    if (icon)  icon.textContent  = isLight ? '🌙' : '☀️';
-    if (label) label.textContent = isLight ? 'Dark' : 'Light';
-  }
+/* ── RPI bar helper (call from populated report) ────────────── */
+function setRPI(value, color) {
+  var bar=document.getElementById('rpi-bar');
+  var lbl=document.getElementById('rpi-label');
+  if(bar){bar.style.width=value+'%';bar.style.background=color||'var(--yellow)';}
+  if(lbl)lbl.textContent=value+'/100';
+}
+// Example: setRPI(54, 'var(--orange)') — call this in the populated report
 </script>
 </body>
 </html>
