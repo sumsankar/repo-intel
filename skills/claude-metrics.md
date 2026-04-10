@@ -49,7 +49,7 @@ Compute:
 
 ### 3. Context window utilization
 
-Claude Sonnet 4.6 has a **200,000-token** context window.
+Claude models have a **200,000-token** context window.
 
 ```
 context_utilization_pct = round((total_tokens / 200000) * 100, 1)
@@ -61,6 +61,8 @@ Flag the utilization level:
 - 25–60% → 🟡 Moderate
 - 60–85% → 🟠 High
 - > 85% → 🔴 Near limit
+
+**Target budget (optimized):** < 120K input + < 15K output = < 135K total (< 68% utilization)
 
 ### 4. Memory files loaded
 
