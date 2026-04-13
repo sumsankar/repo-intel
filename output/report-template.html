@@ -598,56 +598,56 @@
 
   <nav class="sidebar-nav" id="sidebar-nav">
     <div class="nav-group-label">Report</div>
-    <div class="nav-link active" onclick="scrollTo('exec')">
+    <div class="nav-link active" onclick="scrollToSection('exec')">
       <span class="nav-icon">&#128196;</span> Executive Summary
     </div>
-    <div class="nav-link" onclick="scrollTo('overview')">
+    <div class="nav-link" onclick="scrollToSection('overview')">
       <span class="nav-icon">&#128202;</span> Repository Overview
     </div>
-    <div class="nav-link" onclick="scrollTo('scorecard')">
+    <div class="nav-link" onclick="scrollToSection('scorecard')">
       <span class="nav-icon">&#127942;</span> Health Scorecard
     </div>
 
     <div class="nav-group-label">Analysis</div>
-    <div class="nav-link" onclick="scrollTo('security')">
+    <div class="nav-link" onclick="scrollToSection('security')">
       <span class="nav-icon">&#128274;</span> Security
       <span class="nav-badge orange" id="nav-badge-security"><!-- n --></span>
     </div>
-    <div class="nav-link" onclick="scrollTo('critical')">
+    <div class="nav-link" onclick="scrollToSection('critical')">
       <span class="nav-icon">&#128680;</span> Critical &amp; High
       <span class="nav-badge red" id="nav-badge-critical"><!-- n --></span>
     </div>
-    <div class="nav-link" onclick="scrollTo('code')">
+    <div class="nav-link" onclick="scrollToSection('code')">
       <span class="nav-icon">&#128221;</span> Code Quality
       <span class="nav-badge yellow" id="nav-badge-code"><!-- n --></span>
     </div>
-    <div class="nav-link" onclick="scrollTo('architecture')">
+    <div class="nav-link" onclick="scrollToSection('architecture')">
       <span class="nav-icon">&#127959;&#65039;</span> Architecture
     </div>
-    <div class="nav-link" onclick="scrollTo('diagrams')">
+    <div class="nav-link" onclick="scrollToSection('diagrams')">
       <span class="nav-icon">&#128506;&#65039;</span> Diagrams
     </div>
-    <div class="nav-link" onclick="scrollTo('devops')">
+    <div class="nav-link" onclick="scrollToSection('devops')">
       <span class="nav-icon">&#9881;&#65039;</span> DevOps / CI-CD
     </div>
-    <div class="nav-link" onclick="scrollTo('dependency')">
+    <div class="nav-link" onclick="scrollToSection('dependency')">
       <span class="nav-icon">&#128230;</span> Dependency Risk
     </div>
 
     <div class="nav-group-label">Governance</div>
-    <div class="nav-link" onclick="scrollTo('governance')">
+    <div class="nav-link" onclick="scrollToSection('governance')">
       <span class="nav-icon">&#127963;&#65039;</span> Governance
     </div>
-    <div class="nav-link" onclick="scrollTo('quickwins')">
+    <div class="nav-link" onclick="scrollToSection('quickwins')">
       <span class="nav-icon">&#127919;</span> Quick Wins
     </div>
-    <div class="nav-link" onclick="scrollTo('roadmap')">
+    <div class="nav-link" onclick="scrollToSection('roadmap')">
       <span class="nav-icon">&#128506;&#65039;</span> Roadmap
     </div>
-    <div class="nav-link" onclick="scrollTo('summary')">
+    <div class="nav-link" onclick="scrollToSection('summary')">
       <span class="nav-icon">&#128202;</span> Findings Summary
     </div>
-    <div class="nav-link" onclick="scrollTo('metrics')">
+    <div class="nav-link" onclick="scrollToSection('metrics')">
       <span class="nav-icon">&#129302;</span> Claude Metrics
     </div>
   </nav>
@@ -1346,7 +1346,7 @@ if (window.innerWidth <= 768) {
 }
 
 /* ── Smooth scroll + active nav ─────────────────────────────── */
-function scrollTo(id) {
+function scrollToSection(id) {
   var el = document.getElementById(id);
   if (el) el.scrollIntoView({ behavior:'smooth', block:'start' });
   // On mobile, close sidebar after nav
