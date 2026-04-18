@@ -209,3 +209,23 @@ Always include ALL factors even if no issues were found. Use "+0.0 (N/A)" for fa
 - 🟡 **Medium** `[hygiene]` No `CHANGELOG.md`. Consider using conventional commits + `release-please` to automate release notes.
 - 🔵 **Low** `[ci]` `actions/checkout@v2` used in 2 workflows. Upgrade to `@v4` for security and performance.
 - 🔵 **Low** `[hygiene]` `README.md` has no usage examples. Add a quick start section.
+
+---
+
+## Rules emitted
+
+Follows [FINDING-SCHEMA.md](FINDING-SCHEMA.md) and [SCORING-CONTRACT.md](SCORING-CONTRACT.md).
+
+| Rule ID | Default | When it fires |
+|---------|---------|---------------|
+| RI-DEVOPS-001-NO-CI | critical | No `.github/workflows/`, `.gitlab-ci.yml`, `azure-pipelines.yml`, `Jenkinsfile`, or `.circleci/config.yml` |
+| RI-DEVOPS-002-OUTDATED-ACTIONS | high | Any `actions/*@v1` or `@v2` reference |
+| RI-DEVOPS-003-NO-SECURITY-SCAN | high | No SAST (CodeQL/Semgrep), secret scan (Gitleaks), or SCA (Dependabot/Snyk) step in CI |
+| RI-DEVOPS-004-UNPINNED-DEPS-IN-DOCKER | medium | `apt-get install pkg` without `=version`, or `pip install pkg` without `==` |
+| RI-DEVOPS-005-ROOT-CONTAINER | high | Dockerfile has no `USER` directive, or `USER root` |
+| RI-DEVOPS-006-MISSING-HEALTHCHECK | medium | Dockerfile without `HEALTHCHECK` / k8s manifest without `livenessProbe` |
+| RI-DEVOPS-007-PLAINTEXT-SECRETS-IN-IAC | critical | Literal-looking secret in `.tf`, Helm values, k8s manifest, or Ansible vars |
+| RI-DEVOPS-008-NO-LOCK-FILE | medium | Manifest present (package.json / requirements.txt / etc.) but no lock file |
+| RI-DEVOPS-009-NO-DOCKERIGNORE | low | `Dockerfile` present, `.dockerignore` absent |
+
+**Return format:** [SUBAGENT-OUTPUT.md](SUBAGENT-OUTPUT.md).

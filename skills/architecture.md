@@ -359,3 +359,23 @@ Always include ALL factors even if no issues were found.
 - 🟡 **Medium** `[structure]` All 140 source files are in a flat `/src` directory. Group by feature or layer (services/, models/, routes/).
 - 🟡 **Medium** `[dependencies]` Both `moment` (legacy) and `date-fns` present. Pick one and remove the other.
 - 🔵 **Low** `[structure]` No monorepo tooling detected despite having 3 distinct apps. Consider Turborepo or nx.
+
+---
+
+## Rules emitted
+
+Follows [FINDING-SCHEMA.md](FINDING-SCHEMA.md) and [SCORING-CONTRACT.md](SCORING-CONTRACT.md).
+
+| Rule ID | Default | When it fires |
+|---------|---------|---------------|
+| RI-ARCH-001-CIRCULAR-DEPENDENCY | high | Module A imports B AND B imports A (direct or transitive) |
+| RI-ARCH-002-NO-LAYERING | medium | Flat `src/` with no sub-structure; >50 files at one level |
+| RI-ARCH-003-LAYER-VIOLATION | high | Lower layer (e.g. `models/`) imports higher (e.g. `controllers/`) |
+| RI-ARCH-004-TIGHT-COUPLING | medium | Module imports >15 distinct modules |
+| RI-ARCH-005-MISSING-ABSTRACTION | low | Same external dep (e.g. AWS SDK) used directly in >5 files |
+| RI-ARCH-006-INCONSISTENT-PATTERNS | medium | Same concern implemented in >2 different ways across packages |
+| RI-ARCH-007-WORKSPACE-DRIFT | medium | Monorepo packages use different versions of a shared dep |
+
+**Cycle detection:** A is cyclically dependent on B if A imports B and B imports A, directly or transitively. Build the import graph first, then run Tarjan's algorithm. Do not flag same-directory relative imports (`./sibling`) as cycles.
+
+**Return format:** [SUBAGENT-OUTPUT.md](SUBAGENT-OUTPUT.md).

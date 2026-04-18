@@ -1,0 +1,38 @@
+# Copy to `.repo-intelignore` at the root of the target repo.
+# Gitignore-style path patterns — anything matched is skipped by all skills.
+# Merged with `exclude:` from repo-intel.yml if both are present.
+
+# Dependency trees
+**/node_modules/**
+**/vendor/**
+**/.venv/**
+**/venv/**
+**/site-packages/**
+
+# Build output
+**/dist/**
+**/build/**
+**/out/**
+**/target/**
+**/bin/**
+**/obj/**
+
+# Compiled and generated
+**/*.min.js
+**/*.min.css
+**/*.generated.*
+**/*.g.cs
+**/*.pb.go
+
+# Caches
+**/.cache/**
+**/.next/**
+**/.nuxt/**
+**/.turbo/**
+**/.gradle/**
+**/__pycache__/**
+
+# IDE / local
+**/.idea/**
+**/.vscode/**
+**/.DS_Store

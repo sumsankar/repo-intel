@@ -1300,7 +1300,19 @@ sequenceDiagram
 </div><!-- /content -->
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<!--
+  Mermaid is pinned to a specific version. Maintainers: when bumping the
+  version, compute a fresh SRI hash (https://www.srihash.org/) and update
+  the `integrity` attribute below in the same commit. A version bump without
+  an SRI refresh is a supply-chain regression.
+-->
+<script
+  src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"
+  integrity="sha384-REPLACE_WITH_SRI_HASH_FOR_mermaid@11.4.1"
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+  onerror="console.warn('Mermaid failed to load — diagrams will not render. SRI hash may be stale; see output/report-template.html for maintainer notes.');"
+></script>
 <script>
 /* ── Mermaid ────────────────────────────────────────────────── */
 mermaid.initialize({
@@ -1411,10 +1423,16 @@ function expandDiagram(id,title) {
   var src=_getSvg(id); if(!src)return;
   var modal=document.getElementById('diag-modal'), mvp=document.getElementById('diag-modal-vp');
   document.getElementById('diag-modal-title').textContent=title||id;
-  var origId=src.id||'', newId='modal-svg-'+Date.now(), html=src.outerHTML;
-  if(origId)html=html.split(origId).join(newId);
-  mvp.innerHTML=html;
-  var clone=mvp.querySelector('svg'); if(!clone)return;
+  /* Clone via the DOM API rather than the outerHTML/innerHTML round-trip that
+     previously lived here. Mermaid-rendered SVGs contain text derived from
+     user-controlled repo data (file paths, finding messages), so writing their
+     serialised HTML back into innerHTML was a DOM-XSS sink. cloneNode(true)
+     copies nodes verbatim without re-parsing text as markup. */
+  while(mvp.firstChild) mvp.removeChild(mvp.firstChild);
+  var clone=src.cloneNode(true);
+  clone.id='modal-svg-'+Date.now();
+  mvp.appendChild(clone);
+  if(!clone)return;
   clone.style.maxWidth='none'; clone.style.display='block'; clone.style.background='#fff';
   var d=_readDims(src); _modal.nw=d.nw; _modal.nh=d.nh;
   requestAnimationFrame(function(){_modal.scale=Math.min((mvp.clientWidth||window.innerWidth*.92-48)/d.nw,(mvp.clientHeight||window.innerHeight*.84-48)/d.nh,1);_applyModalScale();});

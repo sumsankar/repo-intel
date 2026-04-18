@@ -245,3 +245,31 @@ Always include ALL factors — even those with no issues (show them as "+0.0 (ba
 - 🟠 **High** `[config]` No `.gitignore` file found. Any `.env` files or keys could be accidentally committed.
 - 🟡 **Medium** `[injection]` `innerHTML` assigned directly in 3 files. Use `textContent` or a sanitization library like DOMPurify.
 - 🔵 **Low** `[hygiene]` No `SECURITY.md` found. Add a security disclosure policy so researchers can report issues responsibly.
+
+---
+
+## Rules emitted
+
+This skill follows the canonical rule registry in [FINDING-SCHEMA.md](FINDING-SCHEMA.md) and the scoring model in [SCORING-CONTRACT.md](SCORING-CONTRACT.md). Every finding MUST use one of the IDs below.
+
+| Rule ID | Default | CWE | OWASP |
+|---------|---------|-----|-------|
+| RI-SEC-001-HARDCODED-SECRET | critical | CWE-798 | A07:2021 |
+| RI-SEC-002-SQL-INJECTION-RISK | high | CWE-89 | A03:2021 |
+| RI-SEC-003-COMMAND-INJECTION-RISK | high | CWE-78 | A03:2021 |
+| RI-SEC-004-XSS-RISK | high | CWE-79 | A03:2021 |
+| RI-SEC-005-WEAK-CRYPTO | medium | CWE-327 | A02:2021 |
+| RI-SEC-006-INSECURE-DESERIALIZATION | high | CWE-502 | A08:2021 |
+| RI-SEC-007-MISSING-AUTHZ-CHECK | high | CWE-862 | A01:2021 |
+| RI-SEC-008-PERMISSIVE-CORS | medium | CWE-942 | A05:2021 |
+| RI-SEC-009-MISSING-GITIGNORE-SECRETS | medium | CWE-540 | A05:2021 |
+| RI-SEC-010-OUTDATED-TLS | medium | CWE-326 | A02:2021 |
+| RI-SEC-011-SWALLOWED-EXCEPTION | low | CWE-391 | — |
+
+**Precision rules for RI-SEC-001:**
+1. Value must have Shannon entropy ≥ 4.0 bits/char (configurable via `skill_config.security.entropy_min`).
+2. Value must NOT match an allowlist entry in `repo-intel.yml` → `secrets.allowlist`.
+3. Value must NOT be inside a path matched by `secrets.allowlist[].path` or `exclude:`.
+4. Co-occurrence: if `skill_config.security.require_co_occurrence` is true, a single match is downgraded to `medium`; two related matches within 10 lines (e.g. `AKIA...` and `AWS_SECRET...`) escalate to `critical`.
+
+**Return format:** see [SUBAGENT-OUTPUT.md](SUBAGENT-OUTPUT.md). One YAML block, no prose.

@@ -1,0 +1,98 @@
+# yaml-language-server: $schema=./config.schema.json
+#
+# Copy this file to your target repository as `repo-intel.yml` or `.repo-intel.yml`
+# and tune the sections you need. All fields except `version` are optional — an
+# empty `{ version: 1 }` runs everything with defaults.
+#
+# Discovery order (first match wins):
+#   1. --config <path> CLI flag
+#   2. $REPO_INTEL_CONFIG env var
+#   3. ./.repo-intel.yml
+#   4. ./repo-intel.yml
+#   5. built-in defaults
+
+version: 1
+
+# Which skills to run. Omit to run all.
+skills:
+  - security
+  - code
+  - architecture
+  - devops
+  - dependency
+  - governance
+  - claude-metrics
+
+# Path exclusions (gitignore syntax). Applied before any skill scans.
+# For simple cases, put these in a .repo-intelignore file instead.
+exclude:
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/.venv/**"
+  - "**/__pycache__/**"
+  - "**/*.generated.*"
+  - "**/vendor/**"
+
+# Monorepo hints. Auto-detected if absent.
+monorepo:
+  workspace: pnpm       # pnpm | yarn | npm | lerna | nx | turbo | cargo | maven | gradle | dotnet | bazel | auto
+  packages:
+    - "apps/*"
+    - "packages/*"
+  group_findings: true
+
+# Language limiter. Normally auto-detected from file extensions.
+languages:
+  include: [typescript, python, go]
+
+# Severity thresholds for CI gating. Exit code is non-zero if any threshold is breached.
+thresholds:
+  fail_on: high                 # none | low | medium | high | critical
+  min_scores:
+    overall: 6.0
+    security: 7.0
+  max_findings:
+    critical: 0
+    high: 10
+
+# Rule-level overrides. IDs follow the RI-<SKILL>-<NNN>-<SLUG> format.
+# See skills/FINDING-SCHEMA.md for the canonical rule registry.
+rules:
+  disable:
+    - RI-SEC-003-HARDCODED-DB-PASSWORD   # project-specific: local dev fixture
+  downgrade:
+    RI-CODE-001-LARGE-FILE: low          # legacy megafiles, do not escalate
+  upgrade:
+    RI-DEP-002-DEPRECATED-PACKAGE: critical
+
+# Secret-scan allowlist for known-safe matches.
+secrets:
+  allowlist:
+    - pattern: "AKIAIOSFODNN7EXAMPLE"
+      reason: "AWS docs example key, referenced in README"
+    - path: "tests/fixtures/**"
+      reason: "Synthetic test data"
+
+# Output controls.
+output:
+  formats: [html, sarif, json]
+  path: "./reports/{repo}-{timestamp}"
+  open_in_browser: false
+
+# Hard token budget. When exceeded, `on_exceed` determines behaviour.
+token_budget:
+  input_max: 120000
+  output_max: 15000
+  on_exceed: drop-low-severity          # drop-low-severity | summarize | abort
+
+# Per-skill tuning. Each skill documents its own keys.
+skill_config:
+  code:
+    large_file_threshold: 500
+    god_object_threshold: 1000
+  security:
+    entropy_min: 4.0
+    require_co_occurrence: true
+  dependency:
+    severity_source: osv                # osv | ghsa | nvd

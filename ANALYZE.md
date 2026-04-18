@@ -24,7 +24,23 @@ Set `REPO_PATH=/tmp/repo-intel-target`
 - Set `REPO_PATH=<the path the user provided>`
 - Confirm the folder exists and contains recognisable project files before proceeding
 
-### Step 1.5 — Discovery scan (build the repo context)
+### Step 1.5 — Load configuration
+
+Before the discovery scan, resolve `repo-intel.yml` in this order (first match wins):
+
+1. `--config <path>` CLI flag (if invoked via a wrapper).
+2. `$REPO_INTEL_CONFIG` environment variable.
+3. `$REPO_PATH/.repo-intel.yml`
+4. `$REPO_PATH/repo-intel.yml`
+5. Built-in defaults (run all skills, no exclusions, output HTML+SARIF to `./reports/{repo}-{timestamp}`).
+
+Validate the loaded YAML against `output/config.schema.json`. On validation failure, **abort** with a clear error — do not silently fall back to defaults.
+
+Also merge `$REPO_PATH/.repo-intelignore` (if present) into `exclude:` as gitignore-style patterns.
+
+Persist the resolved config as `RUN_CONFIG` for the remainder of the analysis. Every skill command that scans files MUST honour `exclude:` and `languages.include:` filters from `RUN_CONFIG`. See `output/repo-intel.example.yml` for the full shape.
+
+### Step 1.6 — Discovery scan (build the repo context)
 
 Before loading skills, perform a quick discovery scan to understand the repository:
 
@@ -56,11 +72,16 @@ Build a **RepoContext** containing:
 
 **Do NOT read all skill files into the main conversation context.** Only the main agent reads:
 
+- `skills/SCORING-CONTRACT.md` — scoring model (always load, tiny)
+- `skills/FINDING-SCHEMA.md` — rule registry (always load, tiny)
+- `skills/SUBAGENT-OUTPUT.md` — subagent wire format (always load, tiny)
 - `skills/security.md` (Phase 1 — run directly)
 - `skills/governance.md` (Phase 3 — synthesis)
 - `skills/claude-metrics.md` (Phase 3 — metrics)
 
 The Phase 2 skills (`code.md`, `architecture.md`, `devops.md`, `dependency.md`) are read **only inside their respective subagents**, keeping them out of the main context window.
+
+Apply `RUN_CONFIG.skills` filter from Step 1.5 — skip any skill not in the allowlist.
 
 ### Step 3 — Run all skills (using parallel agents where possible)
 
@@ -82,10 +103,11 @@ Launch these skills in parallel using the Agent tool — they are independent of
 
 Each subagent should:
 1. Read its **own** skill file from `skills/` (do not pass the full skill content in the agent prompt)
-2. Execute all analysis commands against `REPO_PATH`
-3. **Analyze every project/module** in the solution — do not stop at one
-4. Return a **compact structured result** (see "Subagent output format" below)
-5. Return a dimension score (0–10)
+2. Also read `skills/SCORING-CONTRACT.md`, `skills/FINDING-SCHEMA.md`, and `skills/SUBAGENT-OUTPUT.md`
+3. Execute all analysis commands against `REPO_PATH`, honouring `RUN_CONFIG.exclude` and `RUN_CONFIG.languages.include`
+4. **Analyze every project/module** in the solution — do not stop at one
+5. Return a single YAML block conforming to [`skills/SUBAGENT-OUTPUT.md`](skills/SUBAGENT-OUTPUT.md) — no prose outside the fence
+6. Every finding MUST use a `ruleId` from [`skills/FINDING-SCHEMA.md`](skills/FINDING-SCHEMA.md); unknown IDs are dropped with a warning
 
 **Subagent prompt guidelines (token optimization):**
 - Include the `REPO_PATH` and the RepoContext (tech stack, project list) in the prompt
@@ -123,52 +145,79 @@ After all skills complete, reason across ALL findings together:
 - Map **dependency chains** (e.g., vulnerability in shared library affects 5 services)
 - Identify **quick wins** with the highest impact-to-effort ratio
 
-### Step 5 — Generate the report (token-optimized)
+### Step 5 — Emit outputs (SARIF-first)
 
-#### Strategy: Template-based writing (saves ~35,000 output tokens)
+The report pipeline is now **SARIF-first**: a single SARIF 2.1.0 document is the canonical artefact. HTML and Markdown are renderings of that SARIF document. This enforces schema consistency and enables CI integrations (GitHub Code Scanning, Azure DevOps, Defender for DevOps) out of the box.
 
-**Do NOT read the full `output/report-template.html` into context.** The template is ~1,360 lines / ~20,000 tokens. Instead:
+#### 5a. Build the SARIF document
 
-1. **Read only the CSS + JS skeleton** — read lines 1–293 (styles) and lines 1099–1360 (JavaScript) from the template. These are boilerplate that never change.
-2. **Write the HTML body from memory** — you already know the section structure from this file. Write only the `<body>` content (data-populated sections) from scratch.
+Merge all subagent YAML responses into one SARIF document conforming to [`output/report.schema.json`](output/report.schema.json). Required structure:
 
-Alternatively, use this **two-file approach** for maximum savings:
-1. Copy the template to `repo-intel-report.html` using a shell command: `cp output/report-template.html repo-intel-report.html`
-2. Use the **Edit tool** to replace only the placeholder sections with real data. This avoids writing the full 1,700-line file as output tokens.
+- `tool.driver.rules[]` — include every `RI-*` rule that fired at least once. Pull rule metadata (name, description, CWE, OWASP, `security-severity`) from [`skills/FINDING-SCHEMA.md`](skills/FINDING-SCHEMA.md).
+- `results[]` — one per finding. Every `ruleId` must match the registry. Map severity to SARIF `level` per [`skills/SCORING-CONTRACT.md`](skills/SCORING-CONTRACT.md) §1.
+- `invocations[0].properties` — model, token estimates, tool-call counts (from `claude-metrics`).
+- `properties["repo-intel.scores"]` — per-dimension and `overall` scores, computed via the formula in [`skills/SCORING-CONTRACT.md`](skills/SCORING-CONTRACT.md) §2 (skipped skills renormalised out).
+- `properties["repo-intel.repoContext"]` — from the RepoContext built in Step 1.6.
+- `properties["repo-intel.findingsSummary"]` — severity counts.
+- `properties["repo-intel.skippedSkills"]` — any skill that was disabled or failed, with a reason string.
+- `partialFingerprints.primaryLocationLineHash` on every result — required for PR-annotation dedup.
 
-**Preferred approach — Edit-based population:**
-```
-cp output/report-template.html repo-intel-report.html
-# Then use Edit tool to replace each <!-- placeholder --> with real data
-# This outputs only ~200–400 tokens per edit vs. ~45,000 for a full Write
-```
+Write the document to the path resolved from `RUN_CONFIG.output.path` (default `./reports/{repo}-{timestamp}/report.sarif`).
+
+Validate against [`output/report.schema.json`](output/report.schema.json) before proceeding. If validation fails, abort and report the error.
+
+#### 5b. Render the HTML report from SARIF
+
+**Do NOT read the full `output/report-template.html` into context.** Instead:
+
+1. `cp output/report-template.html <output_path>/report.html`
+2. Use the Edit tool to replace each `<!-- placeholder -->` with data pulled from the SARIF document you just wrote.
+3. **Escape all user-supplied strings** before splicing — repository names, file paths, finding messages, and evidence excerpts can contain HTML-sensitive characters. Use HTML entity encoding for `<`, `>`, `&`, `"`, `'`. The subagent guarantees `evidence` is already escaped (see SUBAGENT-OUTPUT.md §3) but the main agent MUST re-escape on splice as defence in depth.
 
 #### What to populate
 
-The output must be a **complete, self-contained HTML file** — do not reference external stylesheets or scripts (except the Mermaid CDN for diagram rendering).
-Populate every section with the real data collected in Steps 3–4:
+All data comes from the SARIF document — do not re-compute. Map:
 
-- **Header** — repository URL, analysis date/time, skills run.
-- **Executive Summary** — 3–4 sentences: what is the project, how healthy is it, top fix.
-- **Health Scorecard** — scores (0–10) per dimension using weighted formula: `(security × 0.30) + (code × 0.25) + (architecture × 0.20) + (devops × 0.15) + (dependency × 0.10)`. Fill **Score Derivation Details** collapsible panels with factor tables from each skill. Include ALL factors (even +0.0 baseline).
-- **Repository Overview table** — language, type, files, lines, test files, coverage, CI/CD, Docker, IaC, lock file, risk level.
-- **Critical & High Priority Findings** — every critical/high finding. Include severity badge, category, description with file/line, and fix.
-- **Code Quality** — summary, metrics (languages, files, lines, coverage, TODOs), all medium/low findings.
-- **Architecture** — type, deps, monorepo, layering, patterns, SOLID adherence, all findings.
-- **Architecture Diagrams** — **MANDATORY.** Two Mermaid diagrams in `<pre class="mermaid">` tags:
-  1. **Logical Architecture** (`graph TD`) with `subgraph` blocks.
-  2. **Functional Flow** (`sequenceDiagram` or `flowchart LR`).
-  Raw Mermaid syntax, no fences/code wrapper. **Never omit this section.**
-- **Security** — risk level, summary, all findings.
-- **DevOps** — summary, checklist, all findings.
-- **Dependency Risk** — package manager, lock file, CVEs, deprecated, licenses, all findings.
-- **Governance** — compliance status, overall score, RPI, policy table, all findings.
-- **Quick Wins** — all actionable items fixable in under an hour.
-- **Roadmap** — three phases (this week / this month / this quarter).
-- **Findings Summary** — severity counts.
-- **Claude Run Metrics** — model, date, duration, estimated tokens, context utilization, tool calls. Mark tokens as estimates.
+| Template placeholder | Source in SARIF |
+|----------------------|-----------------|
+| Header (repo, date, skills) | `runs[0].invocations[0]`, `properties["repo-intel.repoContext"]` |
+| Executive Summary | Synthesize from the top 3 highest-impact findings + overall score |
+| Health Scorecard | `properties["repo-intel.scores"]` |
+| Score Derivation panels | subagent `score_factors` tables (preserved in `properties["repo-intel.scoreFactors"][<skill>]`) |
+| Repository Overview | `properties["repo-intel.repoContext"]` + derived metrics |
+| Critical & High Findings | `results[]` filtered by `level == "error"` |
+| Per-dimension sections | `results[]` filtered by `properties.skill == <skill>` |
+| Findings Summary | `properties["repo-intel.findingsSummary"]` |
+| Claude Run Metrics | `runs[0].invocations[0].properties` |
 
-Replace every `<!-- ... -->` placeholder with real content.
+**Architecture Diagrams** — **MANDATORY.** Two Mermaid diagrams in `<pre class="mermaid">` tags:
+1. **Logical Architecture** (`graph TD`) with `subgraph` blocks.
+2. **Functional Flow** (`sequenceDiagram` or `flowchart LR`).
+Raw Mermaid syntax, no fences/code wrapper. Keep diagrams ≤ 20 nodes; if the repo is larger, group by layer/package. **Never omit this section.**
+
+#### 5c. Optionally render Markdown
+
+If `RUN_CONFIG.output.formats` includes `md`, render `report.md` from the same SARIF. Use `output/report-template.md` as the skeleton; same splice-and-escape rules.
+
+#### 5d. GitHub Code Scanning integration (documented, not executed here)
+
+Users who want PR annotations add one step to their CI:
+
+```yaml
+- uses: github/codeql-action/upload-sarif@v3
+  with:
+    sarif_file: reports/repo-intel.sarif
+```
+
+#### 5e. Exit codes
+
+Compute the exit code from `RUN_CONFIG.thresholds`:
+
+- `0` — no threshold breached
+- `1` — one or more `fail_on` severity findings present, or a `min_scores` floor breached, or a `max_findings` cap exceeded
+- `2` — analyzer error (config invalid, skill crash, SARIF validation failed)
+
+When invoked interactively (no CI context), exit is advisory — the report is still emitted.
 
 ### Step 6 — Clean up
 
@@ -210,15 +259,19 @@ Use this pattern for Phase 2 subagent prompts to avoid bloating their context:
 
 ```
 You are analyzing {REPO_PATH} — a {tech_stack} project.
-Read skills/{skill_name}.md for your analysis checklist.
+
+Read these files from the current repo-intel installation:
+  - skills/{skill_name}.md         (your analysis checklist)
+  - skills/SCORING-CONTRACT.md     (scoring model)
+  - skills/FINDING-SCHEMA.md       (canonical RI-* rule IDs)
+  - skills/SUBAGENT-OUTPUT.md      (exact wire format you must return)
 
 RepoContext: {paste 3-5 lines of discovery results}
+RunConfig:   {paste exclude[], languages.include, skill_config.<skill>, rules.* relevant to your skill}
 
-Return ONLY this structure (no prose):
-1. Score: X.X/10
-2. Score factor table (all factors, markdown table)
-3. Findings list (severity, category, file:line, one-sentence description, fix)
-Keep response under 1,500 tokens.
+Return ONLY one YAML block conforming to SUBAGENT-OUTPUT.md. No prose
+outside the fence. Every finding MUST use a ruleId from FINDING-SCHEMA.md.
+Keep the response ≤ 8 KiB.
 ```
 
 ---
@@ -276,7 +329,8 @@ Follow ANALYZE.md and compare https://github.com/org/repo-a vs https://github.co
 ## Error handling
 
 If a skill fails or cannot complete:
-- **Log the failure** with the reason (e.g., "Python not available for requirements.txt parsing")
+- **Log the failure** in `runs[0].properties["repo-intel.skippedSkills"]` with `{ skill, reason }`
 - **Continue with remaining skills** — one skill failure must not block others
+- **Set the dimension score to `null`** so the overall formula renormalises over the remaining weights (see [SCORING-CONTRACT.md](skills/SCORING-CONTRACT.md) §2)
 - **Report the gap** — note in the report which skills were skipped and why
 - **Score conservatively** — if a skill couldn't run, do not assume a passing score

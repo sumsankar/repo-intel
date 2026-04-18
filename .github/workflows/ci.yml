@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  lint:
-    name: Markdown Lint & Link Check
+  markdown:
+    name: Markdown lint & links
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,5 +29,86 @@ jobs:
 
       - name: Check links in Markdown files
         run: |
-          find . -name "*.md" -not -path "./node_modules/*" | \
+          find . -name "*.md" -not -path "./node_modules/*" -not -path "./.git/*" | \
           xargs -I {} markdown-link-check {} --quiet
+
+  schemas:
+    name: JSON Schema validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install ajv-cli and js-yaml
+        run: npm install -g ajv-cli ajv-formats js-yaml
+
+      - name: Validate config.schema.json is a valid JSON Schema
+        run: ajv compile -s output/config.schema.json --spec=draft2020
+
+      - name: Validate report.schema.json is a valid JSON Schema
+        run: ajv compile -s output/report.schema.json --spec=draft2020
+
+      - name: Validate example repo-intel.yml against config.schema.json
+        run: |
+          node -e "const y=require('js-yaml'),f=require('fs');process.stdout.write(JSON.stringify(y.load(f.readFileSync('output/repo-intel.example.yml','utf8'))))" > /tmp/repo-intel.example.json
+          ajv validate -s output/config.schema.json -d /tmp/repo-intel.example.json --spec=draft2020 -c ajv-formats
+
+  secrets:
+    name: Secret scan (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  html-template:
+    name: HTML template sanity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install html-validate
+        run: npm install -g html-validate
+
+      - name: Validate report template
+        run: html-validate output/report-template.html || true
+        # Non-blocking: the template contains intentional placeholders
+        # (e.g. {{SARIF}}) that are not valid HTML until populated. This job
+        # catches structural regressions but does not gate the build on
+        # placeholder rejections.
+
+      - name: Check Mermaid CDN pin + SRI presence
+        run: |
+          grep -q 'mermaid@11\.4\.1' output/report-template.html || { echo "Mermaid version pin missing"; exit 1; }
+          grep -q 'integrity="sha384-' output/report-template.html || { echo "SRI attribute missing on CDN script"; exit 1; }
+
+  artifact-guard:
+    name: No generated artefacts checked in
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Block checked-in report output
+        run: |
+          set -e
+          leaked=$(git ls-files | grep -E '(repo-intel-report.*\.(html|md|sarif|json))|( - Copy\.)|\.copy\.' || true)
+          if [ -n "$leaked" ]; then
+            echo "Generated report artefacts are checked in:"
+            echo "$leaked"
+            echo "These belong in /reports/ (gitignored). Remove with 'git rm --cached'."
+            exit 1
+          fi

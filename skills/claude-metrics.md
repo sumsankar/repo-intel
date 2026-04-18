@@ -125,3 +125,34 @@ repo_files_inspected:   <integer>
 
 Fill the `<!-- Claude Run Metrics -->` section in both `report-template.html` and `report-template.md` with the values above.
 Be transparent that token counts are **estimates** derived from file sizes and conversation content — not values read from an API response.
+
+---
+
+## Skill classification
+
+`claude-metrics` is a **meta-skill**. It produces no score, no findings, and no `RI-*` rule IDs. It contributes to the SARIF document as follows:
+
+- `runs[].invocations[0].properties`:
+  - `model` — e.g. `claude-opus-4-7`
+  - `tokens_input_estimate` — integer
+  - `tokens_output_estimate` — integer
+  - `context_utilization_pct` — float 0–100
+  - `tool_calls` — integer
+- `runs[].properties["repo-intel.skippedSkills"]` — any skill that was disabled or failed.
+
+### Token estimation table
+
+Use per-language factors instead of a flat `1 KB = 250 tokens`:
+
+| Content type | Tokens per KB |
+|--------------|--------------:|
+| TypeScript / JavaScript | 250 |
+| Python / Ruby / PHP | 200 |
+| Go / Rust / C# / Java | 220 |
+| YAML / TOML / INI | 180 |
+| JSON | 150 |
+| Markdown | 200 |
+| HTML | 100 |
+| CSS | 180 |
+
+**Return format:** return a [SUBAGENT-OUTPUT.md](SUBAGENT-OUTPUT.md) envelope with `status: ok`, no `score`, no `findings`, and the metrics block above under `metrics:`.

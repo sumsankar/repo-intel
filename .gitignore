@@ -12,8 +12,15 @@
 *.p12
 *.pfx
 
-# Generated report output
-repo-intel-report.*
+# Generated report output (all variants)
+*repo-intel-report*.html
+*repo-intel-report*.md
+*repo-intel-report*.sarif
+*repo-intel-report*.json
+/reports/
+# Legacy "- Copy" duplicates that editors sometimes create
+* - Copy.*
+*.copy.*
 
 # Temporary files
 /tmp/

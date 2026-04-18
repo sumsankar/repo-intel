@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/repo-intel/repo-intel/blob/main/output/config.schema.json",
+  "title": "repo-intel configuration",
+  "description": "Schema for repo-intel.yml / .repo-intel.yml per-repo configuration files.",
+  "type": "object",
+  "required": ["version"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "description": "Config schema version. Bumped on breaking changes.",
+      "type": "integer",
+      "enum": [1]
+    },
+    "skills": {
+      "description": "Which skills to run. Omit to run all. Order is preserved in the report.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["security", "code", "architecture", "devops", "dependency", "governance", "claude-metrics"]
+      },
+      "uniqueItems": true
+    },
+    "exclude": {
+      "description": "Gitignore-style path patterns to exclude from analysis.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "include": {
+      "description": "If set, only these paths are analyzed. Applied after exclude.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "languages": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "include": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Limit analysis to these languages (canonical names: typescript, javascript, python, go, rust, csharp, java, kotlin, swift, ruby, php, dart, elixir, scala)."
+        },
+        "exclude": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "monorepo": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "workspace": {
+          "type": "string",
+          "enum": ["pnpm", "yarn", "npm", "lerna", "nx", "turbo", "cargo", "maven", "gradle", "dotnet", "bazel", "auto"]
+        },
+        "packages": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Glob patterns pointing at package roots."
+        },
+        "group_findings": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, the report groups findings by package."
+        }
+      }
+    },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fail_on": {
+          "type": "string",
+          "enum": ["none", "low", "medium", "high", "critical"],
+          "default": "none",
+          "description": "Minimum severity that causes a non-zero exit."
+        },
+        "min_scores": {
+          "type": "object",
+          "description": "Minimum acceptable score per dimension (0-10).",
+          "additionalProperties": { "type": "number", "minimum": 0, "maximum": 10 }
+        },
+        "max_findings": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "critical": { "type": "integer", "minimum": 0 },
+            "high":     { "type": "integer", "minimum": 0 },
+            "medium":   { "type": "integer", "minimum": 0 },
+            "low":      { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "rules": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "disable": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^RI-[A-Z]+-[0-9]{3}-[A-Z0-9-]+$" },
+          "description": "Rule IDs to suppress entirely."
+        },
+        "downgrade": {
+          "type": "object",
+          "description": "Map of rule ID → lower severity.",
+          "additionalProperties": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"]
+          }
+        },
+        "upgrade": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "enum": ["low", "medium", "high", "critical"]
+          }
+        }
+      }
+    },
+    "secrets": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allowlist": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["reason"],
+            "properties": {
+              "pattern": { "type": "string", "description": "Exact value or regex to allow." },
+              "path":    { "type": "string", "description": "Glob where the allowance applies." },
+              "reason":  { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "formats": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["html", "sarif", "json", "md"] },
+          "default": ["html", "sarif"]
+        },
+        "path": {
+          "type": "string",
+          "default": "./reports/{repo}-{timestamp}",
+          "description": "Output path. Tokens: {repo}, {timestamp}, {commit}, {branch}."
+        },
+        "open_in_browser": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "token_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "input_max":  { "type": "integer", "minimum": 1000 },
+        "output_max": { "type": "integer", "minimum": 1000 },
+        "on_exceed": {
+          "type": "string",
+          "enum": ["drop-low-severity", "summarize", "abort"],
+          "default": "drop-low-severity"
+        }
+      }
+    },
+    "skill_config": {
+      "type": "object",
+      "description": "Per-skill tuning. Each skill documents its own keys under skill_config.<skill>.",
+      "additionalProperties": { "type": "object" }
+    }
+  }
+}

@@ -208,3 +208,23 @@ For each issue found, record:
 - 🟠 **High** `[complexity]` `src/payments/processor.js` is 847 lines. Split into smaller single-responsibility modules.
 - 🟡 **Medium** `[testing]` Test ratio is 8% (12 test files / 150 source files). Target 30%+.
 - 🔵 **Low** `[docs]` 47 TODO comments across 23 files. Consider triaging these into GitHub issues.
+
+---
+
+## Rules emitted
+
+Follows [FINDING-SCHEMA.md](FINDING-SCHEMA.md) and [SCORING-CONTRACT.md](SCORING-CONTRACT.md).
+
+| Rule ID | Default | Threshold (default, overridable via `skill_config.code.*`) |
+|---------|---------|-------------------------------------------------------------|
+| RI-CODE-001-LARGE-FILE | medium | file > 500 LOC (`large_file_threshold`) |
+| RI-CODE-002-GOD-OBJECT | high | file > 1000 LOC (`god_object_threshold`) |
+| RI-CODE-003-NO-TESTS | critical | 0 test files detected |
+| RI-CODE-004-LOW-TEST-RATIO | high | test ratio < 10% |
+| RI-CODE-005-DUPLICATION | medium | ≥ 20 identical lines across ≥ 2 files |
+| RI-CODE-006-LONG-FUNCTION | medium | function > 80 LOC |
+| RI-CODE-007-MISSING-README | medium | README absent or < 5 non-blank lines |
+| RI-CODE-008-HIGH-TODO-DENSITY | low | > 1 TODO/FIXME per 100 LOC |
+| RI-CODE-009-DEEP-NESTING | low | block nesting > 5 |
+
+**Return format:** [SUBAGENT-OUTPUT.md](SUBAGENT-OUTPUT.md).

@@ -188,3 +188,30 @@ Always end the governance section with this table:
 
 **Overall: 8/15 policies passed (53%) — ❌ NON-COMPLIANT (2 blocking failures)**
 ```
+
+---
+
+## Rules emitted
+
+Follows [FINDING-SCHEMA.md](FINDING-SCHEMA.md) and [SCORING-CONTRACT.md](SCORING-CONTRACT.md). Governance rules wrap upstream findings; they do not detect anything on their own. One governance finding per failing policy.
+
+| Rule ID | Wraps policy | Triggers when |
+|---------|--------------|---------------|
+| RI-GOV-001-POLICY-FAILURE-SECURITY | GOV-SEC-001 | Any `critical` `RI-SEC-*` finding exists |
+| RI-GOV-002-POLICY-FAILURE-TESTS | GOV-CODE-001 | Test ratio < 10% (i.e. `RI-CODE-003` or `RI-CODE-004` fired) |
+| RI-GOV-003-POLICY-FAILURE-CI | GOV-DEVOPS-001 | `RI-DEVOPS-001-NO-CI` fired |
+| RI-GOV-004-POLICY-FAILURE-LICENSE | GOV-DEP-002 | `RI-DEP-005-LICENSE-RISK` fired |
+| RI-GOV-005-POLICY-FAILURE-DOCS | GOV-CODE-002 | `RI-CODE-007-MISSING-README` fired |
+
+**Aggregate score formula ([SCORING-CONTRACT.md](SCORING-CONTRACT.md) §2):**
+```
+overall = security × 0.30
+        + code × 0.20
+        + architecture × 0.20
+        + devops × 0.15
+        + dependency × 0.10
+        + governance × 0.05
+```
+If a skill is skipped, its weight is removed from the denominator and the remainder is renormalised. See [SCORING-CONTRACT.md](SCORING-CONTRACT.md) §2.
+
+**Return format:** [SUBAGENT-OUTPUT.md](SUBAGENT-OUTPUT.md).

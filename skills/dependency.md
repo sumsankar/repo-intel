@@ -340,3 +340,24 @@ Always include ALL factors even if no issues were found.
 - 🟡 **Medium** `[hygiene]` No Dependabot configuration. Vulnerable dependencies are not automatically flagged. **Fix:** Add `.github/dependabot.yml`.
 - 🔵 **Low** `[staleness]` `request@2.88.2` — deprecated by maintainer. **Fix:** Migrate to `axios` or native `fetch`.
 - 🔵 **Low** `[lockfile]` Python `requirements.txt` has 3 unpinned dependencies (no version specifier). **Fix:** Pin all versions with `pip freeze > requirements.txt`.
+
+---
+
+## Rules emitted
+
+Follows [FINDING-SCHEMA.md](FINDING-SCHEMA.md) and [SCORING-CONTRACT.md](SCORING-CONTRACT.md).
+
+| Rule ID | Default | Source |
+|---------|---------|--------|
+| RI-DEP-001-KNOWN-CVE-CRITICAL | critical | CVSS ≥ 9.0 from OSV / GHSA / NVD |
+| RI-DEP-002-KNOWN-CVE-HIGH | high | CVSS 7.0–8.9 |
+| RI-DEP-003-KNOWN-CVE-MEDIUM | medium | CVSS 4.0–6.9 |
+| RI-DEP-004-DEPRECATED-PACKAGE | medium | Registry `deprecated` flag or maintainer advisory |
+| RI-DEP-005-LICENSE-RISK | high | GPL/AGPL/SSPL/BUSL in production deps |
+| RI-DEP-006-UNLICENSED | medium | No declared licence in package metadata |
+| RI-DEP-007-OUTDATED-MAJOR | low | Installed version ≥ 2 majors behind latest stable |
+| RI-DEP-008-DIRECT-TRANSITIVE-CONFLICT | medium | Lockfile contains conflicting versions of the same package |
+
+**Source selection:** the CVE source is configured via `skill_config.dependency.severity_source` (default `osv`). Each finding MUST include the advisory ID in `properties.cve` (e.g. `CVE-2023-12345` or `GHSA-abcd-efgh-ijkl`).
+
+**Return format:** [SUBAGENT-OUTPUT.md](SUBAGENT-OUTPUT.md).
