@@ -113,6 +113,10 @@
           "type": "object",
           "properties": {
             "model": { "type": "string" },
+            "subagent_models": {
+              "type": "object",
+              "additionalProperties": { "type": "string" }
+            },
             "tokens_input_estimate":  { "type": "integer" },
             "tokens_output_estimate": { "type": "integer" },
             "context_utilization_pct": { "type": "number" },

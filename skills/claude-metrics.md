@@ -64,6 +64,21 @@ Flag the utilization level:
 
 **Target budget (optimized):** < 120K input + < 15K output = < 135K total (< 68% utilization)
 
+### 3.1. Subagent model assignments
+
+Each Phase-2 subagent declares its model in the frontmatter of `.claude/agents/ri-*.md`. Read the four files and extract the `model:` value from each:
+
+```bash
+for f in .claude/agents/ri-code.md .claude/agents/ri-devops.md \
+         .claude/agents/ri-architecture.md .claude/agents/ri-dependency.md; do
+  name=$(awk -F': ' '/^name:/ {print $2; exit}' "$f")
+  model=$(awk -F': ' '/^model:/ {print $2; exit}' "$f")
+  echo "${name}: ${model:-inherit}"
+done
+```
+
+Record the result as `subagent_models` (see Output format below). If a subagent file omits `model:`, record `inherit` — that subagent ran on the parent session's model.
+
 ### 4. Memory files loaded
 
 Check whether Claude Code loaded any memory files from `.claude/` at session start:
@@ -105,6 +120,7 @@ Produce a `ClaudeMetricsResult` record with these fields:
 
 ```
 model:                  claude-sonnet-4-6
+subagent_models:        <dict mapping subagent name → model id, e.g. { ri-code: haiku, ri-architecture: sonnet }>
 run_date:               <ISO 8601 date>
 run_duration_seconds:   <integer>
 input_tokens_est:       <integer>
@@ -133,7 +149,8 @@ Be transparent that token counts are **estimates** derived from file sizes and c
 `claude-metrics` is a **meta-skill**. It produces no score, no findings, and no `RI-*` rule IDs. It contributes to the SARIF document as follows:
 
 - `runs[].invocations[0].properties`:
-  - `model` — e.g. `claude-opus-4-7`
+  - `model` — main-agent model, e.g. `claude-opus-4-7`
+  - `subagent_models` — object mapping each Phase-2 subagent name to the model it ran on, e.g. `{ "ri-code": "haiku", "ri-devops": "haiku", "ri-architecture": "sonnet", "ri-dependency": "sonnet" }`. Source the value from each subagent's frontmatter `model:` field; record `inherit` if the subagent file does not declare one.
   - `tokens_input_estimate` — integer
   - `tokens_output_estimate` — integer
   - `context_utilization_pct` — float 0–100

@@ -99,6 +99,22 @@ Current skills:
 
 ---
 
+## Claude Code native wrappers
+
+A thin layer in [.claude/](.claude/) exposes the pipeline through Claude Code's native primitives without duplicating logic:
+
+| File | Role |
+|------|------|
+| `.claude/commands/analyze.md` | Slash command `/analyze <repo-url-or-path>` — delegates to `ANALYZE.md`. |
+| `.claude/agents/ri-code.md` | Phase 2 code-quality subagent — reads `skills/code.md` and returns YAML. |
+| `.claude/agents/ri-architecture.md` | Phase 2 architecture subagent — reads `skills/architecture.md`. |
+| `.claude/agents/ri-devops.md` | Phase 2 DevOps subagent — reads `skills/devops.md`. |
+| `.claude/agents/ri-dependency.md` | Phase 2 dependency subagent — reads `skills/dependency.md`. |
+
+These wrappers hold **no analysis logic**. The contract surface is still `skills/*.md` + the contract files in the table above. If `.claude/` is removed, the pipeline still works via the old "Follow ANALYZE.md" invocation pattern.
+
+---
+
 ## What is not part of the system
 
 To avoid confusion: the following have been referenced in older drafts of the docs but **are not implemented** and are not part of the architecture. They are roadmap ideas tracked in [ROADMAP.md](ROADMAP.md):

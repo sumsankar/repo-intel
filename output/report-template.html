@@ -65,12 +65,18 @@
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
     code {
-      background: var(--surface3);
-      padding: 1px 6px;
-      border-radius: 4px;
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
       font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
-      font-size: 0.82em;
+      font-size: 0.88em;
       color: var(--blue);
+    }
+    pre code, .finding-meta code { color: inherit; }
+    table code, .table-wrap code {
+      background: rgba(116, 192, 252, 0.08);
+      padding: 1px 5px;
+      border-radius: 3px;
     }
 
     /* ── Sidebar ─────────────────────────────────────────────────── */
@@ -493,15 +499,15 @@
     .qw-body strong { color: var(--text); }
 
     /* ── Roadmap ─────────────────────────────────────────────────── */
-    .roadmap { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 12px; }
-    .roadmap-phase { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
-    .roadmap-phase h4 { font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
-    .roadmap-phase ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
-    .roadmap-phase ul li { font-size: 0.85rem; color: var(--text2); display: flex; gap: 6px; }
+    .roadmap { display: flex; flex-direction: column; gap: 14px; }
+    .roadmap-phase { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 20px; }
+    .roadmap-phase h4 { font-size: 0.78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+    .roadmap-phase ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .roadmap-phase ul li { font-size: 0.88rem; line-height: 1.55; color: var(--text2); display: flex; gap: 8px; }
     .roadmap-phase ul li::before { content: "→"; color: var(--accent); flex-shrink: 0; }
-    .roadmap-phase.week { border-top: 3px solid var(--red); }
-    .roadmap-phase.month { border-top: 3px solid var(--yellow); }
-    .roadmap-phase.quarter { border-top: 3px solid var(--accent); }
+    .roadmap-phase.week { border-left: 3px solid var(--red); }
+    .roadmap-phase.month { border-left: 3px solid var(--yellow); }
+    .roadmap-phase.quarter { border-left: 3px solid var(--accent); }
 
     /* ── Compliance box ──────────────────────────────────────────── */
     .compliance-box { border-radius: var(--radius); padding: 16px 20px; margin-bottom: 16px; }
@@ -568,7 +574,6 @@
       .content { padding: 20px 16px; }
       .topbar-pills { display: none; }
       .checklist { grid-template-columns: 1fr; }
-      .roadmap { grid-template-columns: 1fr; }
       .score-grid { grid-template-columns: repeat(3, 1fr); }
     }
   </style>
@@ -1191,6 +1196,9 @@ sequenceDiagram
   </div>
 
   <!-- Roadmap -->
+  <!-- Renderer note: do NOT use <code> tags inside roadmap <li> items.
+       Roadmap entries are plain prose for scan-ability — keep file/symbol
+       names inline as plain text. -->
   <div class="section" id="roadmap">
     <div class="section-header">
       <span class="section-icon">&#128506;&#65039;</span>
@@ -1200,19 +1208,19 @@ sequenceDiagram
       <div class="roadmap-phase week">
         <h4>&#128308; This week — critical fixes</h4>
         <ul>
-          <!-- <li>Item</li> -->
+          <!-- <li>Item (plain text only — no <code>)</li> -->
         </ul>
       </div>
       <div class="roadmap-phase month">
         <h4>&#128993; This month — quality improvements</h4>
         <ul>
-          <!-- <li>Item</li> -->
+          <!-- <li>Item (plain text only — no <code>)</li> -->
         </ul>
       </div>
       <div class="roadmap-phase quarter">
         <h4>&#128309; This quarter — strategic</h4>
         <ul>
-          <!-- <li>Item</li> -->
+          <!-- <li>Item (plain text only — no <code>)</li> -->
         </ul>
       </div>
     </div>
@@ -1281,6 +1289,7 @@ sequenceDiagram
         <thead><tr><th>Detail</th><th>Value</th></tr></thead>
         <tbody>
           <tr><td>Memory files loaded</td><td><!-- paths or "none" --></td></tr>
+          <tr><td>Subagent models</td><td><!-- ri-code: haiku, ri-devops: haiku, ri-architecture: sonnet, ri-dependency: sonnet --></td></tr>
           <tr><td>Tool calls — total</td><td></td></tr>
           <tr><td>&nbsp;&nbsp;Bash</td><td></td></tr>
           <tr><td>&nbsp;&nbsp;Read</td><td></td></tr>
@@ -1412,9 +1421,18 @@ function _initDiag(id) {
   vp.addEventListener('mousemove',function(e){if(!drag)return;vp.scrollLeft=sl-(e.pageX-ox);vp.scrollTop=st-(e.pageY-oy);});
   return true;
 }
+function _sizeSvg(svg,w,h){
+  /* Set both the SVG attributes and inline style px so the SVG resizes
+     reliably even when Mermaid has injected its own inline style="height:auto;
+     max-width:..." which would otherwise win against the bare attributes. */
+  if(!svg)return;
+  svg.setAttribute('width',w); svg.setAttribute('height',h);
+  svg.style.width=w+'px'; svg.style.height=h+'px';
+  svg.style.maxWidth='none'; svg.style.maxHeight='none';
+}
 function _applyDiagScale(id) {
   var svg=_getSvg(id),st=_diag[id]; if(!svg||!st)return;
-  svg.style.maxWidth='none'; svg.setAttribute('width',st.nw*st.scale); svg.setAttribute('height',st.nh*st.scale);
+  _sizeSvg(svg, st.nw*st.scale, st.nh*st.scale);
   var l=document.getElementById(id+'-scale'); if(l)l.textContent=Math.round(st.scale*100)+'%';
 }
 function zoomDiagram(id,d){if(!_diag[id])return;_diag[id].scale=Math.min(5,Math.max(.1,_diag[id].scale+d));_applyDiagScale(id);}
@@ -1431,12 +1449,28 @@ function expandDiagram(id,title) {
   while(mvp.firstChild) mvp.removeChild(mvp.firstChild);
   var clone=src.cloneNode(true);
   clone.id='modal-svg-'+Date.now();
+  /* Strip any width/height baked into the source so we control sizing here. */
+  clone.removeAttribute('width'); clone.removeAttribute('height');
+  clone.style.maxWidth='none'; clone.style.maxHeight='none'; clone.style.display='block'; clone.style.background='#fff';
   mvp.appendChild(clone);
-  if(!clone)return;
-  clone.style.maxWidth='none'; clone.style.display='block'; clone.style.background='#fff';
   var d=_readDims(src); _modal.nw=d.nw; _modal.nh=d.nh;
-  requestAnimationFrame(function(){_modal.scale=Math.min((mvp.clientWidth||window.innerWidth*.92-48)/d.nw,(mvp.clientHeight||window.innerHeight*.84-48)/d.nh,1);_applyModalScale();});
+  /* IMPORTANT: open the modal BEFORE measuring mvp. While the modal is
+     display:none, mvp.clientWidth/clientHeight are 0 and the fit calc collapses
+     the SVG to 0x0, leaving only the black overlay visible. */
   modal.classList.add('open'); document.addEventListener('keydown',_escClose);
+  /* Force a synchronous layout so clientWidth/clientHeight are accurate, then
+     compute the fit-to-viewport scale. */
+  void mvp.offsetWidth;
+  var fitScale=function(){
+    var mw=mvp.clientWidth||window.innerWidth*.92-48;
+    var mh=mvp.clientHeight||window.innerHeight*.84-48;
+    var s=Math.min(mw/d.nw, mh/d.nh, 1);
+    if(!isFinite(s)||s<=0) s=1;
+    _modal.scale=s; _applyModalScale();
+  };
+  fitScale();
+  /* One more rAF pass to catch browsers that haven't laid out the modal yet. */
+  requestAnimationFrame(fitScale);
   mvp._wh&&mvp.removeEventListener('wheel',mvp._wh);
   mvp._wh=function(e){e.preventDefault();_modal.scale=Math.min(5,Math.max(.1,_modal.scale+(e.deltaY<0?.15:-.15)));_applyModalScale();};
   mvp.addEventListener('wheel',mvp._wh,{passive:false});
@@ -1447,7 +1481,11 @@ function expandDiagram(id,title) {
   mvp._mousemove=function(e){if(!d2)return;mvp.scrollLeft=sl2-(e.pageX-ox2);mvp.scrollTop=st2-(e.pageY-oy2);};
   ['mousedown','mouseleave','mouseup','mousemove'].forEach(function(t){mvp.addEventListener(t,mvp['_'+t]);});
 }
-function _applyModalScale(){var svg=document.getElementById('diag-modal-vp').querySelector('svg');if(!svg)return;svg.setAttribute('width',_modal.nw*_modal.scale);svg.setAttribute('height',_modal.nh*_modal.scale);var l=document.getElementById('modal-scale');if(l)l.textContent=Math.round(_modal.scale*100)+'%';}
+function _applyModalScale(){
+  var svg=document.getElementById('diag-modal-vp').querySelector('svg');
+  _sizeSvg(svg, _modal.nw*_modal.scale, _modal.nh*_modal.scale);
+  var l=document.getElementById('modal-scale'); if(l)l.textContent=Math.round(_modal.scale*100)+'%';
+}
 function zoomModal(d){_modal.scale=Math.min(5,Math.max(.1,_modal.scale+d));_applyModalScale();}
 function resetModal(){var vp=document.getElementById('diag-modal-vp');_modal.scale=Math.min((vp&&vp.clientWidth||window.innerWidth*.92-48)/_modal.nw,(vp&&vp.clientHeight||window.innerHeight*.84-48)/_modal.nh,1);_applyModalScale();if(vp){vp.scrollLeft=0;vp.scrollTop=0;}}
 function closeDiagramModal(){document.getElementById('diag-modal').classList.remove('open');document.removeEventListener('keydown',_escClose);}

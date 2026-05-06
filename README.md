@@ -8,15 +8,19 @@ repo-intel is a **local CLI tool**, not a service. You point Claude Code at `ANA
 
 ## Quick start
 
-### Analyse a remote repo
+### Slash command (preferred)
+
+```
+/analyze https://github.com/org/repo
+/analyze C:\projects\my-app
+```
+
+The `/analyze` command ([.claude/commands/analyze.md](.claude/commands/analyze.md)) delegates to `ANALYZE.md` and prefers the declared `ri-code`, `ri-architecture`, `ri-devops`, `ri-dependency` subagents for Phase 2 parallel analysis.
+
+### Or drive ANALYZE.md directly
 
 ```
 Follow ANALYZE.md and analyse https://github.com/org/repo
-```
-
-### Analyse a local folder
-
-```
 Follow ANALYZE.md and analyse C:\projects\my-app
 ```
 

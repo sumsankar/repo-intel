@@ -95,11 +95,16 @@ To maximize throughput and analysis depth, use Claude Code's **Agent tool** to r
 Run `security` skill directly (main agent reads `skills/security.md`). If critical secrets are found, **stop and escalate immediately** before proceeding.
 
 **Phase 2 — Parallel analysis (use subagents):**
-Launch these skills in parallel using the Agent tool — they are independent of each other:
-- `code` — size, coverage, complexity, duplication, documentation
-- `architecture` — structure, dependencies, patterns, design principles, diagrams
-- `devops` — CI/CD, containers, IaC, hygiene
-- `dependency` — CVEs, licenses, supply chain, deprecated packages
+Launch these skills in parallel using the Agent tool — they are independent of each other. Prefer the **project-declared subagents** in `.claude/agents/` (each has `tools` scoped to `Bash, Read, Grep, Glob` and a brief that already points at its skill file). Spawn all four in a **single tool-use message** so they run concurrently:
+
+| Phase 2 skill | Declared `subagent_type` |
+|---------------|--------------------------|
+| `code` — size, coverage, complexity, duplication, documentation | `ri-code` |
+| `architecture` — structure, dependencies, patterns, design principles, diagrams | `ri-architecture` |
+| `devops` — CI/CD, containers, IaC, hygiene | `ri-devops` |
+| `dependency` — CVEs, licenses, supply chain, deprecated packages | `ri-dependency` |
+
+If a declared subagent is unavailable (e.g. running from a fresh clone before `.claude/` is populated), fall back to `subagent_type: general-purpose` with the skill name in the prompt — the contract files below still apply.
 
 Each subagent should:
 1. Read its **own** skill file from `skills/` (do not pass the full skill content in the agent prompt)
@@ -302,13 +307,15 @@ When the repository contains multiple projects (e.g., .NET solution with multipl
 
 ## Quick start
 
-**Remote URL:**
+**Slash command (preferred):**
 ```
-Follow ANALYZE.md and analyze https://github.com/org/repo
+/analyze https://github.com/org/repo
+/analyze C:\projects\my-app
 ```
 
-**Local folder:**
+**Or follow this file directly:**
 ```
+Follow ANALYZE.md and analyze https://github.com/org/repo
 Follow ANALYZE.md and analyze C:\projects\my-app
 ```
 

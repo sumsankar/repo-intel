@@ -1,5 +1,10 @@
-# Local Claude Code developer config
-.claude/
+# Claude Code — ignore user/local state, keep project-shared wrappers
+# (slash commands and subagents are the native surface for this repo —
+# see .claude/commands/analyze.md and .claude/agents/ri-*.md)
+.claude/*
+!.claude/commands/
+!.claude/agents/
+!.claude/settings.json
 
 # Environment files
 .env

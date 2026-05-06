@@ -65,6 +65,7 @@ markdown-link-check <file.md>
 - [output/](output/) — config schema, SARIF schema, HTML + Markdown report templates, example config
 - [examples/](examples/) — sample generated reports
 - [.github/](.github/) — CI workflow, Dependabot, SECURITY.md
+- [.claude/](.claude/) — Claude Code native wrappers: `commands/analyze.md` slash command and `agents/ri-{code,architecture,devops,dependency}.md` Phase 2 subagents. Thin wrappers over `ANALYZE.md` and `skills/*.md` — those remain the contract surface.
 
 Nothing else exists at the root beyond entry-point docs (`ANALYZE.md`, `ARCHITECTURE.md`, `ROADMAP.md`, `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `LICENSE`).
 
